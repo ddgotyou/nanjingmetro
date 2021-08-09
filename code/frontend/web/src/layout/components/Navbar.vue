@@ -2,53 +2,36 @@
   <div class="navbar">
     <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
 
-    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
+    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav"/>
+    <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav"/>
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
-        <!-- <search id="header-search" class="right-menu-item" /> -->
-
-        <error-log class="errLog-container right-menu-item hover-effect" />
+        <search id="header-search" class="right-menu-item" />
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
-        <!-- <el-tooltip :content="$t('navbar.size')" effect="dark" placement="bottom">
+        <!-- <el-tooltip content="布局大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip> -->
-
-        <lang-select class="right-menu-item hover-effect" />
 
       </template>
 
       <el-dropdown class="right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <!-- <img :src="avatar+'?imageView2/1/w/64/h/64'" class="user-avatar"> -->
-          <svg-icon class-name="international-icon" icon-class="user" />
+          <!-- <img :src="avatar" class="user-avatar"> -->
           <!-- <i class="el-icon-caret-bottom" /> -->
+          <svg-icon class-name="international-icon" icon-class="user" />
         </div>
-
         <el-dropdown-menu slot="dropdown">
-          <!-- <router-link to="/">
-            <el-dropdown-item>
-              {{ $t('navbar.dashboard') }}
-            </el-dropdown-item>
-          </router-link> -->
-          <router-link to="/profile/index">
-            <el-dropdown-item>
-              {{ $t('navbar.profile') }}
-            </el-dropdown-item>
+          <router-link to="/user/profile">
+            <el-dropdown-item>个人中心</el-dropdown-item>
           </router-link>
-
-          <a target="_blank" href="https://panjiachen.gitee.io/vue-element-admin-site/zh/guide/">
-            <el-dropdown-item>
-              模板参考
-            </el-dropdown-item>
-          </a>
-          <a target="_blank" href="https://element.eleme.cn/#/zh-CN">
-            <el-dropdown-item>Element</el-dropdown-item>
-          </a>
+          <el-dropdown-item @click.native="setting = true">
+            <span>布局设置</span>
+          </el-dropdown-item>
           <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">{{ $t('navbar.logOut') }}</span>
+            <span>退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -59,37 +42,58 @@
 <script>
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
+import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
-import ErrorLog from '@/components/ErrorLog'
 import Screenfull from '@/components/Screenfull'
-// import SizeSelect from '@/components/SizeSelect'
-import LangSelect from '@/components/LangSelect'
-// import Search from '@/components/HeaderSearch'
+import SizeSelect from '@/components/SizeSelect'
+import Search from '@/components/HeaderSearch'
 
 export default {
   components: {
     Breadcrumb,
+    TopNav,
     Hamburger,
-    ErrorLog,
     Screenfull,
-    // SizeSelect,
-    LangSelect
-    // Search
+    SizeSelect,
+    Search
   },
   computed: {
     ...mapGetters([
       'sidebar',
       'avatar',
       'device'
-    ])
+    ]),
+    setting: {
+      get() {
+        return this.$store.state.settings.showSettings
+      },
+      set(val) {
+        this.$store.dispatch('settings/changeSetting', {
+          key: 'showSettings',
+          value: val
+        })
+      }
+    },
+    topNav: {
+      get() {
+        return this.$store.state.settings.topNav
+      }
+    }
   },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+      this.$confirm('确定注销并退出系统吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.dispatch('LogOut').then(() => {
+          location.href = '/index';
+        })
+      }).catch(() => {});
     }
   }
 }
@@ -118,6 +122,11 @@ export default {
 
   .breadcrumb-container {
     float: left;
+  }
+
+  .topmenu-container {
+    position: absolute;
+    left: 50px;
   }
 
   .errLog-container {

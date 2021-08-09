@@ -1,27 +1,33 @@
 module.exports = {
-  title: '南京地铁培训管理',
+  title: '南京地铁培训管理系统',
 
   /**
-   * @type {boolean} true | false
-   * @description Whether show the settings right-panel
+   * 侧边栏主题 深色主题theme-dark，浅色主题theme-light
+   */
+  sideTheme: 'theme-dark',
+
+  /**
+   * 是否系统布局配置
    */
   showSettings: false,
 
   /**
-   * @type {boolean} true | false
-   * @description Whether need tagsView
+   * 是否显示顶部导航
+   */
+  topNav: false,
+
+  /**
+   * 是否显示 tagsView
    */
   tagsView: false,
 
   /**
-   * @type {boolean} true | false
-   * @description Whether fix the header
+   * 是否固定头部
    */
   fixedHeader: true,
 
   /**
-   * @type {boolean} true | false
-   * @description Whether show the logo in sidebar
+   * 是否显示logo
    */
   sidebarLogo: true,
 
@@ -31,7 +37,5 @@ module.exports = {
    * The default is only used in the production env
    * If you want to also use it in dev, you can pass ['production', 'development']
    */
-  errorLog: 'production',
-
-  superAdminRole: 'SUPER_ADMIN'
+  errorLog: 'production'
 }

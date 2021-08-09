@@ -5,46 +5,27 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
-
-/* Router Modules */
-// import componentsRouter from './modules/components'
-// import chartsRouter from './modules/charts'
-// import tableRouter from './modules/table'
-// import nestedRouter from './modules/nested'
+import ParentView from '@/components/ParentView';
 
 /**
- * 提示：仅当包含子路由时才会显示子菜单
- * 详情参考：https://panjiachen.github.io/vue-element-AUTH_ADMIN-site/guide/essentials/router-and-nav.html
+ * Note: 路由配置项
  *
- * 路由定义选项如下：
- *
- * hidden: true                   若为true，该路由不会出现在侧边导航栏中（默认为false）
- * alwaysShow: true               若为true，则使用显示该项的根节点（参考稍后的icon路由）
- *                                如未指定alwaysShow属性，当该路由包含多于一个子路由时，将会呈现为嵌套模式，
- *                                若不包含或仅包含一个子路由，将不显示该项的根节点
- * redirect: noRedirect           若将redirect设为noRedirect，该项将不在breadcrumb中重新跳转
- * name:'router-name'             <keep-alive>使用的名称。除以下两种情况外，必须设置：
- *                                         1、该项为父节点且只有一个子节点（此时导航项的属性由子节点决定）
- *                                         2、hidden为true的节点
+ * hidden: true                   // 当设置 true 的时候该路由不会再侧边栏出现 如401，login等页面，或者如一些编辑页面/edit/1
+ * alwaysShow: true               // 当你一个路由下面的 children 声明的路由大于1个时，自动会变成嵌套的模式--如组件页面
+ *                                // 只有一个时，会将那个子路由当做根路由显示在侧边栏--如引导页面
+ *                                // 若你想不管路由下面的 children 声明的个数都显示你的根路由
+ *                                // 你可以设置 alwaysShow: true，这样它就会忽略之前定义的规则，一直显示根路由
+ * redirect: noRedirect           // 当设置 noRedirect 的时候该路由在面包屑导航中不可被点击
+ * name:'router-name'             // 设定路由的名字，一定要填写不然使用<keep-alive>时会出现各种问题
  * meta : {
-    roles: ['AUTH_ADMIN','AUTH_USER']    控制页面权限（可设置多个权限），
-                                         注意：1、若用户权限为AUTH_ADMIN，则不论导航项如何设置均对该用户可见
-                                              2、若不设置roles，则表示该项无限制（任何人可见）
-                                              3、若设为[]（空数组），则除AUTH_ADMIN之外所有人均不可见
-    title: 'title'               侧边导航栏和breadcrumb中显示的名称（建议设置）若与语言文件中的键值匹配则应用i18n，若无匹配项则直接设置
-    icon: 'svg-name'             侧边导航栏中显示的图标
-    noCache: true                若为true则该页面不被缓存（默认为false）
-    affix: true                  若为true则该页面标签将在tags-view中黏附
-    breadcrumb: false            若为false，该项在breadcrumb中隐藏（默认为true）
-    activeMenu: '/example/list'  若设置，侧边导航栏将高亮指定的路径
+    noCache: true                // 如果设置为true，则不会被 <keep-alive> 缓存(默认 false)
+    title: 'title'               // 设置该路由在侧边栏和面包屑中展示的名字
+    icon: 'svg-name'             // 设置该路由的图标，对应路径src/assets/icons/svg
+    breadcrumb: false            // 如果设置为false，则不会在breadcrumb面包屑中显示
   }
  */
 
-/**
- * 不受权限限制的常量路由，定义在此处的路由可以被所有已登录用户访问
- * 注意：最终的路由将由constantRoutes与asyncRoutes组合而成，
- * 常量路由（中的非隐藏项）将始终出现在动态路由之前。合成过程不对次序进行调整
- */
+// 公共路由
 export const constantRoutes = [
   {
     path: '/redirect',
@@ -52,326 +33,96 @@ export const constantRoutes = [
     hidden: true,
     children: [
       {
-        path: '/redirect/:path*',
-        component: () => import('@/views/redirect/index')
+        path: '/redirect/:path(.*)',
+        component: (resolve) => require(['@/views/redirect'], resolve)
       }
     ]
   },
   {
     path: '/login',
-    component: () => import('@/views/login/index'),
-    hidden: true
-  },
-  {
-    path: '/auth-redirect',
-    component: () => import('@/views/login/auth-redirect'),
+    component: (resolve) => require(['@/views/login'], resolve),
     hidden: true
   },
   {
     path: '/404',
-    component: () => import('@/views/error-page/404'),
+    component: (resolve) => require(['@/views/error/404'], resolve),
     hidden: true
   },
   {
     path: '/401',
-    component: () => import('@/views/error-page/401'),
+    component: (resolve) => require(['@/views/error/401'], resolve),
     hidden: true
   },
   {
-    path: '/',
+    path: '',
     component: Layout,
-    redirect: '/dashboard',
-    children: [
-      {
-        path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
-        name: 'Dashboard',
-        meta: { title: 'dashboard', icon: 'el-icon-s-home', affix: true }
-      }
-    ]
-  },
-  // {
-  //   path: '/documentation',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       component: () => import('@/views/documentation/index'),
-  //       name: 'Documentation',
-  //       meta: { title: 'documentation', icon: 'documentation', affix: true }
-  //     }
-  //   ]
-  // },
-  // {
-  //   path: '/guide',
-  //   component: Layout,
-  //   redirect: '/guide/index',
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       component: () => import('@/views/guide/index'),
-  //       name: 'Guide',
-  //       meta: { title: 'guide', icon: 'guide', noCache: true }
-  //     }
-  //   ]
-  // },
-  {
-    path: '/profile',
-    component: Layout,
-    redirect: '/profile/index',
-    hidden: true,
+    redirect: 'index',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/profile/index'),
+        component: (resolve) => require(['@/views/index'], resolve),
+        name: '首页',
+        meta: { title: '首页', icon: 'dashboard', noCache: true, affix: true }
+      }
+    ]
+  },
+  {
+    path: '/user',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'profile',
+        component: (resolve) => require(['@/views/system/user/profile/index'], resolve),
         name: 'Profile',
-        meta: { title: 'profile', icon: 'user', noCache: true }
+        meta: { title: '个人中心', icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/dict',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'type/data/:dictId(\\d+)',
+        component: (resolve) => require(['@/views/system/dict/data'], resolve),
+        name: 'Data',
+        meta: { title: '字典数据', icon: '' }
+      }
+    ]
+  },
+  {
+    path: '/job',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'log',
+        component: (resolve) => require(['@/views/monitor/job/log'], resolve),
+        name: 'JobLog',
+        meta: { title: '调度日志' }
+      }
+    ]
+  },
+  {
+    path: '/gen',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'edit/:tableId(\\d+)',
+        component: (resolve) => require(['@/views/tool/gen/editTable'], resolve),
+        name: 'GenEdit',
+        meta: { title: '修改生成配置' }
       }
     ]
   }
 ]
 
-/**
- * 受权限限制的动态路由，会根据用户权限动态加入到最终的路由定义中
- * 具体参看以下各示例路由的meta.roles属性
- */
-export const asyncRoutes = [
-  {
-    path: '/rulechainrepo',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/rule-chain-repo/index'),
-        name: 'RuleChainRepo',
-        meta: { title: 'ruleChainRepo', icon: 'el-icon-link', noCache: true, roles: ['TENANT_ADMIN'] }
-      }
-    ]
-  },
-  {
-    path: '/tenants',
-    component: Layout,
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/tenant/index'),
-        name: 'Tenant',
-        meta: { title: 'tenant', icon: 'el-icon-s-custom', noCache: true, roles: ['SYS_ADMIN'] }
-      }
-    ]
-  },
-  {
-    path: '/users',
-    // path: '/:a/:id/users',
-    component: Layout,
-    hidden: true,
-    children: [
-      {
-        path: '',
-        component: () => import('@/views/user/index'),
-        name: 'User',
-        meta: { title: 'user', icon: 'el-icon-s-custom', noCache: true, roles: ['SYS_ADMIN', 'TENANT_ADMIN'] }
-      }
-    ]
-  },
-
-  {
-    path: '/customers',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/customer/index'),
-        name: 'Customer',
-        meta: { title: 'customer', icon: 'peoples', noCache: true, roles: ['TENANT_ADMIN'] }
-      }
-    ]
-  },
-
-  {
-    path: '/assets',
-    component: Layout,
-    // redirect: 'noRedirect',
-    // name: 'ErrorPages',
-    // meta: {
-    //   title: 'asset',
-    //   icon: 'table',
-    //   noCache: true,
-    //   roles: ['TENANT_ADMIN', 'CUSTOMER_USER']
-    // },
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/asset/index'),
-        name: 'Asset',
-        meta: { title: 'asset', icon: 'table', noCache: true, roles: ['TENANT_ADMIN', 'CUSTOMER_USER'] }
-      }
-    ]
-  },
-
-  {
-    path: '/devices',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/device/index'),
-        name: 'Device',
-        meta: { title: 'device', icon: 'el-icon-mobile', noCache: true, roles: ['TENANT_ADMIN', 'CUSTOMER_USER'] }
-      }
-    ]
-  },
-
-  //   {
-  //     path: '/excel',
-  //     component: Layout,
-  //     redirect: '/excel/export-excel',
-  //     name: 'Excel',
-  //     meta: {
-  //       title: 'entityView',
-  //       icon: 'el-icon-view',
-  //       noCache: true,
-  //       roles: ['TENANT_ADMIN', 'CUSTOMER_USER']
-  //     },
-  //     children: [
-  //       {
-  //         path: 'export-excel',
-  //         component: () => import('@/views/excel/export-excel'),
-  //         name: 'ExportExcel',
-  //         meta: { title: 'exportExcel' }
-  //       },
-  //       {
-  //         path: 'export-selected-excel',
-  //         component: () => import('@/views/excel/select-excel'),
-  //         name: 'SelectExcel',
-  //         meta: { title: 'selectExcel' }
-  //       },
-  //       {
-  //         path: 'export-merge-header',
-  //         component: () => import('@/views/excel/merge-header'),
-  //         name: 'MergeHeader',
-  //         meta: { title: 'mergeHeader' }
-  //       },
-  //       {
-  //         path: 'upload-excel',
-  //         component: () => import('@/views/excel/upload-excel'),
-  //         name: 'UploadExcel',
-  //         meta: { title: 'uploadExcel' }
-  //       }
-  //     ]
-  //   },
-
-  //   {
-  //     path: '/zip',
-  //     component: Layout,
-  //     redirect: '/zip/download',
-  //     alwaysShow: true,
-  //     name: 'Zip',
-  //     meta: { title: 'widgetRepo', icon: 'component', noCache: true, roles: ['TENANT_ADMIN', 'SYS_ADMIN'] },
-  //     children: [
-  //       {
-  //         path: 'download',
-  //         component: () => import('@/views/zip/index'),
-  //         name: 'ExportZip',
-  //         meta: { title: 'exportZip' }
-  //       }
-  //     ]
-  //   },
-
-  {
-    path: '/scenerepo',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/scene-repo/index'),
-        name: 'SceneRepo',
-        meta: { title: 'sceneRepo', icon: 'dashboard', noCache: true, roles: ['TENANT_ADMIN', 'CUSTOMER_USER'] }
-      }
-    ]
-  },
-
-  {
-    path: '/auditlog',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/audit-log/index'),
-        name: 'I18n',
-        meta: { title: 'auditLog', icon: 'el-icon-s-claim', noCache: true, roles: ['TENANT_ADMIN'] }
-      }
-    ]
-  },
-  {
-    path: '/syssetting',
-    component: () => import('@/layout'), // 另一种声明方式
-    redirect: '/sys-setting/page',
-    alwaysShow: true, // 始终显示根节点
-    name: 'Permission',
-    meta: {
-      title: 'sysSetting',
-      icon: 'el-icon-setting',
-      roles: ['SYS_ADMIN'] // 可为该路由根节点设置权限
-    },
-    children: [
-      {
-        path: 'page',
-        component: () => import('@/views/sys-setting/page'),
-        name: 'PagePermission',
-        meta: {
-          title: 'pagePermission',
-          roles: ['AUTH_ADMIN'] // 或仅为子路由设置权限
-        }
-      },
-      {
-        path: 'directive',
-        component: () => import('@/views/sys-setting/directive'),
-        name: 'DirectivePermission',
-        meta: {
-          title: 'directivePermission'
-          // 如未设置权限，则表示该页面没有权限限制
-        }
-      },
-      {
-        path: 'role',
-        component: () => import('@/views/sys-setting/role'),
-        name: 'RolePermission',
-        meta: {
-          title: 'rolePermission',
-          roles: ['AUTH_ADMIN']
-        }
-      }
-    ]
-  },
-  // {
-  //   path: 'external-link',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'http://confluence.avantport.com/pages/viewpage.action?pageId=7045148',
-  //       meta: { title: 'externalLink', icon: 'link' }
-  //     }
-  //   ]
-  // },
-
-  // 404页面必须位于路由定义最后！！！
-  { path: '*', redirect: '/404', hidden: true }
-]
-
-const createRouter = () => new Router({
-  base: '/',
-  mode: 'history', // 需要服务支持
+export default new Router({
+  mode: 'history', // 去掉url中的#
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })
-
-const router = createRouter()
-
-// 具体参考： https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
-export function resetRouter() {
-  const newRouter = createRouter()
-  router.matcher = newRouter.matcher // reset router
-}
-
-export default router

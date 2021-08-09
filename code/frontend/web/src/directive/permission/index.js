@@ -1,13 +1,15 @@
-import permission from './permission'
+import hasRole from './hasRole'
+import hasPermi from './hasPermi'
 
 const install = function(Vue) {
-  Vue.directive('permission', permission)
+  Vue.directive('hasRole', hasRole)
+  Vue.directive('hasPermi', hasPermi)
 }
 
 if (window.Vue) {
-  window['permission'] = permission
+  window['hasRole'] = hasRole
+  window['hasPermi'] = hasPermi
   Vue.use(install); // eslint-disable-line
 }
 
-permission.install = install
-export default permission
+export default install

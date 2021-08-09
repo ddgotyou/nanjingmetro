@@ -1,19 +1,23 @@
 <template>
-  <div class="sidebar-logo-container" :class="{'collapse':collapse}">
+  <div class="sidebar-logo-container" :class="{'collapse':collapse}" :style="{ backgroundColor: sideTheme === 'theme-dark' ? variables.menuBg : variables.menuLightBg }">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 v-else class="sidebar-title">{{ title }} </h1>
+        <h1 v-else class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.sidebarTitle : variables.sidebarLightTitle }">{{ title }} </h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 class="sidebar-title">{{ title }} </h1>
+        <h1 class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.sidebarTitle : variables.sidebarLightTitle }">{{ title }} </h1>
       </router-link>
     </transition>
   </div>
 </template>
 
 <script>
+import logoImg from '@/assets/logo/logo.png'
+import variables from '@/assets/styles/variables.scss'
+import settings from '@/settings'
+
 export default {
   name: 'SidebarLogo',
   props: {
@@ -22,10 +26,18 @@ export default {
       required: true
     }
   },
+  computed: {
+    variables() {
+      return variables;
+    },
+	sideTheme() {
+      return this.$store.state.settings.sideTheme
+    }
+  },
   data() {
     return {
-      title: 'ThingsPort 智能物联',
-      logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      title: settings.title,
+      logo: logoImg
     }
   }
 }
@@ -58,7 +70,7 @@ export default {
       width: 32px;
       height: 32px;
       vertical-align: middle;
-      margin-right: 12px;
+      margin-right: 5px;
     }
 
     & .sidebar-title {
