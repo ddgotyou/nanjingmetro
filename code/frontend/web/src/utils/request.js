@@ -1,168 +1,135 @@
-/**
- * author Hongfei
- * created on 2021-02-05
- */
-
+import axios from 'axios'
+import { Notification, MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
-import { MessageBox, Message } from 'element-ui'
+import errorCode from '@/utils/errorCode'
+import { tansParams } from "@/utils/common";
 
-export default function request(config) {
-  let url = config.url
+axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
+// 创建axios实例
+const service = axios.create({
+  // axios中请求配置有baseURL选项，表示请求URL公共部分
+  baseURL: process.env.VUE_APP_BASE_API,
+  // 超时
+  timeout: 10000
+})
 
-  if (!isAbsoluteUrl(url)) {
-    url = process.env.VUE_APP_BASE_API + url
+// request拦截器
+service.interceptors.request.use(config => {
+  // 是否需要设置 token
+  const isToken = (config.headers || {}).isToken === false
+  if (getToken() && !isToken) {
+    config.headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
   }
-
-  if (!config.headers) {
-    config.headers = {}
-  }
-
-  config.headers['Content-Type'] = 'application/json'
-
-  if (store.getters.token) {
-    config.headers.Authorization = 'Bearer ' + getToken()
-  }
-
-  if (config.body) {
-    config.body = JSON.stringify(config.body)
-  }
-
-  return fetch(url, config)
-    .then(response => {
-      if (response.ok) {
-        return response.json()
-      } else { // 返回4xx或5xx
-        checkErrorStatus(response)
-        return abortSignal()
-      }
-    })
-    // 只有在网络不可用，或回调方法本身出错时，返回的Promise才会是reject的，否则只要有响应，不管是2xx还是4xx，都是resolve的，
-    // 区别仅在于ok属性是true还是false。因此catch语句仅在网络不可用时执行
-    .catch(error => {
-      console.log(error)
-      Message({
-        message:
-              '无法连接至服务器，您可以稍后再试。如果持续出现此问题，请与系统管理员确认。',
-        type: 'error',
-        duration: 10 * 1000
-      })
-
-      // catch执行时客户代码的回调将会作为finally块。终止回调链以避免可能引发的新的异常。
-      return abortSignal()
-    })
-}
-
-function isAbsoluteUrl(url) {
-  const u = url.toLowerCase()
-  return u.startsWith('http://') || u.startsWith('https://')
-}
-
-/**
- * 用一个状态为Pending的Promise组织回调链继续执行。由于catch只在网络不可用时执行，故应该不会有太大的负面影响
- */
-function abortSignal() {
-  return (new Promise((resolve, reject) => {}))
-}
-
-function checkErrorStatus(response) {
-  // console.log('错误：' + response.status)
-  const url = response.url
-  const status = response.status
-
-  let errorMessage = response.status + ' ' + response.statusText
-
-  let error = ''
-  let error_description = ''
-
-  let errorResponse = {}
-  response.json().then(res => {
-    errorResponse = res
-  })
-
-  if (errorResponse) {
-    // 不能确保每一次错误响应都包含消息体
-    error = errorResponse.error
-    error_description = errorResponse.error_description
-    // const logMessage = JSON.stringify(resData)
-    // console.log(logMessage)
-  }
-
-  if (status === 400) {
-    // 400 Bad Request
-    if (isLoginUrl(url)) {
-      if (error.toLowerCase() === 'invalid_grant') {
-        // 用户名存在，但登录不成功
-        switch (error_description.toLowerCase()) {
-          case 'bad credentials': // 密码错误
-            errorMessage = '密码错误'
-            break
-          case 'user is disabled':
-            errorMessage = '账户未启用'
-            break
-          case 'user account is locked':
-            errorMessage = '账户已锁定'
-            break
-          case 'user account has expired':
-            errorMessage = '账户已过期'
-            break
-          case 'user credentials have expired':
-            errorMessage = '密码已过期'
-            break
-          default:
+  // get请求映射params参数
+  if (config.method === 'get' && config.params) {
+    let url = config.url + '?';
+    for (const propName of Object.keys(config.params)) {
+      const value = config.params[propName];
+      var part = encodeURIComponent(propName) + "=";
+      if (value !== null && typeof(value) !== "undefined") {
+        if (typeof value === 'object') {
+          for (const key of Object.keys(value)) {
+            let params = propName + '[' + key + ']';
+            var subPart = encodeURIComponent(params) + "=";
+            url += subPart + encodeURIComponent(value[key]) + "&";
+          }
+        } else {
+          url += part + encodeURIComponent(value) + "&";
         }
       }
     }
-  } else if (status === 401) {
-    // 401 Unauthorized
+    url = url.slice(0, -1);
+    config.params = {};
+    config.url = url;
+  }
+  return config
+}, error => {
+    console.log(error)
+    Promise.reject(error)
+})
 
-    if (isLoginUrl(url)) {
-      errorMessage = '用户不存在'
-    } else {
-      MessageBox.confirm(
-        '您已登出应用，可以点击“取消”留在此页面，或重新登录',
-        '确认',
-        {
+// 响应拦截器
+service.interceptors.response.use(res => {
+    // 未设置状态码则默认成功状态
+    const code = res.data.code || 200;
+    // 获取错误信息
+    const msg = errorCode[code] || res.data.msg || errorCode['default']
+    if (code === 401) {
+      MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', {
           confirmButtonText: '重新登录',
           cancelButtonText: '取消',
           type: 'warning'
         }
       ).then(() => {
-        store.dispatch('user/resetToken').then(() => {
-          location.reload()
+        store.dispatch('LogOut').then(() => {
+          location.href = '/index';
         })
+      }).catch(() => {});
+    } else if (code === 500) {
+      Message({
+        message: msg,
+        type: 'error'
       })
-    }
-  } else if (status === 403) {
-    // 403 Forbidden
-    // 当用户登录时返回403，表示应用程序的OAUTH凭据不再有效
-    if (isLoginUrl(url)) {
-      errorMessage =
-        '当前应用向认证服务提交了无效的OAUTH凭据，请与系统管理员确认此问题'
+      return Promise.reject(new Error(msg))
+    } else if (code !== 200) {
+      Notification.error({
+        title: msg
+      })
+      return Promise.reject('error')
     } else {
-      // 其余url均表示用户无权执行操作
+      return res.data
     }
-  } else if (status === 404) {
-    // 404 Not found
-    errorMessage = '请求的资源不存在'
-  } else if (status === 405) {
-    // 405 Method not allowed
-    errorMessage
-  } else if (status === 500) {
-    // 500 Internal server error
-    errorMessage
+  },
+  error => {
+    console.log('err' + error)
+    let { message } = error;
+    if (message == "Network Error") {
+      message = "后端接口连接异常";
+    }
+    else if (message.includes("timeout")) {
+      message = "系统接口请求超时";
+    }
+    else if (message.includes("Request failed with status code")) {
+      message = "系统接口" + message.substr(message.length - 3) + "异常";
+    }
+    Message({
+      message: message,
+      type: 'error',
+      duration: 5 * 1000
+    })
+    return Promise.reject(error)
   }
+)
 
-  Message({
-    message: errorMessage,
-    type: 'error',
-    duration: 5 * 1000
+// 通用下载方法
+export function download(url, params, filename) {
+  return service.post(url, params, {
+    transformRequest: [(params) => {
+      return tansParams(params)
+    }],
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    responseType: 'blob'
+  }).then((data) => {
+    const content = data
+    const blob = new Blob([content])
+    if ('download' in document.createElement('a')) {
+      const elink = document.createElement('a')
+      elink.download = filename
+      elink.style.display = 'none'
+      elink.href = URL.createObjectURL(blob)
+      document.body.appendChild(elink)
+      elink.click()
+      URL.revokeObjectURL(elink.href)
+      document.body.removeChild(elink)
+    } else {
+      navigator.msSaveBlob(blob, filename)
+    }
+  }).catch((r) => {
+    console.error(r)
   })
-  // return Promise.reject(err)
 }
 
-function isLoginUrl(url) {
-  return url.startsWith(
-    process.env.VUE_APP_BASE_API + '/auth-service/oauth/token'
-  )
-}
+export default service

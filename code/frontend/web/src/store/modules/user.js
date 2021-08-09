@@ -1,186 +1,115 @@
-// 注意：此处仅负责设置、保存与用户相关的信息（详情、配置等等），具体的获取方式代理给/api/user
+import { login, logout, getInfo, refreshToken } from '@/api/login'
+import { getToken, setToken, setExpiresIn, removeToken } from '@/utils/auth'
 
-import { login } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
-// import { asyncRoutes } from '@/router'
-import { getUserInfo } from '@/utils/jwt'
-// import Settings from '@/settings'
-// import { configRoutes } from '@/utils/route-config'
+const user = {
+  state: {
+    token: getToken(),
+    name: '',
+    avatar: '',
+    roles: [],
+    permissions: []
+  },
 
-const state = {
-  token: getToken(),
-  name: '',
-  avatar: '',
-  introduction: '',
-  roles: []
-}
+  mutations: {
+    SET_TOKEN: (state, token) => {
+      state.token = token
+    },
+    SET_EXPIRES_IN: (state, time) => {
+      state.expires_in = time
+    },
+    SET_NAME: (state, name) => {
+      state.name = name
+    },
+    SET_AVATAR: (state, avatar) => {
+      state.avatar = avatar
+    },
+    SET_ROLES: (state, roles) => {
+      state.roles = roles
+    },
+    SET_PERMISSIONS: (state, permissions) => {
+      state.permissions = permissions
+    }
+  },
 
-const mutations = {
-  SET_TOKEN: (state, token) => {
-    state.token = token
-  },
-  SET_INTRODUCTION: (state, introduction) => {
-    state.introduction = introduction
-  },
-  SET_NAME: (state, name) => {
-    state.name = name
-  },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
-  },
-  SET_ROLES: (state, roles) => {
-    state.roles = roles
-  }
-}
-
-const actions = {
-  // 用户登录，此处仅通过/api/user/login方法获取并存储OAuth令牌，令牌的解析由getInfo完成
-  login({
-    commit
-  }, userInfo) {
-    const {
-      username,
-      password
-    } = userInfo
-    return new Promise((resolve, reject) => {
-      login({
-        username: username.trim(),
-        password: password
-      })
-        .then(response => {
-          const data = response
-          commit('SET_TOKEN', data.access_token)
+  actions: {
+    // 登录
+    Login({ commit }, userInfo) {
+      const username = userInfo.username.trim()
+      const password = userInfo.password
+      const code = userInfo.code
+      const uuid = userInfo.uuid
+      return new Promise((resolve, reject) => {
+        login(username, password, code, uuid).then(res => {
+          let data = res.data
           setToken(data.access_token)
+          commit('SET_TOKEN', data.access_token)
+          setExpiresIn(data.expires_in)
+          commit('SET_EXPIRES_IN', data.expires_in)
           resolve()
         }).catch(error => {
           reject(error)
         })
-    })
-  },
-
-  // 解析OAuth令牌获取用户名与权限信息
-  // 注意：getInfo行为仅在实际发生路由导航时执行一次，其主要目的是获取用户的权限（角色）信息，
-  // 其执行时机已在UI初始化之后，故不应在此处执行与UI设置相关的操作
-  getInfo({
-    commit,
-    state
-  }) {
-    return new Promise((resolve, reject) => {
-      const token = getToken()
-      const userInfo = getUserInfo(token)
-
-      //   const { tenant } = userInfo
-
-      const data = {
-        roles: userInfo.authorities,
-        introduction: '',
-        avatar: 'http://hbimg.b0.upaiyun.com/c5440470619c6048395d6ebeff4212025414266a29a0-dIo4KG_fw658',
-        name: userInfo.user_name
-      }
-
-      // roles 必须是非空数组
-      if (!data.roles || data.roles.length <= 0) {
-        reject('getInfo: roles must be a non-null array!')
-      }
-
-      commit('SET_ROLES', data.roles)
-      commit('SET_NAME', data.name)
-      commit('SET_AVATAR', data.avatar)
-      commit('SET_INTRODUCTION', data.introduction)
-      resolve(data)
-    })
-  },
-
-  // user logout
-  logout({
-    commit,
-    state,
-    dispatch
-  }) {
-    return new Promise((resolve, reject) => {
-      commit('SET_TOKEN', '')
-      commit('SET_ROLES', [])
-      removeToken()
-      resetRouter()
-
-      // reset visited views and cached views
-      // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
-      dispatch('tagsView/delAllViews', null, {
-        root: true
       })
+    },
 
-      resolve()
+    // 获取用户信息
+    GetInfo({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        getInfo().then(res => {
+          const user = res.user
+          const avatar = user.avatar == "" ? require("@/assets/images/profile.jpg") : user.avatar;
+          if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
+            commit('SET_ROLES', res.roles)
+            commit('SET_PERMISSIONS', res.permissions)
+          } else {
+            commit('SET_ROLES', ['ROLE_DEFAULT'])
+          }
+          commit('SET_NAME', user.userName)
+          commit('SET_AVATAR', avatar)
+          resolve(res)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
 
-      // logout(state.token).then(() => {
-      //   commit('SET_TOKEN', '')
-      //   commit('SET_ROLES', [])
-      //   removeToken()
-      //   resetRouter()
+    // 刷新token
+    RefreshToken({commit, state}) {
+      return new Promise((resolve, reject) => {
+        refreshToken(state.token).then(res => {
+          setExpiresIn(res.data)
+          commit('SET_EXPIRES_IN', res.data)
+          resolve()
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    
+    // 退出系统
+    LogOut({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        logout(state.token).then(() => {
+          commit('SET_TOKEN', '')
+          commit('SET_ROLES', [])
+          commit('SET_PERMISSIONS', [])
+          removeToken()
+          resolve()
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
 
-      //   // reset visited views and cached views
-      //   // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
-      //   dispatch('tagsView/delAllViews', null, {
-      //     root: true
-      //   })
-
-      //   resolve()
-      // }).catch(error => {
-      //   reject(error)
-      // })
-    })
-  },
-
-  // remove token
-  resetToken({
-    commit
-  }) {
-    return new Promise(resolve => {
-      commit('SET_TOKEN', '')
-      commit('SET_ROLES', [])
-      removeToken()
-      resolve()
-    })
+    // 前端 登出
+    FedLogOut({ commit }) {
+      return new Promise(resolve => {
+        commit('SET_TOKEN', '')
+        removeToken()
+        resolve()
+      })
+    }
   }
-
-  // dynamically modify permissions
-  //   changeRoles({
-  //     commit,
-  //     dispatch
-  //   }, role) {
-  //     return new Promise(async resolve => {
-  //       const token = role + '-token'
-
-  //       commit('SET_TOKEN', token)
-  //       setToken(token)
-
-  //       const {
-  //         roles
-  //       } = await dispatch('getInfo')
-
-  //       resetRouter()
-
-  //       // generate accessible routes map based on roles
-  //       const accessRoutes = await dispatch('permission/generateRoutes', roles, {
-  //         root: true
-  //       })
-
-  //       // dynamically add accessible routes
-  //       router.addRoutes(accessRoutes)
-
-  //       // reset visited views and cached views
-  //       dispatch('tagsView/delAllViews', null, {
-  //         root: true
-  //       })
-
-//       resolve()
-//     })
-//   }
 }
 
-export default {
-  namespaced: true,
-  state,
-  mutations,
-  actions
-}
+export default user
