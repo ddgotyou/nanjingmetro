@@ -4,9 +4,8 @@
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span>培训计划</span>
-
             </div>
-          <el-form inline="true" model="planform" ref="planform" label-width="80px" class="form">
+            <el-form inline="true" model="planform" ref="planform" label-width="80px" class="form">
 		  				<el-form-item label="计划名称" prop="name" >
 			  				<el-select v-model="planform.name" >
 							    <el-option label="一号" value="1"></el-option>
@@ -48,6 +47,7 @@
               <el-button type="primary">确定</el-button>
             </el-form-item>
             </el-form>
+
             <el-table
               :data="tableData"
               style="width: 100%">
@@ -64,6 +64,17 @@
               <el-table-column prop="passrate" label="通过率" width="120">
               </el-table-column>
             </el-table>
+            <el-pagination
+            :current-page="currentPage"
+            :page-sizes="pageSizes"
+            :page-size="pageSize"
+            :total="totalPage"
+            layout="total, sizes, prev, pager, next, jumper"
+            class="pagination"
+            @size-change="pagingSizeChange"
+            @current-change="pagingCurrentChange"
+            />
+
           </el-card>
 
 
@@ -71,9 +82,8 @@
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span>任务使用</span>
-
             </div>
-          <el-form inline="true" model="taskuseform" ref="taskuseform" label-width="80px" class="form">
+            <el-form inline="true" model="taskuseform" ref="taskuseform" label-width="80px" class="form">
 		  				<el-form-item label="专业" prop="taskmajor" >
 			  				<el-select v-model="planform.taskmajor" >
 							    <el-option label="一号" value="1"></el-option>
@@ -92,11 +102,9 @@
                   <el-option label="二号" value="2"></el-option>
 						  	</el-select>
 						  </el-form-item>
-
-
-            <el-form-item >
-              <el-button type="primary">确定</el-button>
-            </el-form-item>
+              <el-form-item >
+                <el-button type="primary">确定</el-button>
+              </el-form-item>
             </el-form>
             <el-table
               :data="tableData"
@@ -110,6 +118,16 @@
               <el-table-column prop="usenum" label="使用次数">
               </el-table-column>
             </el-table>
+            <el-pagination
+            :current-page="currentPage"
+            :page-sizes="pageSizes"
+            :page-size="pageSize"
+            :total="totalPage"
+            layout="total, sizes, prev, pager, next, jumper"
+            class="pagination"
+            @size-change="pagingSizeChange"
+            @current-change="pagingCurrentChange"
+            />
           </el-card>
 
           <div style="margin: 80px;"></div>
@@ -174,8 +192,17 @@
               <el-table-column label="详情" width="120">
                 <el-link type="primary">详情</el-link>
               </el-table-column>
-
             </el-table>
+            <el-pagination
+            :current-page="currentPage"
+            :page-sizes="pageSizes"
+            :page-size="pageSize"
+            :total="totalPage"
+            layout="total, sizes, prev, pager, next, jumper"
+            class="pagination"
+            @size-change="pagingSizeChange"
+            @current-change="pagingCurrentChange"
+            />
           </el-card>
 
 
@@ -220,12 +247,23 @@
         planform: {
           name: '',
           state:'',
-
-
         },
         tableData: Array(5).fill(item),
+        pageSizes: [100, 200, 300, 400],
+        pageSize: 100,
+        totalPage: 400,
+        currentPage: 1,
 
       }
     }
   };
 </script>
+
+<style>
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+</style>

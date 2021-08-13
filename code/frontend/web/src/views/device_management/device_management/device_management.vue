@@ -19,7 +19,7 @@
 
           <el-row >
           <el-col :span="2" >
-            <el-button type="primary" plain @click="dialogFormVisible = true">新增实验室</el-button>
+            <el-button  plain @click="dialogFormVisible = true">新增实验室</el-button>
             <el-dialog title="新增实验室" :visible.sync="dialogFormVisible">
               <el-form :model="newlabForm">
                 <el-form-item label="名称" label-width="100px">
@@ -44,10 +44,10 @@
             </el-dialog>
           </el-col>
           <el-col :span="2" offset="2">
-            <el-button type="primary" plain @click="goNeweq">新增设备</el-button>
+            <el-button  plain @click="goNeweq">新增设备</el-button>
           </el-col>
           <el-col :span="2" offset="2">
-            <el-button type="primary" plain @click="search">删除记录</el-button>
+            <el-button  plain @click="search">删除记录</el-button>
           </el-col>
         </el-row>
 
@@ -88,6 +88,18 @@
             <el-link type="primary">详情</el-link>
           </el-table-column>
         </el-table>
+                <el-row>
+          <el-pagination
+            :current-page="currentPage"
+            :page-sizes="pageSizes"
+            :page-size="pageSize"
+            :total="totalPage"
+            layout="total, sizes, prev, pager, next, jumper"
+            class="pagination"
+            @size-change="pagingSizeChange"
+            @current-change="pagingCurrentChange"
+          />
+        </el-row>
   </div>
 </template>
 <style>
@@ -122,6 +134,12 @@
           checkPass: '',
         },
         showSearch:true,
+        pageSizes: [100, 200, 300, 400],
+        pageSize: 100,
+        totalPage: 400,
+        currentPage: 1,
+
+
       }
     },
     methods:{
@@ -144,6 +162,12 @@
             done();
           })
           .catch(_ => {});
+      },
+      pagingSizeChange(val) {
+        console.log(`每页 ${val} 条`);
+      },
+      pagingCurrentChange(val) {
+        console.log(`当前页: ${val}`);
       },
       exportExcel() {
         /* 从表生成工作簿对象 */
@@ -178,3 +202,11 @@
     }
   };
 </script>
+<style>
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+</style>

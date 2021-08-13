@@ -46,6 +46,18 @@
       </template>
       </el-table-column>
     </el-table>
+    <el-row>
+          <el-pagination
+            :current-page="currentPage"
+            :page-sizes="pageSizes"
+            :page-size="pageSize"
+            :total="totalPage"
+            layout="total, sizes, prev, pager, next, jumper"
+            class="pagination"
+            @size-change="pagingSizeChange"
+            @current-change="pagingCurrentChange"
+          />
+        </el-row>
   </div>
 </template>
 <style>
@@ -74,6 +86,11 @@
       return {
         tableData: Array(20).fill(item),
         showSearch: true,
+        pageSizes: [100, 200, 300, 400],
+        pageSize: 100,
+        totalPage: 400,
+        currentPage: 1,
+
       }
     },
     methods:{
@@ -94,3 +111,12 @@
     }
   };
 </script>
+
+<style>
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+</style>
