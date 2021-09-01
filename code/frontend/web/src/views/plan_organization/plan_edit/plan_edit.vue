@@ -15,7 +15,7 @@
                 <el-option
                   v-for="item in names"
                   :key="item.value"
-                  :label="item.lable"
+                  :label="item.label"
                   :value="item.value"
                 />
               </el-select>
@@ -24,6 +24,7 @@
           <el-col span="9">
             <el-form-item label="计划时间">
               <el-date-picker
+                value-format="yyyy-MM-dd HH:mm:ss"
                 v-model="searchData.period"
                 type="daterange"
                 range-separator="至"
@@ -40,7 +41,7 @@
                 placeholder="请选择"
               >
                 <el-option
-                  v-for="item in status"
+                  v-for="item in statuses"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
@@ -142,7 +143,10 @@
       </el-table>
       <el-pagination style="text-align: center"
         layout="prev, pager, next"
-        :total="10*response.page.totalPages">
+        :current-page.sync="index"
+        :page-size="pageSize"
+        :total="response.page.totalElements"
+        @current-change="list()">
       </el-pagination>
     </el-card>
   </div>
@@ -158,99 +162,18 @@ export default {
     return {
       searchData: {
         name: '',
-        period: '',
+        period: ['',''],
         status: '',
         teacher: '',
         value: ''
       },
-      names: [
-        {
-          label: '掩体计划',
-          value: '掩体计划'
-        },
-        {
-          label: '广播计划',
-          value: '广播计划'
-        },
-        {
-          label: '黒域计划',
-          value: '黒域计划'
-        }
-      ],
-      status: [
-        {
-          label: '未开始',
-          value: '未开始'
-        },
-        {
-          label: '进行中',
-          value: '进行中'
-        },
-        {
-          label: '已完成',
-          value: '已完成'
-        }
-      ],
-      teachers: [
-        {
-          value: '章北海',
-          label: '章北海'
-        },
-        {
-          value: '艾AA',
-          label: '艾AA'
-        },
-        {
-          value: '维德',
-          label: '维德'
-        }
-      ],
+      index: 1,
+      pageSize: 2,
+      names: [],
+      statuses: [],
+      teachers: [],
       response: {},
       tableData: []
-      // tableData: [
-      //   {
-      //     planID: 0,
-      //     planName: '计划1',
-      //     period: '周一1-2节',
-      //     teacher: '文忆',
-      //     status: '正在审核'
-      //   },
-      //   {
-      //     planID: 1,
-      //     planName: '计划2',
-      //     period: '周一3-4节',
-      //     teacher: '史布',
-      //     status: '正在审核'
-      //   },
-      //   {
-      //     planID: 2,
-      //     planName: '计划3',
-      //     period: '周四1-2节',
-      //     teacher: '杞承恩',
-      //     status: '正在审核'
-      //   },
-      //   {
-      //     planID: 3,
-      //     planName: '计划4',
-      //     period: '周二"5"-6节',
-      //     teacher: '本清涵',
-      //     status: '审核通过'
-      //   },
-      //   {
-      //     planID: 4,
-      //     planName: '计划"5"',
-      //     period: '周三7-8节',
-      //     teacher: '练晗玥',
-      //     status: '审核通过'
-      //   },
-      //   {
-      //     planID: "5",
-      //     planName: '计划6',
-      //     period: '周一1-2节',
-      //     teacher: '藏晗',
-      //     status: '审核通过'
-      //   }
-      // ]
     }
   },
   created() {
@@ -258,11 +181,78 @@ export default {
     this.list();
   },
   methods: {
+    isInArray(arr, value) {
+      for(var i = 0; i < arr.length; i++){
+        if(value === arr[i].value){
+          return true;
+        }
+      }
+      return false;
+    },
     list() {
       let that = this;
-      api.plans().then( res => {
+      api.plans({
+        page: that.index-1,
+        size: that.pageSize
+      }).then( res => {
         that.response = res
         that.tableData = []
+        that.names = [{label: '（任意）', value: ''}]
+        that.statuses = [{label: '（任意）', value: ''}]
+        that.teachers = [{label: '（任意）', value: ''}]
+        for(var i = 0; i < res._embedded.plans.length; i++)
+        {
+          let item = {
+            planID: i + 1,
+            name: res._embedded.plans[i].name,
+            startTime: res._embedded.plans[i].startTime,
+            endTime: res._embedded.plans[i].endTime,
+            teacher: '',
+            status: res._embedded.plans[i].status,
+            self: res._embedded.plans[i]._links.self.href
+          };
+
+          if(!that.isInArray(that.names,item.name))
+          {
+            that.names.push({label: item.name, value: item.name});
+          }
+          if(!that.isInArray(that.statuses,item.status))
+          {
+            that.statuses.push({label: item.status, value: item.status});
+          }
+
+          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+          {
+            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+            if(!that.isInArray(that.teachers,res._embedded.plans[i].trainers[j].username))
+            {
+              that.teachers.push({label: res._embedded.plans[i].trainers[j].username, vlaue: res._embedded.plans[i].trainers[j].username})
+            }
+          }
+          that.tableData.push(item)
+        }
+      });
+    },
+    add() {
+      this.$router.push({ path: 'new_plan' })
+    },
+    del() {
+
+    },
+    search_commit() {
+      console.log(this.searchData);
+      var params = {
+        name: this.searchData.name,
+        startTime: this.searchData.period[0],
+        endTime: this.searchData.period[1],
+        status: this.searchData.status,
+        trainer: this.searchData.teacher,
+        keyword: this.searchData.value
+      };
+      let that=this;
+      api.search(params).then( res => {
+        //that.response = res;
+        that.tableData = [];
         for(var i = 0; i < res._embedded.plans.length; i++)
         {
           let item = {
@@ -282,25 +272,18 @@ export default {
         }
       });
     },
-    add() {
-      this.$router.push({ path: 'new_plan' })
-    },
-    del() {
-
-    },
-    search_commit() {
-      console.log(this.searchData)
-    },
     search_reset() {
       this.searchData = {
         name: '',
-        period: '',
+        period: ['',''],
+        status: '',
         teacher: '',
         value: ''
-      }
+      };
+      this.list();
     },
     show_details(index, data) {
-      this.$router.push({ path: 'plan_approval_details', query: { id: index }})
+      this.$router.push({ path: 'plan_approval_details', query: { self: this.tableData[index].self }})
     },
     edit(index, data) {
       this.$router.push({ path: 'new_plan' })

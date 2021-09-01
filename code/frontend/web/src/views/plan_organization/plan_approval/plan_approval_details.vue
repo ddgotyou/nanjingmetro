@@ -63,20 +63,20 @@
         <el-tabs v-model="tab_activeName" @tab-click="handleClick">
           <el-tab-pane style="text-align:center;" label="学员" name="students">
             <el-table
-              :data="tableData_students"
+              :data="tableData_students.filter(data => !search_value || data.username.toLowerCase().includes(search_value.toLowerCase()))"
               style="width: 100"
             >
               <el-table-column
-                prop="ID"
-                label="学号"
+                prop="user"
+                label="用户"
               />
               <el-table-column
-                prop="name"
-                label="姓名"
+                prop="username"
+                label="用户名"
               />
               <el-table-column
-                prop="class"
-                label="所在用户组"
+                prop="userRole"
+                label="角色"
               />
             </el-table>
           </el-tab-pane>
@@ -109,60 +109,66 @@
       </el-card>
       <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
-        <el-form label-position="right" label-width="80px" :model="taskData">
+        <el-form label-position="right" label-width="80px" :model="tableData_tasks[taskIndex]">
           <el-row>
             <el-col span="12">
               <el-form-item label="任务名称">
-                <el-input id="task_name" v-model="taskData.name" name="task_name" disabled />
+                <el-input id="task_name" v-model="tableData_tasks[taskIndex].name" name="task_name" disabled />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="任务选择">
-                <el-input id="task_option" v-model="taskData.option" style="width:100%" disabled />
+                <el-input id="task_option" v-model="tableData_tasks[taskIndex].chooseTask" style="width:100%" disabled />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col span="12">
               <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="taskData.time" name="task_time" disabled />
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime + '-' + tableData_tasks[taskIndex].startTime" name="task_time" disabled />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="顺序">
-                <el-input id="task_sequence" v-model="taskData.sequence" style="width:100%" disabled />
+                <el-input id="task_sequence" v-model="tableData_tasks[taskIndex].order" style="width:100%" disabled />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col span="12">
               <el-form-item label="类型">
-                <el-input id="task_type" v-model="taskData.type" style="width:100%" disabled />
+                <el-input id="task_type" v-model="tableData_tasks[taskIndex].type" style="width:100%" disabled />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="评分表">
-                <el-input id="task_standard" v-model="taskData.standard" style="width:100%" disabled />
+                <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" disabled />
               </el-form-item>
             </el-col>
           </el-row>
         </el-form>
         <el-divider />
         <el-table
-          :data="tableData"
+          :data="tableData_tasks"
           style="width: 100"
+          highlight-current-row
+          @current-change="handleCurrentChange"
         >
           <el-table-column
-            prop="taskID"
+            prop="signInNumber"
             label="任务号"
           />
           <el-table-column
-            prop="taskName"
+            prop="name"
             label="任务名称"
           />
           <el-table-column
-            prop="taskArrange"
-            label="课时安排"
+            prop="startTime"
+            label="开始时间"
+          />
+          <el-table-column
+            prop="endTime"
+            label="结束时间"
           />
         </el-table>
       </el-card>
@@ -171,33 +177,18 @@
   </div>
 </template>
 <script>
+import api from '@/api/training_plan/training_plan' 
 export default {
+  components: {
+    api
+  },
   data() {
     return {
       id: '',
       search_value: '',
-      baseData: {
-        name: '测试工程',
-        speciality: '计算机科学与技术',
-        type: '类型1',
-        period: '三个月',
-        description: '123456',
-        people: [],
-        classes: [],
-        approver: []
-      },
-      tableData_students: [
-        {
-          ID: '1852001',
-          name: '范德萨',
-          class: 'G1'
-        },
-        {
-          ID: '1852002',
-          name: '水月',
-          class: 'G2'
-        }
-      ],
+      response: {},
+      baseData: {},
+      tableData_students: [],
       tableData_classes: [
         {
           name: '武装部'
@@ -209,6 +200,8 @@ export default {
           name: '售票部'
         }
       ],
+      tableData_tasks: [],
+      taskIndex: 0,
       taskData: {
         name: '1',
         option: '2',
@@ -218,24 +211,32 @@ export default {
         standard: '6'
       },
       tab_activeName: 'students',
-      tableData: [
-        {
-          taskID: 0,
-          taskName: '任务1',
-          taskArrange: '周一1-2节'
-        },
-        {
-          taskID: 1,
-          taskName: '任务1',
-          taskArrange: '周一1-2节'
-        }
-      ]
     }
   },
   created() {
-    this.id = this.$route.query.id
+    var temp=this.$route.query.self.split("/")
+    this.id=temp[temp.length-1]
+    this.list()
   },
   methods: {
+    list() {
+      let that=this;
+      api.details(this.id)
+      .then( res => {
+        that.response=res;
+        that.baseData={
+          name: res.name,
+          speciality: res.major,
+          type: res.type,
+          period: res.startTime+'-'+res.endTime,
+          description: res.detailed,
+          people: [],
+          classes: []
+        };
+        that.tableData_students=res.auditors;
+        that.tableData_tasks=res.tasks;
+      });
+    },
     search_commit() {
       console.log(this.searchData)
     },
@@ -247,6 +248,12 @@ export default {
     },
     showDetailes(index, data) {
 
+    },
+    handleCurrentChange(val) {
+      this.taskIndex = val;
+    },
+    filterHandler(value, row, column) {
+      console.log(value, row, column)
     },
     submit() {
 
