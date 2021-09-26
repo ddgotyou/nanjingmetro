@@ -125,7 +125,7 @@
           <el-row>
             <el-col span="12">
               <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime + '-' + tableData_tasks[taskIndex].startTime" name="task_time" disabled />
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime" name="task_time" disabled />
               </el-form-item>
             </el-col>
             <el-col span="12">
@@ -152,12 +152,9 @@
           :data="tableData_tasks"
           style="width: 100"
           highlight-current-row
-          @current-change="handleCurrentChange"
+          :cell-class-name="tableCellClassName"
+          @cell-click="cellClick"
         >
-          <el-table-column
-            prop="signInNumber"
-            label="任务号"
-          />
           <el-table-column
             prop="name"
             label="任务名称"
@@ -202,14 +199,6 @@ export default {
       ],
       tableData_tasks: [],
       taskIndex: 0,
-      taskData: {
-        name: '1',
-        option: '2',
-        sequence: '3',
-        time: '4',
-        type: '5',
-        standard: '6'
-      },
       tab_activeName: 'students',
     }
   },
@@ -256,8 +245,14 @@ export default {
     showDetailes(index, data) {
 
     },
-    handleCurrentChange(val) {
-      this.taskIndex = val;
+    tableCellClassName({row, column, rowIndex, columnIndex}){
+      //注意这里是解构
+      //利用单元格的 className 的回调方法，给行列索引赋值
+      row.index=rowIndex;
+      column.index=columnIndex;
+    },
+    cellClick(row, column, cell, event){
+      this.taskIndex=row.index;
     },
     filterHandler(value, row, column) {
       console.log(value, row, column)

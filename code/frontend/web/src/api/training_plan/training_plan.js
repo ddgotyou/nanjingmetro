@@ -19,15 +19,33 @@ module.exports={
             params: query
         })
     },
+    planStatuses(){
+        return request({
+            url: '/training-plan/plans/statuses',
+            method: 'get'
+        })
+    },
     details(id){
         return request({
             url: '/training-plan/plans/'+id,
             method: 'get'
         })
     },
-    selections(){
+    planTypes(){
         return request({
-            url: '/training-plan/plans/selection',
+            url: '/training-plan/planTypes',
+            method: 'get'
+        })
+    },
+    taskTypes(){
+        return request({
+            url: '/training-plan/taskTypes',
+            method: 'get'
+        })
+    },
+    chooseTasks(){
+        return request({
+            url: '/training-plan/chooseTasks',
             method: 'get'
         })
     },

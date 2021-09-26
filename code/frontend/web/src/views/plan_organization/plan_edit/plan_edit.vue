@@ -4,23 +4,6 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <!-- <el-col span="5">
-            <el-form-item label="计划名称">
-              <el-select
-                id="type"
-                v-model="searchData.name"
-                style="width:100%"
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in names"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col> -->
           <el-col span="10">
             <el-form-item label="计划时间">
               <el-date-picker
@@ -191,29 +174,6 @@ export default {
       }
       return false;
     },
-    // getSelection() {
-    //   let that=this
-    //   api.selections().then( res => {
-    //     that.statuses=[]
-    //     that.teachers=[]
-    //     for(var i=0;i<res.data.auditors.length;i++)
-    //     {
-    //       that.people_data.push({label:res.data.auditors[i],key:res.data.auditors[i]})
-    //     }
-    //     for(var i=0;i<res.data.planTypes.length;i++)
-    //     {
-    //       that.kinds.push({label:res.data.planTypes[i],value:res.data.planTypes[i]})
-    //     }
-    //     for(var i=0;i<res.data.taskTypes.length;i++)
-    //     {
-    //       that.task_types.push({label:res.data.taskTypes[i],value:res.data.taskTypes[i]})
-    //     }
-    //     for(var i=0;i<res.data.chooseTasks.length;i++)
-    //     {
-    //       that.task_chooses.push({label:res.data.chooseTasks[i],value:res.data.chooseTasks[i]})
-    //     }
-    //   })
-    // },
     list() {
       let that = this;
       api.plans({
@@ -222,8 +182,7 @@ export default {
       }).then( res => {
         that.response = res
         that.tableData = []
-        that.names = [{label: '（任意）', value: ''}]
-        that.statuses = [{label: '（任意）', value: ''}]
+        //that.names = [{label: '（任意）', value: ''}]
         that.teachers = [{label: '（任意）', value: ''}]
         for(var i = 0; i < res._embedded.plans.length; i++)
         {
@@ -237,14 +196,14 @@ export default {
             self: res._embedded.plans[i]._links.self.href
           };
 
-          if(!that.isInArray(that.names,item.name))
-          {
-            that.names.push({label: item.name, value: item.name});
-          }
-          if(!that.isInArray(that.statuses,item.status))
-          {
-            that.statuses.push({label: item.status, value: item.status});
-          }
+          // if(!that.isInArray(that.names,item.name))
+          // {
+          //   that.names.push({label: item.name, value: item.name});
+          // }
+          // if(!that.isInArray(that.statuses,item.status))
+          // {
+          //   that.statuses.push({label: item.status, value: item.status});
+          // }
 
           for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
           {
@@ -255,6 +214,14 @@ export default {
             }
           }
           that.tableData.push(item)
+        }
+      });
+      api.planStatuses().then( res => {
+        that.statuses = [{label: '（任意）', value: ''}]
+        for(var i=0;i<res._embedded.strings.length;i++)
+        {
+          console.log(res._embedded.strings[i])
+          that.statuses.push({label: res._embedded.strings[i], value: res._embedded.strings[i]});
         }
       });
     },

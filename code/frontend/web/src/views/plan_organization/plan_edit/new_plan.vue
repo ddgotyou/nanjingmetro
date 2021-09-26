@@ -111,8 +111,19 @@
           <el-row>
             <el-col span="12">
               <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="taskData.time" name="task_time" />
+                <el-date-picker
+                  style="width:100%;"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  v-model="taskData.time"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期">
+                </el-date-picker>
               </el-form-item>
+              <!-- <el-form-item label="课时安排">
+                <el-input id="task_time" v-model="taskData.time" name="task_time" />
+              </el-form-item> -->
             </el-col>
             <el-col span="12">
               <el-form-item label="顺序">
@@ -161,12 +172,16 @@
           style="width: 100"
         >
           <el-table-column
-            prop="taskName"
+            prop="name"
             label="任务名称"
           />
           <el-table-column
-            prop="taskArrange"
-            label="课时安排"
+            prop="startTime"
+            label="课时开始时间"
+          />
+           <el-table-column
+            prop="startTime"
+            label="课时结束时间"
           />
           <el-table-column
             label="操作"
@@ -270,7 +285,7 @@ export default {
         name: '',
         option: '',
         sequence: '',
-        time: '',
+        time: ['',''],
         type: '',
         standard: ''
       },
@@ -280,20 +295,7 @@ export default {
       },
       tab_activeName: 'students',
       kinds: [],
-      task_chooses: [
-        {
-          label: '任务选择1',
-          value: '任务选择1'
-        },
-        {
-          label: '任务选择2',
-          value: '任务选择2'
-        },
-        {
-          label: '任务选择3',
-          value: '任务选择3'
-        }
-      ],
+      task_chooses: [],
       task_sequences: [
         {
           label: '顺序1',
@@ -323,16 +325,7 @@ export default {
           value: '3'
         }
       ],
-      tableData: [
-        {
-          taskName: '任务1',
-          taskArrange: '周一1-2节'
-        },
-        {
-          taskName: '任务1',
-          taskArrange: '周一1-2节'
-        }
-      ],
+      tableData: [],
       departments: [
         {
           value: '古筝部',
@@ -378,7 +371,20 @@ export default {
       console.log(tab, event)
     },
     addTask() {
-      this.tableData.push({ taskID: 0, taskName: this.taskData.name, taskArrange: this.taskData.time })
+      this.tableData.push({
+        classroom: null,
+        name: this.taskData.name,
+        chooseTask: this.taskData.option,
+        type: this.taskData.type,
+        taskScore: this.taskData.standard,
+        inPlanTask: null,
+        description: null,
+        startTime: this.taskData.time[0],
+        endTime: this.taskData.time[1],
+        order: this.sequence,
+        signInNumber: null,
+        signOutNumber: null
+      })
       console.log(this.Data)
     },
     deleteRow(index, tableData) {
@@ -386,26 +392,28 @@ export default {
     },
     getSelection() {
       let that=this
-      api.selections().then( res => {
-        that.people_data=[]
+      api.planTypes().then( res => {
+        //that.people_data=[]
         that.kinds=[]
+        //that.task_types=[]
+        //that.task_chooses=[]
+        for(var i=0;i<res._embedded.planTypes.length;i++)
+        {
+          that.kinds.push({label:res._embedded.planTypes[i].name,value:res._embedded.planTypes[i].name})
+        }
+      })
+      api.taskTypes().then( res => {
         that.task_types=[]
+        for(var i=0;i<res._embedded.taskTypes.length;i++)
+        {
+          that.task_types.push({label:res._embedded.taskTypes[i].name,value:res._embedded.taskTypes[i].name})
+        }
+      })
+      api.chooseTasks().then( res => {
         that.task_chooses=[]
-        for(var i=0;i<res.data.auditors.length;i++)
+        for(var i=0;i<res._embedded.chooseTasks.length;i++)
         {
-          that.people_data.push({label:res.data.auditors[i],key:res.data.auditors[i]})
-        }
-        for(var i=0;i<res.data.planTypes.length;i++)
-        {
-          that.kinds.push({label:res.data.planTypes[i],value:res.data.planTypes[i]})
-        }
-        for(var i=0;i<res.data.taskTypes.length;i++)
-        {
-          that.task_types.push({label:res.data.taskTypes[i],value:res.data.taskTypes[i]})
-        }
-        for(var i=0;i<res.data.chooseTasks.length;i++)
-        {
-          that.task_chooses.push({label:res.data.chooseTasks[i],value:res.data.chooseTasks[i]})
+          that.task_chooses.push({label:res._embedded.chooseTasks[i].name,value:res._embedded.chooseTasks[i].name})
         }
       })
     },
@@ -417,7 +425,7 @@ export default {
         type: this.formData.type,
         goal:'',
         detailed: this.formData.description,
-        status:'processing',
+        status:'待审核',
         searchText: this.formData.name,
         startTime: this.formData.period[0],
         endTime: this.formData.period[1],
@@ -438,6 +446,7 @@ export default {
         auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
       }
       data.auditors=auditors
+      data.tasks=this.tableData
       api.add(data).then(res => {
         console.log("add new plan successfully!")
       })

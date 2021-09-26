@@ -11,36 +11,39 @@
         placeholder="请选择筛选项（可多选）"
         style="width: 200px"
         class="mr10"
-        @change="addOption"
+        @change="optionChange"
       >
         <el-option
           v-for="item in options"
-          :key="item.value"
+          :key="item.key"
           :label="item.label"
-          :value="item.value"
+          :value="item.key"
         >
         </el-option>
       </el-select>
-      <el-select
-        v-if="selSexVisible"
-        v-model="selSex"
-        ref="sex"
-        placeholder="请选择"
-        style="width: 100px"
-        class="mr10"
-      >
-        <el-option label="男" value="1" />
-        <el-option label="女" value="2" />
-      </el-select>
+      <template v-for="item in options">
+        <el-select
+          :key="item.key"
+          v-if="item.visible"
+          v-model="item.value"
+          :placeholder="item.label"
+          style="width: 100px"
+          class="mr10"
+        >
+          <el-option label="男" value="1" />
+          <el-option label="女" value="2" />
+        </el-select>
+      </template>
     </div>
+
     <el-card class="card-box" style="width: 100%">
       <!-- 功能栏 -->
       <div slot="header">
         <div style="float: left">
-          <el-button @click="addTeacher">新增</el-button>
-          <el-button @click="delTeacher">删除</el-button>
-          <el-button @click="importTeacher">导入</el-button>
-          <el-button @click="exportTeacher">导出</el-button>
+          <el-button @click="handleAdd">新增</el-button>
+          <el-button @click="handleDelete">删除</el-button>
+          <el-button @click="handleImport">导入</el-button>
+          <el-button @click="handleExport">导出</el-button>
         </div>
 
         <span>
@@ -55,8 +58,9 @@
       <!-- 表项 -->
       <div class="box-item">
         <el-table
+          v-loading="loading"
           stripe
-          :data="items"
+          :data="teacherList"
           style="width: 100%"
           :default-sort="{ prop: 'date', order: 'descending' }"
           @row-click="rowClick"
@@ -64,7 +68,11 @@
         >
           <el-table-column type="selection" />
           <el-table-column prop="name" label="姓名" width="" align="center" />
-          <el-table-column prop="sex" label="性别" width="" align="center" />
+          <el-table-column prop="sex" label="性别" width="" align="center">
+            <template slot-scope="scope">
+              {{ getTeacherSex(scope.row.sex) }}
+            </template>
+          </el-table-column>
           <el-table-column
             prop="tel"
             label="联系电话"
@@ -74,11 +82,15 @@
           <el-table-column prop="dept" label="部门" width="" align="center" />
           <el-table-column prop="post" label="岗位" width="" align="center" />
           <el-table-column
-            prop="type"
+            prop="usertype"
             label="用户类型"
             width=""
             align="center"
-          />
+          >
+            <template slot-scope="scope">
+              {{ getTeacherUserType(scope.row.usertype) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="enabled" label="操作" align="center">
             <template slot-scope="scope">
               <el-button type="text" @click="handleDetail(scope.$index)"
@@ -104,133 +116,18 @@
         </el-row>
       </div>
     </el-card>
-
-    <!-- 新增讲师对话框 -->
-    <el-dialog title="新增讲师" :visible.sync="dialogAddVisible" width="1000px">
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="姓名">
-              <el-input v-model="form.name"></el-input>
-            </el-form-item>
-            <el-form-item label="性别">
-              <el-select v-model="form.sex" placeholder="性别">
-                <el-option key="1" label="男" value="1" />
-                <el-option key="2" label="女" value="2" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="联系电话">
-              <el-input v-model="form.tel"></el-input>
-            </el-form-item>
-            <el-form-item label="邮箱">
-              <el-input v-model="form.email"></el-input>
-            </el-form-item>
-            <el-form-item label="身份证号">
-              <el-input v-model="form.id"></el-input>
-            </el-form-item>
-            <el-form-item label="用户组">
-              <el-select v-model="form.userGroup" placeholder="用户组">
-                <el-option key="1" label="一" value="1" />
-                <el-option key="2" label="二" value="2" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <!-- <el-col :span="8"></el-col> -->
-          <el-col :span="12">
-            <el-form-item label="部门">
-              <el-select v-model="form.sex" placeholder="部门">
-                <el-option key="1" label="1" value="1" />
-                <el-option key="2" label="2" value="2" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="岗位">
-              <el-select v-model="form.sex" placeholder="岗位">
-                <el-option key="1" label="1" value="1" />
-                <el-option key="2" label="2" value="2" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="用户类型">
-              <el-select v-model="form.userType" placeholder="用户类型">
-                <el-option key="1" label="1" value="1" />
-                <el-option key="2" label="2" value="2" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="专业">
-              <el-select v-model="form.sex" placeholder="专业">
-                <el-option key="1" label="1" value="1" />
-                <el-option key="2" label="2" value="2" />
-              </el-select>
-            </el-form-item>
-            <el-form-item>
-              <el-button>查看电子档案</el-button>
-              <el-button>导出电子档案</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <div align="center">
-        <el-button type="primary" @click="onSubmit">提交</el-button>
-        <el-button>取消</el-button>
-      </div>
-    </el-dialog>
-
-    <!-- 导入讲师对话框 -->
-    <el-dialog title="导入讲师" :visible.sync="dialogImportVisible" width="1000px">
-      <div class="step-box" >
-        <el-steps direction="vertical" :active="1" :space="200">
-          <el-step>
-            <template slot="description">
-              <p>
-                请按照模板样式填写
-                <br />
-                为确保您的讲师数据导入正常，建议下载新的模板导入
-              </p>
-            </template>
-            <template slot="title">
-              <el-row>
-                <el-col :span="12">
-                  <p>下载模板，填写讲师信息</p>
-                </el-col>
-                <el-col :span="12">
-                  <el-button>下载最新模板</el-button>
-                </el-col>
-              </el-row>
-            </template>
-          </el-step>
-          <el-step>
-            <template slot="title">
-              <el-row>
-                <el-col :span="12">
-                  <p>上传填写好的模板</p>
-                </el-col>
-                <el-col :span="12">
-                  <el-upload
-                    class="upload-demo"
-                    action="https://jsonplaceholder.typicode.com/posts/"
-                    :on-preview="handlePreview"
-                    :on-remove="handleRemove"
-                    :before-remove="beforeRemove"
-                    multiple
-                    :limit="3"
-                    :on-exceed="handleExceed"
-                    :file-list="fileList"
-                  >
-                    <el-button type="primary">上传</el-button>
-                  </el-upload>
-                </el-col>
-              </el-row>
-            </template>
-          </el-step>
-        </el-steps>
-      </div>      
-    </el-dialog>
   </div>
 </template>
 
 <script>
+import { listTeacher } from "@/api/personnel/teacher";
+
 export default {
   data: function () {
     return {
+      // 遮罩层
+      loading: true,
+
       pageSizes: [100, 200, 300, 400],
       pageSize: 100,
       totalPage: 400,
@@ -241,31 +138,16 @@ export default {
         type: null,
       },
 
-      items: [],
+      teacherList: [],
       selectedItem: null,
 
       dimensions: [],
       options: [
-        { value: "1", label: "性别" },
-        { value: "2", label: "部门" },
-        { value: "3", label: "岗位" },
-        { value: "4", label: "学员状态" },
+        { key: "0", label: "性别", visible: false, value: null },
+        { key: "1", label: "部门", visible: false, value: null },
+        { key: "2", label: "岗位", visible: false, value: null },
+        { key: "3", label: "用户类别", visible: false, value: null },
       ],
-
-      selSex: null,
-      selSexVisible: false,
-
-      dialogAddVisible: false,
-      dialogImportVisible: false,
-      form: {
-        name: null,
-        sex: null,
-        tel: null,
-        email: null,
-        id: null,
-        userGroup: null,
-        userType: null ,
-      },
     };
   },
   computed: {},
@@ -274,24 +156,24 @@ export default {
   },
   methods: {
     getData() {
-      this.items = [
-        {
-          name: "XXX",
-          sex: "XXX",
-          tel: "XXX",
-          dept: "XXX",
-          post: "XXX",
-          type: "XXX",
-        },
-      ];
+      this.loading = true;
+      listTeacher(null).then((response) => {
+        this.teacherList = response.data;
+        this.loading = false;
+      });
     },
-    addOption() {
-      if (this.dimensions.indexOf("1") != -1) {
-        const that = this;
-        this.selSex = false;
-        this.$nextTick(() => {
-          that.selSex = true;
-        });
+    getTeacherSex(sex) {
+      return sex === "1" ? "男" : "女";
+    },
+    getTeacherUserType(type) {
+      return type === "01" ? "正式" : "临时";
+    },
+    optionChange() {
+      for (var i = 0; i < this.options.length; i++) {
+        this.options[i].visible = false;
+        if (this.dimensions.indexOf(i.toString()) != -1) {
+          this.options[i].visible = true;
+        }
       }
     },
     pagingSizeChange(val) {
@@ -300,16 +182,14 @@ export default {
     pagingCurrentChange(val) {
       console.log(`当前页: ${val}`);
     },
-    addTeacher() {
-      // this.$router.push("/staff/teacher/add");
-      this.dialogAddVisible = true;
+    handleAdd() {
+      this.$router.push("/personnel/new_teacher");
     },
-    delTeacher() {},
-    importTeacher() {
-      // this.$router.push("/staff/teacher/import");
-      this.dialogImportVisible = true;
+    handleDelete() {},
+    handleImport() {
+      this.$router.push("/personnel/import_teacher");
     },
-    exportTeacher() {},
+    handleExport() {},
     handleSearch() {},
     handleReset() {},
   },
@@ -339,14 +219,5 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
-}
-
-.el-input {
-  width: 220px;
-}
-
-.step-box {
-  width: 100%;
-  margin: 50px;
 }
 </style>
