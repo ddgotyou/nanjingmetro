@@ -18,7 +18,7 @@
         <el-row>
           <el-col span="12">
             <el-form-item label="类型">
-              <el-select id="type" filterable multiple allow-create v-model="formData.type" style="width:100%" placeholder="请选择">
+              <el-select id="type" filterable v-model="formData.type" style="width:100%" placeholder="请选择">
                 <el-option
                   v-for="item in kinds"
                   :key="item.value"
@@ -29,9 +29,20 @@
             </el-form-item>
           </el-col>
           <el-col span="12">
-            <el-form-item label="计划周期">
-              <el-input id="period" v-model="formData.period" name="period" />
+            <el-form-item label="计划时间">
+              <el-date-picker
+                style="width:100%;"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                v-model="formData.period"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期">
+              </el-date-picker>
             </el-form-item>
+            <!-- <el-form-item label="计划周期">
+              <el-input id="period" v-model="formData.period" name="period" />
+            </el-form-item> -->
           </el-col>
         </el-row>
         <el-row>
@@ -216,7 +227,7 @@
         </el-form>
         <div style="text-align: right">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+          <el-button type="primary" @click="commit">确 定</el-button>
         </div>
       </div>
     </el-dialog>
@@ -224,24 +235,14 @@
 </template>
 
 <script>
-
+import api from '@/api/training_plan/training_plan' 
 export default {
+  components: {
+    api
+  },
   data() {
     return {
-      people_data: [
-        {
-          label: '罗辑',
-          key: 0
-        },
-        {
-          label: '汪淼',
-          key: 1
-        },
-        {
-          label: '丁仪',
-          key: 2
-        }
-      ],
+      people_data: [],
       classes_data: [
         {
           label: '普通培训一班',
@@ -260,7 +261,7 @@ export default {
         name: '',
         speciality: '',
         type: '',
-        period: '',
+        period: ['',''],
         description: '',
         people: [],
         classes: []
@@ -278,20 +279,7 @@ export default {
         approver: []
       },
       tab_activeName: 'students',
-      kinds: [
-        {
-          label: '1',
-          value: '1'
-        },
-        {
-          label: '2',
-          value: '2'
-        },
-        {
-          label: '3',
-          value: '3'
-        }
-      ],
+      kinds: [],
       task_chooses: [
         {
           label: '任务选择1',
@@ -320,20 +308,7 @@ export default {
           value: '顺序3'
         }
       ],
-      task_types: [
-        {
-          label: '类型1',
-          value: '类型1'
-        },
-        {
-          label: '类型2',
-          value: '类型2'
-        },
-        {
-          label: '类型3',
-          value: '类型3'
-        }
-      ],
+      task_types: [],
       task_standards: [
         {
           label: '评分表1',
@@ -391,6 +366,9 @@ export default {
       tags: []
     }
   },
+  created() {
+    this.getSelection()
+  },
   methods: {
     submit(form) {
       console.log(this.formData)
@@ -405,6 +383,64 @@ export default {
     },
     deleteRow(index, tableData) {
       this.tableData.splice(index, 1)
+    },
+    getSelection() {
+      let that=this
+      api.selections().then( res => {
+        that.people_data=[]
+        that.kinds=[]
+        that.task_types=[]
+        that.task_chooses=[]
+        for(var i=0;i<res.data.auditors.length;i++)
+        {
+          that.people_data.push({label:res.data.auditors[i],key:res.data.auditors[i]})
+        }
+        for(var i=0;i<res.data.planTypes.length;i++)
+        {
+          that.kinds.push({label:res.data.planTypes[i],value:res.data.planTypes[i]})
+        }
+        for(var i=0;i<res.data.taskTypes.length;i++)
+        {
+          that.task_types.push({label:res.data.taskTypes[i],value:res.data.taskTypes[i]})
+        }
+        for(var i=0;i<res.data.chooseTasks.length;i++)
+        {
+          that.task_chooses.push({label:res.data.chooseTasks[i],value:res.data.chooseTasks[i]})
+        }
+      })
+    },
+    commit() {
+      this.dialogFormVisible = false;
+      var data={
+        name: this.formData.name,
+        major:this.formData.speciality,
+        type: this.formData.type,
+        goal:'',
+        detailed: this.formData.description,
+        status:'processing',
+        searchText: this.formData.name,
+        startTime: this.formData.period[0],
+        endTime: this.formData.period[1],
+        auditors: [],
+        trainers: [],
+        tasks: []
+      }
+      for(var key in data)
+      {
+        if(data[key]=='')
+        {
+          delete data[key]
+        }
+      }
+      var auditors=[]
+      for(var i=0;i<this.formData.people.length;i++)
+      {
+        auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
+      }
+      data.auditors=auditors
+      api.add(data).then(res => {
+        console.log("add new plan successfully!")
+      })
     }
   }
 }

@@ -4,7 +4,7 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col span="5">
+          <!-- <el-col span="5">
             <el-form-item label="计划名称">
               <el-select
                 id="type"
@@ -20,10 +20,11 @@
                 />
               </el-select>
             </el-form-item>
-          </el-col>
-          <el-col span="9">
+          </el-col> -->
+          <el-col span="10">
             <el-form-item label="计划时间">
               <el-date-picker
+                style="width:100%"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 v-model="searchData.period"
                 type="daterange"
@@ -33,7 +34,7 @@
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col span="5">
+          <el-col span="7">
             <el-form-item label="计划状态">
               <el-select
                 v-model="searchData.status"
@@ -49,7 +50,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col span="5">
+          <el-col span="7">
             <el-form-item label="讲师">
               <el-select
                 v-model="searchData.teacher"
@@ -146,7 +147,7 @@
         :current-page.sync="index"
         :page-size="pageSize"
         :total="response.page.totalElements"
-        @current-change="list()">
+        @current-change="index_change()">
       </el-pagination>
     </el-card>
   </div>
@@ -167,8 +168,9 @@ export default {
         teacher: '',
         value: ''
       },
+      search_status: false,
       index: 1,
-      pageSize: 2,
+      pageSize: 20,
       names: [],
       statuses: [],
       teachers: [],
@@ -189,6 +191,29 @@ export default {
       }
       return false;
     },
+    // getSelection() {
+    //   let that=this
+    //   api.selections().then( res => {
+    //     that.statuses=[]
+    //     that.teachers=[]
+    //     for(var i=0;i<res.data.auditors.length;i++)
+    //     {
+    //       that.people_data.push({label:res.data.auditors[i],key:res.data.auditors[i]})
+    //     }
+    //     for(var i=0;i<res.data.planTypes.length;i++)
+    //     {
+    //       that.kinds.push({label:res.data.planTypes[i],value:res.data.planTypes[i]})
+    //     }
+    //     for(var i=0;i<res.data.taskTypes.length;i++)
+    //     {
+    //       that.task_types.push({label:res.data.taskTypes[i],value:res.data.taskTypes[i]})
+    //     }
+    //     for(var i=0;i<res.data.chooseTasks.length;i++)
+    //     {
+    //       that.task_chooses.push({label:res.data.chooseTasks[i],value:res.data.chooseTasks[i]})
+    //     }
+    //   })
+    // },
     list() {
       let that = this;
       api.plans({
@@ -247,11 +272,14 @@ export default {
         endTime: this.searchData.period[1],
         status: this.searchData.status,
         trainer: this.searchData.teacher,
-        keyword: this.searchData.value
+        keyword: this.searchData.value,
+        page: 0,
+        size: this.pageSize
       };
+      this.index = 1;
       let that=this;
       api.search(params).then( res => {
-        //that.response = res;
+        that.response = res;
         that.tableData = [];
         for(var i = 0; i < res._embedded.plans.length; i++)
         {
@@ -271,6 +299,7 @@ export default {
           that.tableData.push(item)
         }
       });
+      this.search_status = true;
     },
     search_reset() {
       this.searchData = {
@@ -280,6 +309,7 @@ export default {
         teacher: '',
         value: ''
       };
+      this.search_status = false;
       this.list();
     },
     show_details(index, data) {
@@ -287,6 +317,15 @@ export default {
     },
     edit(index, data) {
       this.$router.push({ path: 'new_plan' })
+    },
+    index_change(){
+      if(this.search_status)
+      {
+        this.search_commit()
+      }
+      else{
+        this.list()
+      }
     }
   }
 }

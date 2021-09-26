@@ -234,7 +234,14 @@ export default {
           classes: []
         };
         that.tableData_students=res.auditors;
-        that.tableData_tasks=res.tasks;
+        if(res.tasks.length==0)
+        {
+          that.tableData_tasks=[{}]
+        }
+        else
+        {
+          that.tableData_tasks=res.tasks;
+        }
       });
     },
     search_commit() {
