@@ -199,7 +199,10 @@
           </el-table-column>
         </el-table>
       </el-card>
-      <div style="text-align:right"><el-button type="primary" @click="submit">提交</el-button></div>
+      <div style="text-align:right">
+        <el-button @click="commit">保存</el-button>
+        <el-button type="primary" @click="submit">提交</el-button>
+      </div>
     </el-form>
     <el-dialog title="发起审批" :visible.sync="dialogFormVisible">
       <div class="dialog-footer">

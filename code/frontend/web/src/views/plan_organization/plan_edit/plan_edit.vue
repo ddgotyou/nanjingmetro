@@ -80,9 +80,9 @@
         style="width: 100"
       >
         <el-table-column
-          prop="planID"
-          label="序号"
-        />
+          type="index"
+          width="50">
+        </el-table-column>
         <el-table-column
           prop="name"
           label="计划名称"
@@ -187,7 +187,6 @@ export default {
         for(var i = 0; i < res._embedded.plans.length; i++)
         {
           let item = {
-            planID: i + 1,
             name: res._embedded.plans[i].name,
             startTime: res._embedded.plans[i].startTime,
             endTime: res._embedded.plans[i].endTime,
@@ -251,7 +250,6 @@ export default {
         for(var i = 0; i < res._embedded.plans.length; i++)
         {
           let item = {
-            planID: i + 1,
             name: res._embedded.plans[i].name,
             startTime: res._embedded.plans[i].startTime,
             endTime: res._embedded.plans[i].endTime,
@@ -283,7 +281,7 @@ export default {
       this.$router.push({ path: 'plan_approval_details', query: { self: this.tableData[index].self }})
     },
     edit(index, data) {
-      this.$router.push({ path: 'new_plan' })
+      this.$router.push({ path: 'edit_plan', query: { self: this.tableData[index].self }})
     },
     index_change(){
       if(this.search_status)

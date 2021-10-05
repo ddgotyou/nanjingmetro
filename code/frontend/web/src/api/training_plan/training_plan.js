@@ -55,5 +55,12 @@ module.exports={
             method: 'post',
             data: data
         })
+    },
+    update(data,id){
+        return request({
+            url: '/training-plan/plans/'+'id',
+            method: 'put',
+            data: data
+        })
     }
 }
