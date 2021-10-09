@@ -58,7 +58,7 @@ module.exports={
     },
     update(data,id){
         return request({
-            url: '/training-plan/plans/'+'id',
+            url: '/training-plan/plans/'+id,
             method: 'put',
             data: data
         })

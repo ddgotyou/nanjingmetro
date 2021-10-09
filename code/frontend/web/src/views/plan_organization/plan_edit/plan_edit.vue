@@ -4,7 +4,7 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col span="10">
+          <el-col span="12">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%"
@@ -17,23 +17,7 @@
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col span="7">
-            <el-form-item label="计划状态">
-              <el-select
-                v-model="searchData.status"
-                style="width:100%"
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in statuses"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col span="7">
+          <el-col span="12">
             <el-form-item label="讲师">
               <el-select
                 v-model="searchData.teacher"
@@ -126,10 +110,12 @@
         </el-table-column>
       </el-table>
       <el-pagination style="text-align: center"
-        layout="prev, pager, next"
+        layout="total, sizes, prev, pager, next, jumper"
         :current-page.sync="index"
+        :page-sizes="[10, 20, 50, 100]"
         :page-size="pageSize"
         :total="response.page.totalElements"
+        @size-change="size_change"
         @current-change="index_change()">
       </el-pagination>
     </el-card>
@@ -153,9 +139,7 @@ export default {
       },
       search_status: false,
       index: 1,
-      pageSize: 20,
-      names: [],
-      statuses: [],
+      pageSize: 10,
       teachers: [],
       response: {},
       tableData: []
@@ -175,74 +159,12 @@ export default {
       return false;
     },
     list() {
-      let that = this;
-      api.plans({
-        page: that.index-1,
-        size: that.pageSize
-      }).then( res => {
-        that.response = res
-        that.tableData = []
-        //that.names = [{label: '（任意）', value: ''}]
-        that.teachers = [{label: '（任意）', value: ''}]
-        for(var i = 0; i < res._embedded.plans.length; i++)
-        {
-          let item = {
-            name: res._embedded.plans[i].name,
-            startTime: res._embedded.plans[i].startTime,
-            endTime: res._embedded.plans[i].endTime,
-            teacher: '',
-            status: res._embedded.plans[i].status,
-            self: res._embedded.plans[i]._links.self.href
-          };
-
-          // if(!that.isInArray(that.names,item.name))
-          // {
-          //   that.names.push({label: item.name, value: item.name});
-          // }
-          // if(!that.isInArray(that.statuses,item.status))
-          // {
-          //   that.statuses.push({label: item.status, value: item.status});
-          // }
-
-          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
-          {
-            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
-            if(!that.isInArray(that.teachers,res._embedded.plans[i].trainers[j].username))
-            {
-              that.teachers.push({label: res._embedded.plans[i].trainers[j].username, vlaue: res._embedded.plans[i].trainers[j].username})
-            }
-          }
-          that.tableData.push(item)
-        }
-      });
-      api.planStatuses().then( res => {
-        that.statuses = [{label: '（任意）', value: ''}]
-        for(var i=0;i<res._embedded.strings.length;i++)
-        {
-          console.log(res._embedded.strings[i])
-          that.statuses.push({label: res._embedded.strings[i], value: res._embedded.strings[i]});
-        }
-      });
-    },
-    add() {
-      this.$router.push({ path: 'new_plan' })
-    },
-    del() {
-
-    },
-    search_commit() {
       console.log(this.searchData);
       var params = {
-        name: this.searchData.name,
-        startTime: this.searchData.period[0],
-        endTime: this.searchData.period[1],
-        status: this.searchData.status,
-        trainer: this.searchData.teacher,
-        keyword: this.searchData.value,
-        page: 0,
+        status: '未申请',
+        page: this.index-1,
         size: this.pageSize
       };
-      this.index = 1;
       let that=this;
       api.search(params).then( res => {
         that.response = res;
@@ -255,7 +177,52 @@ export default {
             endTime: res._embedded.plans[i].endTime,
             teacher: '',
             status: res._embedded.plans[i].status,
-            self: res._embedded.plans[i]._links.self.herf
+            self: res._embedded.plans[i]._links.self.href
+          };
+          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+          {
+            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+          }
+          that.tableData.push(item)
+        }
+      });
+    },
+    add() {
+      this.$router.push({ path: 'new_plan' })
+    },
+    del() {
+
+    },
+    search_commit()
+    {
+      this.index=1
+      this.search_list()
+    },
+    search_list() {
+      console.log(this.searchData);
+      var params = {
+        name: this.searchData.name,
+        startTime: this.searchData.period[0],
+        endTime: this.searchData.period[1],
+        status: '未申请',
+        trainer: this.searchData.teacher,
+        keyword: this.searchData.value,
+        page: this.index-1,
+        size: this.pageSize
+      };
+      let that=this;
+      api.search(params).then( res => {
+        that.response = res;
+        that.tableData = [];
+        for(var i = 0; i < res._embedded.plans.length; i++)
+        {
+          let item = {
+            name: res._embedded.plans[i].name,
+            startTime: res._embedded.plans[i].startTime,
+            endTime: res._embedded.plans[i].endTime,
+            teacher: '',
+            status: res._embedded.plans[i].status,
+            self: res._embedded.plans[i]._links.self.href
           };
           for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
           {
@@ -275,18 +242,24 @@ export default {
         value: ''
       };
       this.search_status = false;
+      this.index=1;
       this.list();
     },
     show_details(index, data) {
-      this.$router.push({ path: 'plan_approval_details', query: { self: this.tableData[index].self }})
+      console.log(this.tableData[index])
+      this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].self }})
     },
     edit(index, data) {
       this.$router.push({ path: 'edit_plan', query: { self: this.tableData[index].self }})
     },
+    size_change(val){
+      this.pageSize=val
+      this.index_change()
+    },
     index_change(){
       if(this.search_status)
       {
-        this.search_commit()
+        this.search_list()
       }
       else{
         this.list()
