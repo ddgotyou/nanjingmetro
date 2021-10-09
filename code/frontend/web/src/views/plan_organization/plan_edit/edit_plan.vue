@@ -1,3 +1,7 @@
+<!--
+ * @Author: your name
+ * @LastEditors: your name
+-->
 <template>
   <div class="app-container">
     <el-form label-position="right" label-width="80px" :model="formData">
@@ -260,6 +264,8 @@ export default {
   },
   data() {
     return {
+      id: '',
+      response: {},
       people_data: [],
       classes_data: [
         {
@@ -363,9 +369,37 @@ export default {
     }
   },
   created() {
+    var temp=this.$route.query.self.split("/")
+    this.id=temp[temp.length-1]
+    this.list()
     this.getSelection()
   },
   methods: {
+    list() {
+      let that=this;
+      api.details(this.id)
+      .then( res => {
+        that.response=res;
+        that.formData={
+          name: res.name,
+          speciality: res.major,
+          type: res.type,
+          period: [res.startTime,res.endTime],
+          description: res.detailed,
+          people: [],
+          classes: []
+        };
+        that.tableData_students=res.auditors;
+        if(res.tasks.length==0)
+        {
+          that.tableData=[{}]
+        }
+        else
+        {
+          that.tableData=res.tasks;
+        }
+      });
+    },
     submit(form) {
       console.log(this.formData)
       this.dialogFormVisible = true
@@ -450,8 +484,8 @@ export default {
       }
       data.auditors=auditors
       data.tasks=this.tableData
-      api.add(data).then(res => {
-        console.log("add new plan successfully!")
+      api.update(data,this.id).then(res => {
+        console.log("update plan successfully!")
       })
     }
   }

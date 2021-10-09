@@ -6,24 +6,24 @@
         <el-row>
           <el-col span="12">
             <el-form-item label="名称">
-              <el-input id="name" v-model="baseData.name" name="name" disabled />
+              <el-input id="name" v-model="baseData.name" name="name"  readonly />
             </el-form-item>
           </el-col>
           <el-col span="12">
             <el-form-item label="专业">
-              <el-input id="speciality" v-model="baseData.speciality" name="speciality" disabled />
+              <el-input id="speciality" v-model="baseData.speciality" name="speciality" readonly />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col span="12">
             <el-form-item label="类型">
-              <el-input id="type" v-model="baseData.type" style="width:100%" disabled />
+              <el-input id="type" v-model="baseData.type" style="width:100%" readonly />
             </el-form-item>
           </el-col>
           <el-col span="12">
             <el-form-item label="计划周期">
-              <el-input id="period" v-model="baseData.period" name="period" disabled />
+              <el-input id="period" v-model="baseData.period" name="period" readonly />
             </el-form-item>
           </el-col>
         </el-row>
@@ -35,7 +35,7 @@
                 v-model="baseData.description"
                 type="textarea"
                 :rows="4"
-                disabled
+                readonly
               />
             </el-form-item>
           </el-col>
@@ -113,36 +113,36 @@
           <el-row>
             <el-col span="12">
               <el-form-item label="任务名称">
-                <el-input id="task_name" v-model="tableData_tasks[taskIndex].name" name="task_name" disabled />
+                <el-input id="task_name" v-model="tableData_tasks[taskIndex].name" name="task_name" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="任务选择">
-                <el-input id="task_option" v-model="tableData_tasks[taskIndex].chooseTask" style="width:100%" disabled />
+                <el-input id="task_option" v-model="tableData_tasks[taskIndex].chooseTask" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col span="12">
               <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime" name="task_time" disabled />
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime" name="task_time" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="顺序">
-                <el-input id="task_sequence" v-model="tableData_tasks[taskIndex].order" style="width:100%" disabled />
+                <el-input id="task_sequence" v-model="tableData_tasks[taskIndex].order" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col span="12">
               <el-form-item label="类型">
-                <el-input id="task_type" v-model="tableData_tasks[taskIndex].type" style="width:100%" disabled />
+                <el-input id="task_type" v-model="tableData_tasks[taskIndex].type" style="width:100%" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="评分表">
-                <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" disabled />
+                <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
