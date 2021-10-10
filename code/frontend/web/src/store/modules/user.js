@@ -1,5 +1,6 @@
 import { login, logout, getInfo, refreshToken } from '@/api/login'
 import { getToken, setToken, setExpiresIn, removeToken } from '@/utils/auth'
+import Vue from 'vue'
 
 const user = {
   state: {
@@ -57,6 +58,7 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo().then(res => {
           const user = res.user
+          Vue.prototype.$user = res.user
           const avatar = user.avatar == "" ? require("@/assets/images/profile.jpg") : user.avatar;
           if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
             commit('SET_ROLES', res.roles)

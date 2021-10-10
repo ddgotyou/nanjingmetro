@@ -169,7 +169,6 @@
           />
         </el-table>
       </el-card>
-      <div style="text-align:right"><el-button type="primary" @click="submit">提交</el-button></div>
     </el-form>
   </div>
 </template>
@@ -256,9 +255,6 @@ export default {
     },
     filterHandler(value, row, column) {
       console.log(value, row, column)
-    },
-    submit() {
-
     }
   }
 }
