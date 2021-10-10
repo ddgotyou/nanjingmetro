@@ -204,8 +204,8 @@
         </el-table>
       </el-card>
       <div style="text-align:right">
-        <el-button @click="commit">保存</el-button>
-        <el-button type="primary" @click="submit">提交</el-button>
+        <el-button @click="save">保存</el-button>
+        <el-button type="primary" @click="submit">保存并提交</el-button>
       </div>
     </el-form>
     <el-dialog title="发起审批" :visible.sync="dialogFormVisible">
@@ -257,10 +257,12 @@
 </template>
 
 <script>
-import api from '@/api/training_plan/training_plan' 
+import api from '@/api/training_plan/training_plan'
+import api2 from '@/api/training_plan/application'
 export default {
   components: {
-    api
+    api,
+    api2
   },
   data() {
     return {
@@ -392,7 +394,7 @@ export default {
         that.tableData_students=res.auditors;
         if(res.tasks.length==0)
         {
-          that.tableData=[{}]
+          that.tableData=[]
         }
         else
         {
@@ -454,7 +456,7 @@ export default {
         }
       })
     },
-    commit() {
+    save() {
       this.dialogFormVisible = false;
       var data={
         name: this.formData.name,
@@ -462,7 +464,7 @@ export default {
         type: this.formData.type,
         goal:'',
         detailed: this.formData.description,
-        status:'待审核',
+        status:'未申请',
         searchText: this.formData.name,
         startTime: this.formData.period[0],
         endTime: this.formData.period[1],
@@ -485,7 +487,55 @@ export default {
       data.auditors=auditors
       data.tasks=this.tableData
       api.update(data,this.id).then(res => {
+        this.$message({
+          message: '保存成功！',
+          type: 'success'
+        });
         console.log("update plan successfully!")
+      })
+    },
+    commit(){
+      this.dialogFormVisible = false;
+      var data={
+        name: this.formData.name,
+        major:this.formData.speciality,
+        type: this.formData.type,
+        goal:'',
+        detailed: this.formData.description,
+        status:'未申请',
+        searchText: this.formData.name,
+        startTime: this.formData.period[0],
+        endTime: this.formData.period[1],
+        auditors: [],
+        trainers: [],
+        tasks: []
+      }
+      for(var key in data)
+      {
+        if(data[key]=='')
+        {
+          delete data[key]
+        }
+      }
+      var auditors=[]
+      for(var i=0;i<this.formData.people.length;i++)
+      {
+        auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
+      }
+      data.auditors=auditors
+      data.tasks=this.tableData
+      api.update(data,this.id).then(res => {
+        api2.submit({
+          user:this.$user.userId,
+          plan:this.id
+        }).then(res => {
+          this.$message({
+            message: '保存并提交成功！',
+            type: 'success'
+          });
+          this.$router.go(-1)
+          console.log("submit plan successfully!")
+        })
       })
     }
   }
