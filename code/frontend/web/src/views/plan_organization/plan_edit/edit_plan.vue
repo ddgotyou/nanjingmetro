@@ -38,7 +38,7 @@
                 style="width:100%;"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 v-model="formData.period"
-                type="daterange"
+                type="datetimerange"
                 range-separator="至"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期">
@@ -119,7 +119,7 @@
                   style="width:100%;"
                   value-format="yyyy-MM-dd HH:mm:ss"
                   v-model="taskData.time"
-                  type="daterange"
+                  type="datetimerange"
                   range-separator="至"
                   start-placeholder="开始日期"
                   end-placeholder="结束日期">
@@ -131,14 +131,7 @@
             </el-col>
             <el-col span="12">
               <el-form-item label="顺序">
-                <el-select id="task_sequence" v-model="taskData.sequence" style="width:100%" placeholder="请选择">
-                  <el-option
-                    v-for="item in task_sequences"
-                    :key="item.value"
-                    :label="item.lable"
-                    :value="item.value"
-                  />
-                </el-select>
+                <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
               </el-form-item>
             </el-col>
           </el-row>
@@ -156,15 +149,27 @@
               </el-form-item>
             </el-col>
             <el-col span="12">
-              <el-form-item label="评分表">
-                <el-select id="task_standard" v-model="taskData.standard" style="width:100%" placeholder="请选择">
+              <el-form-item label="评分">
+                <el-input-number style="width:100%;" v-model="taskData.score" :min="1" :max="100"></el-input-number>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col span="12">
+              <el-form-item label="教室">
+                <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择">
                   <el-option
-                    v-for="item in task_standards"
+                    v-for="item in classrooms"
                     :key="item.value"
                     :label="item.label"
                     :value="item.value"
                   />
                 </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col span="12">
+              <el-form-item label="描述">
+                <el-input v-model="taskData.description" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -175,6 +180,10 @@
           :data="tableData"
           style="width: 100"
         >
+          <el-table-column
+            prop="order"
+            label="任务顺序"
+          />
           <el-table-column
             prop="name"
             label="任务名称"
@@ -295,10 +304,12 @@ export default {
       taskData: {
         name: '',
         option: '',
-        sequence: '',
+        order: '',
         time: ['',''],
         type: '',
-        standard: ''
+        score: '',
+        classroom: '',
+        description: ''
       },
       popData: {
         department: '',
@@ -307,35 +318,8 @@ export default {
       tab_activeName: 'students',
       kinds: [],
       task_chooses: [],
-      task_sequences: [
-        {
-          label: '顺序1',
-          value: '顺序1'
-        },
-        {
-          label: '顺序2',
-          value: '顺序2'
-        },
-        {
-          label: '顺序3',
-          value: '顺序3'
-        }
-      ],
       task_types: [],
-      task_standards: [
-        {
-          label: '评分表1',
-          value: '1'
-        },
-        {
-          label: '评分表2',
-          value: '2'
-        },
-        {
-          label: '评分表3',
-          value: '3'
-        }
-      ],
+      classrooms: [],
       tableData: [],
       departments: [
         {
@@ -399,6 +383,9 @@ export default {
         else
         {
           that.tableData=res.tasks;
+          that.tableData.sort(function (a,b) {
+            return a.order-b.order;
+          });
         }
       });
     },
@@ -411,20 +398,22 @@ export default {
     },
     addTask() {
       this.tableData.push({
-        classroom: null,
+        classroom: this.taskData.classroom,
         name: this.taskData.name,
         chooseTask: this.taskData.option,
         type: this.taskData.type,
-        taskScore: this.taskData.standard,
+        taskScore: this.taskData.score,
         inPlanTask: null,
-        description: null,
+        description: this.taskData.description,
         startTime: this.taskData.time[0],
         endTime: this.taskData.time[1],
-        order: this.sequence,
+        order: this.taskData.order,
         signInNumber: null,
         signOutNumber: null
       })
-      console.log(this.Data)
+      this.tableData.sort(function (a,b) {
+        return a.order-b.order;
+      })
     },
     deleteRow(index, tableData) {
       this.tableData.splice(index, 1)
@@ -432,10 +421,7 @@ export default {
     getSelection() {
       let that=this
       api.planTypes().then( res => {
-        //that.people_data=[]
         that.kinds=[]
-        //that.task_types=[]
-        //that.task_chooses=[]
         for(var i=0;i<res._embedded.planTypes.length;i++)
         {
           that.kinds.push({label:res._embedded.planTypes[i].name,value:res._embedded.planTypes[i].name})
@@ -453,6 +439,15 @@ export default {
         for(var i=0;i<res._embedded.chooseTasks.length;i++)
         {
           that.task_chooses.push({label:res._embedded.chooseTasks[i].name,value:res._embedded.chooseTasks[i].name})
+        }
+      })
+     api.classrooms().then( res => {
+        that.classrooms=[]
+        for(var i=0;i<res._embedded.classrooms.length;i++)
+        {
+          var temp=res._embedded.classrooms[i]._links.self.href.split("/")
+          var classroom_id=temp[temp.length-1]
+          that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
         }
       })
     },

@@ -49,6 +49,12 @@ module.exports={
             method: 'get'
         })
     },
+    classrooms(){
+        return request({
+            url: '/training-plan/classrooms',
+            method: 'get'
+        })
+    },
     add(data){
         return request({
             url: '/training-plan/plans',
