@@ -125,7 +125,7 @@
           <el-row>
             <el-col span="12">
               <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime" name="task_time" readonly />
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime+'-'+tableData_tasks[taskIndex].endTime" name="task_time" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
@@ -141,8 +141,20 @@
               </el-form-item>
             </el-col>
             <el-col span="12">
-              <el-form-item label="评分表">
+              <el-form-item label="评分">
                 <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col span="12">
+              <el-form-item label="教室">
+                <el-input v-model="tableData_tasks[taskIndex].classroom" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+            <el-col span="12">
+              <el-form-item label="描述">
+                <el-input v-model="tableData_tasks[taskIndex].description" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
