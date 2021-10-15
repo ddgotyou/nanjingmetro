@@ -68,16 +68,20 @@
         style="width: 100"
         >
         <el-table-column
-          prop="planID"
-          label="序号"
-        />
+          type="index"
+          width="50">
+        </el-table-column>
         <el-table-column
           prop="planName"
           label="计划名称"
         />
         <el-table-column
-          prop="period"
-          label="周期"
+          prop="startTime"
+          label="开始时间"
+        />
+        <el-table-column
+          prop="endTime"
+          label="结束时间"
         />
         <el-table-column
           prop="applicant"
@@ -86,10 +90,6 @@
         <el-table-column
           prop="teacher"
           label="讲师"
-        />
-        <el-table-column
-          prop="approver"
-          label="第一审批人"
         />
         <el-table-column
           label="操作"
@@ -102,16 +102,10 @@
               详情
             </el-button>
             <el-button
-              @click.native.prevent=""
-              type="text"
-              size="small">
-              实施
-            </el-button>
-            <el-button
               @click.native.prevent="dialogFormVisible = true"
               type="text"
               size="small">
-              驳回
+              调整任务
             </el-button>
           </template>
         </el-table-column>

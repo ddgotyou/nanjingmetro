@@ -9,7 +9,6 @@
               <el-date-picker
                 style="width:50%"
                 v-model="searchData.period[0]"
-<<<<<<< HEAD
                 value-format="yyyy-MM-dd HH:mm:ss"
                 type="date"
                 placeholder="开始日期">
@@ -19,17 +18,6 @@
                 v-model="searchData.period[1]"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 type="date"
-=======
-                value-format="yyyy-MM-dd HH:mm:ss"
-                type="date"
-                placeholder="开始日期">
-              </el-date-picker>
-              <el-date-picker
-                style="width:50%"
-                v-model="searchData.period[1]"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                type="date"
->>>>>>> e3623985b1e95e9ef7d6fb5e7ecfd90b4595fc02
                 placeholder="结束日期">
               </el-date-picker>
             </el-form-item>
