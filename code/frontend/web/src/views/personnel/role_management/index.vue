@@ -5,7 +5,6 @@
       <div slot="header">
         <div style="float: left">
           <el-button @click="handleAdd">新增</el-button>
-          <el-button @click="handleDelete">删除</el-button>
           <el-button @click="handleExport">导出</el-button>
         </div>
 
@@ -23,16 +22,16 @@
         <el-table
           v-loading="loading"
           stripe
-          :data="userGroupList"
+          :data="roleList"
           style="width: 100%"
-          :default-sort="{ prop: 'creatTime', order: 'descending' }"
+          :default-sort="{ prop: 'date', order: 'descending' }"
           @row-click="rowClick"
           @current-change="tableCurrentChange"
         >
           <el-table-column type="selection" />
           <el-table-column type="index" label="序号" width="" align="center" />
           <el-table-column
-            prop="deptName"
+            prop="roleName"
             label="名称"
             width=""
             align="center"
@@ -47,7 +46,7 @@
           <el-table-column prop="enabled" label="操作" align="center">
             <template slot-scope="scope">
               <el-button type="text" @click="handleEdit(scope.$index)"
-                >修改</el-button
+                >编辑</el-button
               >
             </template>
           </el-table-column>
@@ -55,10 +54,10 @@
 
         <el-row>
           <el-pagination
-            :current-page="currentPage"
-            :page-sizes="pageSizes"
-            :page-size="pageSize"
-            :total="totalPage"
+            :current-page="page.number"
+            :page-sizes="[]"
+            :page-size="page.size"
+            :total="page.totalPages"
             layout="total, sizes, prev, pager, next, jumper"
             class="pagination"
             @size-change="pagingSizeChange"
@@ -71,7 +70,7 @@
 </template>
 
 <script>
-import { listUserGroup } from "@/api/personnel/user_group";
+import { listRole } from "@/api/personnel/role";
 
 export default {
   data: function () {
@@ -79,13 +78,16 @@ export default {
       //遮罩层
       loading: true,
 
-      pageSizes: [100, 200, 300, 400],
-      pageSize: 100,
-      totalPage: 400,
-      currentPage: 1,
+      page: {
+        size: 0,
+        totalElements: 0,
+        totalPages: 0,
+        number: 0,
+      },
 
-      userGroupList: [],
+      roleList: [],
       selectedItem: null,
+      addVisible: false,
     };
   },
   mounted: function () {
@@ -94,9 +96,9 @@ export default {
   methods: {
     getData() {
       this.loading = true;
-      listUserGroup(null).then((response) => {
+      listRole(null).then((response) => {
         console.log(response);
-        this.userGroupList = response.data;
+        this.roleList = response.rows;
         this.loading = false;
       });
     },
@@ -107,9 +109,8 @@ export default {
       console.log(`当前页: ${val}`);
     },
     handleAdd() {
-      this.$router.push("/personnel/new_usergroup");
+      this.$router.push("/personnel/new_role");
     },
-    handleDelete() {},
     handleExport() {},
     handleSearch() {},
     handleReset() {},
@@ -122,17 +123,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.header-input {
-  width: 67%;
-  display: inline-block;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
 .card-box {
   width: 400px;
   max-width: 100%;
   margin: 20px auto;
+}
+
+.header-input {
+  width: 750px;
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .pagination {
