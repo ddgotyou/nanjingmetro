@@ -1,9 +1,70 @@
 import request from '@/utils/request'
 
-export function listDevice() {
-  return request({
-    url: '/device/devices',
-    method: 'get'
-    //params: query
-  })
+module.exports={
+  listDevice() {
+    return request({
+      url: '/device/devices',
+      method: 'get'
+    })
+  },
+  search(query){
+      return request({
+          url: '/device/devices/search/findByConditions',
+          method: 'get',
+          params: query
+      })
+  },
+  protocols(){
+    return request({
+        url: '/device/protocols',
+        method: 'get'
+    })
+  },
+
+  deviceTypes(){
+      return request({
+          url: '/training-plan/planTypes',
+          method: 'get'
+      })
+  },
+  add(data){
+      return request({
+        url: '/devices',
+        method: 'post',
+        data: data
+      })
+  },
+  planStatuses(){
+      return request({
+          url: '/training-plan/plans/statuses',
+          method: 'get'
+      })
+  },
+  details(id){
+      return request({
+          url: '/training-plan/plans/'+id,
+          method: 'get'
+      })
+  },
+
+  taskTypes(){
+      return request({
+          url: '/training-plan/taskTypes',
+          method: 'get'
+      })
+  },
+  chooseTasks(){
+      return request({
+          url: '/training-plan/chooseTasks',
+          method: 'get'
+      })
+  },
+
+  update(data,id){
+      return request({
+          url: '/training-plan/plans/'+id,
+          method: 'put',
+          data: data
+      })
+  }
 }

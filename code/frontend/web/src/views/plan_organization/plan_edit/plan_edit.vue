@@ -123,7 +123,7 @@
 </template>
 
 <script>
-import api from '@/api/training_plan/training_plan' 
+import api from '@/api/training_plan/training_plan'
 export default {
   components: {
     api

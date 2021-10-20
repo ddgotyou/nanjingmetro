@@ -1,31 +1,26 @@
 <template>
   <div class="app-container">
     <el-form
-      :model="queryParams"
-      ref="queryForm"
-      v-show="showSearch"
+      :model="searchData"
       :inline="true"
     >
       <el-form-item prop="roleName">
         <!-- v-model="queryParams.roleName" -->
-        <el-input
-          placeholder="请输入搜索关键词"
+        <el-input id="search" v-model="searchData.value" name="search_value" placeholder="请输入搜索关键词"
           clearable
           size="small"
-          style="width: 240px"
-        >
-        </el-input>
+          style="width: 240px" />
       </el-form-item>
       <el-form-item>
         <el-button
           type="primary"
           icon="el-icon-search"
           size="mini"
-          @click="handleQuery"
-          >搜索</el-button
+          @click="search_commit"
+          >搜 索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
+        <el-button icon="el-icon-refresh" size="mini" @click="search_reset"
+          >重 置</el-button
         >
       </el-form-item>
     </el-form>
@@ -85,22 +80,21 @@
     <div style="margin: 20px"></div>
 
     <el-table
-      :data="deviceList"
-      stripe
+      :data="tableData"
+
       style="width: 100%"
-      @selection-change="handleSelectionChange"
       id="device_table"
     >
       <el-table-column type="selection" width="55" align="center">
       </el-table-column>
 
       <el-table-column type="index" label="序号" width="100"> </el-table-column>
-      <el-table-column prop="classroom" label="实验室名称"> </el-table-column>
-      <el-table-column prop="deviceStatus.name" label="设备"> </el-table-column>
-      <el-table-column prop="deviceStatus.description" label="状态">
-      </el-table-column>
+      <el-table-column prop="deviceClassroom" label="实验室名称"> </el-table-column>
+      <el-table-column prop="deviceName" label="设备"> </el-table-column>
+      <el-table-column prop="deviceDescription" label="状态"></el-table-column>
       <el-table-column label="操作">
-        <el-link type="primary">修改</el-link>
+        <!-- icon="el-icon-edit" -->
+        <el-button @click="handleUpdate" type="text">修改</el-button>
       </el-table-column>
     </el-table>
     <el-row>
@@ -132,9 +126,12 @@
 <script>
 import FileSaver from "file-saver";
 import XLSX from "xlsx";
-import { listDevice } from "@/api/device/device";
+import api from "@/api/device/device"
 
 export default {
+  components: {
+    api
+  },
   data() {
     const item = {
       student: "王一二",
@@ -143,46 +140,123 @@ export default {
       score: "",
     };
     return {
+      searchData: {
+        name: '',
+        keyword: '',
+        purchaseDate:''
+      },
+      search_status: false,
+      index: 1,
+
+      teachers: [],
+      response: {},
+      tableData: [],
       deviceList: [],
-      tableData: Array(20).fill(item),
+
       dialogFormVisible: false,
       newlabForm: {
         pass: "",
         checkPass: "",
       },
-      showSearch: true,
+      //showSearch: true,
       pageSizes: [100, 200, 300, 400],
       pageSize: 100,
       totalPage: 400,
       currentPage: 1,
     };
   },
+
   created() {
-    //console.log("created",this.tableData);
+    console.log("created",this.tableData)
     this.getDeviceList();
   },
   methods: {
     getDeviceList() {
       let vm = this;
-      listDevice().then((response) => {
-        vm.deviceList = response._embedded.devices;
+      api.listDevice().then((response) => {
+        vm.tableData = response._embedded.devices;
       });
     },
+    // list() {
+    //   console.log(this.searchData);
+    //   var params = {
+    //     name:'',
+    //     value: '',
+    //     index: this.index-1,
+    //     //size: this.pageSize
+    //   };
+    //   let that=this;
+    //   api.search(params).then( res => {
+    //     that.response = res;
+    //     that.tableData = [];
+    //     for(var i = 0; i < res._embedded.devices.length; i++)
+    //     {
+    //       let item = {
+    //         deviceClassroom: res._embedded.devices[i].deviceClassroom,
+    //         deviceName: res._embedded.devices[i].deviceName,
+    //         deviceDescription: res._embedded.devices[i].deviceDescription,
+    //         //self: res._embedded.devices[i]._links.self.href
+    //       };
+    //       that.tableData.push(item)
+    //     }
+    //   });
+    // },
     handleEdit() {
       dialogFormVisible = true;
     },
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          alert("submit!");
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
+    // submitForm(formName) {
+    //   this.$refs[formName].validate((valid) => {
+    //     if (valid) {
+    //       alert("submit!");
+    //     } else {
+    //       console.log("error submit!!");
+    //       return false;
+    //     }
+    //   });
+    // },
+    // 前往新增设备页面
     add() {
       this.$router.push({ path: "new_device" });
+    },
+    search_commit()
+    {
+      this.index=1
+      this.search_list()
+    },
+    search_list() {
+      console.log(this.searchData);
+      var params = {
+        name: "1",
+        keyword: this.searchData.value,
+
+      };
+      let that=this;
+      api.search(params).then( res => {
+        that.response = res;
+        that.tableData = [];
+        for(var i = 0; i < res._embedded.devices.length; i++)
+        {
+          let item = {
+            deviceName: res._embedded.devices[i].deviceName,
+            deviceClassroom: res._embedded.devices[i].deviceClassroom,
+            deviceDescription: res._embedded.devices[i].deviceDescription,
+          };
+          that.tableData.push(item)
+        }
+      });
+      this.search_status = true;
+    },
+    search_reset() {
+      this.searchData = {
+        name: '',
+        period: ['',''],
+        status: '',
+        teacher: '',
+        value: ''
+      };
+      this.search_status = false;
+      this.index=1;
+      this.list();
     },
     handleClose(done) {
       this.$confirm("确认关闭？")
@@ -190,6 +264,21 @@ export default {
           done();
         })
         .catch((_) => {});
+    },
+    handleUpdate(row) {
+      this.reset();
+      this.getTreeselect();
+      const userId = row.userId || this.ids;
+      getUser(userId).then(response => {
+        this.form = response.data;
+        this.postOptions = response.posts;
+        this.roleOptions = response.roles;
+        this.form.postIds = response.postIds;
+        this.form.roleIds = response.roleIds;
+        this.open = true;
+        this.title = "修改用户";
+        this.form.password = "";
+      });
     },
     pagingSizeChange(val) {
       console.log(`每页 ${val} 条`);
