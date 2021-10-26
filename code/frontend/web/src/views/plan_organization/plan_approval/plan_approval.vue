@@ -4,25 +4,10 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col span="8">
-              <el-form-item label="计划名称">
-              <el-select
-                style="width:100%"
-                id="type"
-                v-model="searchData.name"
-                placeholder="请选择">
-                <el-option
-                  v-for="item in names"
-                  :key="item.value"
-                  :label="item.lable"
-                  :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-          </el-col>
-          <el-col span="8">
+          <el-col span="10">
             <el-form-item label="计划时间">
               <el-date-picker
+                style="width:100%;"
                 v-model="searchData.period"
                 type="daterange"
                 range-separator="至"
@@ -31,7 +16,22 @@
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col span="8">
+          <el-col span="7">
+            <el-form-item label="审批状态">
+              <el-select
+              style="width:100%"
+              v-model="searchData.status"
+              placeholder="请选择">
+              <el-option
+                  v-for="item in statuses"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+              </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col span="7">
             <el-form-item label="讲师">
               <el-select
               style="width:100%"
@@ -69,19 +69,27 @@
         style="width: 100"
         >
         <el-table-column
-          prop="planID"
-          label="序号"
-        />
+          type="index"
+          width="50">
+        </el-table-column>
         <el-table-column
           prop="planName"
           label="计划名称"
         />
         <el-table-column
-          prop="period"
-          label="周期"
+          prop="startTime"
+          label="开始时间"
         />
         <el-table-column
-          prop="applicant"
+          prop="endTime"
+          label="结束时间"
+        />
+        <el-table-column
+          prop="status"
+          label="申请状态"
+        />
+        <el-table-column
+          prop="userName"
           label="申请人"
         />
         <el-table-column
@@ -103,13 +111,13 @@
               详情
             </el-button>
             <el-button
-              @click.native.prevent=""
+              @click.native.prevent="approve(scope.$index, tableData)"
               type="text"
               size="small">
               通过
             </el-button>
             <el-button
-              @click.native.prevent=""
+              @click.native.prevent="reject(scope.$index, tableData)"
               type="text"
               size="small">
               驳回
@@ -118,36 +126,39 @@
         </el-table-column>
       </el-table>
       <el-pagination style="text-align: center"
-        layout="prev, pager, next"
-        :total="500">
+        layout="total, sizes, prev, pager, next, jumper"
+        :current-page.sync="index"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size="pageSize"
+        :total="response.page.totalElements"
+        @size-change="size_change"
+        @current-change="index_change()">
       </el-pagination>
     </el-card>
   </div>
 </template>
 
 <script>
-
+import api from '@/api/training_plan/application'
 export default {
+  components: {
+    api
+  },
   data() {
     return {
       searchData: {
-        name: '',
-        period: '',
+        period: ['',''],
+        status: '',
         teacher: '',
         value: ''
       },
-      names: [
+      search_status: false,
+      index: 1,
+      pageSize: 10,
+      statuses: [
         {
-          label: '掩体计划',
-          value: '掩体计划'
-        },
-        {
-          label: '广播计划',
-          value: '广播计划'
-        },
-        {
-          label: '黒域计划',
-          value: '黒域计划'
+          value: '未通过',
+          label: '未通过'
         }
       ],
       teachers: [
@@ -164,6 +175,7 @@ export default {
           label: '维德'
         }
       ],
+      response: {},
       tableData: [
         {
           planID: 0,
@@ -172,64 +184,116 @@ export default {
           applicant: '程专',
           teacher: '文忆',
           approver: '艾AA'
-        },
-        {
-          planID: 1,
-          planName: '计划2',
-          period: '周一3-4节',
-          applicant: '旁诗丹',
-          teacher: '史布',
-          approver: '雪永望'
-        },
-        {
-          planID: 2,
-          planName: '计划3',
-          period: '周四1-2节',
-          applicant: '叶茂才',
-          teacher: '杞承恩',
-          approver: '弥水凡'
-        },
-        {
-          planID: 3,
-          planName: '计划4',
-          period: '周二5-6节',
-          applicant: '司空恨蝶',
-          teacher: '本清涵',
-          approver: '平友菱'
-        },
-        {
-          planID: 4,
-          planName: '计划5',
-          period: '周三7-8节',
-          applicant: '丰飞烟',
-          teacher: '练晗玥',
-          approver: '侨国安'
-        },
-        {
-          planID: 5,
-          planName: '计划6',
-          period: '周一1-2节',
-          applicant: '白含文',
-          teacher: '藏晗',
-          approver: '艾AA'
         }
       ]
     }
   },
+  created(){
+    this.list()
+  },
   methods: {
+    list() {
+      var params = {
+        page: this.index-1,
+        size: this.pageSize
+      };
+      var that=this;
+      api.list(params).then(res=>{
+        that.response=res;
+        that.tableData = [];
+        for(var i=0;i<res._embedded.applications.length;i++)
+        {
+          let item={
+            planName: res._embedded.applications[i].plan,
+            planId:res._embedded.applications[i].plan,
+            startTime: '',
+            endTime: '',
+            status: res._embedded.applications[i].status,
+            userName: res._embedded.applications[i].user,
+            teacher: '',
+            approver: '',
+            self: res._embedded.applications[i]._links.self.href
+          }
+          that.tableData.push(item);
+        }
+      })
+    },
+    search_list() {
+
+    },
     search_commit() {
-      console.log(this.searchData)
+      this.index=1
+      this.search_list()
     },
     search_reset() {
       this.searchData = {
-        name: '',
-        period: '',
+        period: ['',''],
+        status: '',
         teacher: '',
         value: ''
       }
+      this.search_status = false;
+      this.index=1;
+      this.list();
     },
     show_details(index, data) {
-      this.$router.push({ path: 'plan_approval_details', query: { id: index }})
+      this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].planId }})
+    },
+    approve(index, data) {
+      var that=this;
+      var temp=that.tableData[index].self.split("/")
+      var id=temp[temp.length-1]
+      this.$confirm('此操作将通过计划'+that.tableData[index].planName+', 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        api.approve(id, { auditor:this.$user.userId }).then(
+          this.$message({
+          type: 'success',
+          message: '审批通过成功!'
+          })
+        )
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消审批'
+        });          
+      });
+    },
+    reject(index, data) {
+      var that=this;
+      var temp=that.tableData[index].self.split("/")
+      var id=temp[temp.length-1]
+      this.$prompt('请输入驳回原因', '驳回', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(({ value }) => {
+        api.reject(id,{ auditor: this.$user.userId, reason: value}).then(
+          this.$message({
+            type: 'success',
+            message: '审批驳回成功！'
+          })
+        )
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消审批'
+        });       
+      });
+    },
+    size_change(val){
+      this.pageSize=val
+      this.index_change()
+    },
+    index_change(){
+      if(this.search_status)
+      {
+        this.search_list()
+      }
+      else{
+        this.list()
+      }
     }
   }
 }

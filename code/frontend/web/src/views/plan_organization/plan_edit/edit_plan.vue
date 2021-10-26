@@ -1,3 +1,7 @@
+<!--
+ * @Author: your name
+ * @LastEditors: your name
+-->
 <template>
   <div class="app-container">
     <el-form label-position="right" label-width="80px" :model="formData">
@@ -174,7 +178,6 @@
         <el-divider />
         <el-table
           :data="tableData"
-          :default-sort = "{prop: 'order', order: 'ascending'}"
           style="width: 100"
         >
           <el-table-column
@@ -263,7 +266,7 @@
 </template>
 
 <script>
-import api from '@/api/training_plan/training_plan' 
+import api from '@/api/training_plan/training_plan'
 import api2 from '@/api/training_plan/application'
 export default {
   components: {
@@ -272,6 +275,8 @@ export default {
   },
   data() {
     return {
+      id: '',
+      response: {},
       people_data: [],
       classes_data: [
         {
@@ -350,9 +355,40 @@ export default {
     }
   },
   created() {
+    var temp=this.$route.query.self.split("/")
+    this.id=temp[temp.length-1]
+    this.list()
     this.getSelection()
   },
   methods: {
+    list() {
+      let that=this;
+      api.details(this.id)
+      .then( res => {
+        that.response=res;
+        that.formData={
+          name: res.name,
+          speciality: res.major,
+          type: res.type,
+          period: [res.startTime,res.endTime],
+          description: res.detailed,
+          people: [],
+          classes: []
+        };
+        that.tableData_students=res.auditors;
+        if(res.tasks.length==0)
+        {
+          that.tableData=[]
+        }
+        else
+        {
+          that.tableData=res.tasks;
+          that.tableData.sort(function (a,b) {
+            return a.order-b.order;
+          });
+        }
+      });
+    },
     submit(form) {
       console.log(this.formData)
       this.dialogFormVisible = true
@@ -405,7 +441,7 @@ export default {
           that.task_chooses.push({label:res._embedded.chooseTasks[i].name,value:res._embedded.chooseTasks[i].name})
         }
       })
-      api.classrooms().then( res => {
+     api.classrooms().then( res => {
         that.classrooms=[]
         for(var i=0;i<res._embedded.classrooms.length;i++)
         {
@@ -445,13 +481,12 @@ export default {
       }
       data.auditors=auditors
       data.tasks=this.tableData
-      api.add(data).then(res => {
+      api.update(data,this.id).then(res => {
         this.$message({
           message: '保存成功！',
           type: 'success'
         });
-        this.$router.go(-1)
-        console.log("add new plan successfully!")
+        console.log("update plan successfully!")
       })
     },
     commit(){
@@ -484,12 +519,10 @@ export default {
       }
       data.auditors=auditors
       data.tasks=this.tableData
-      api.add(data).then(res => {
-        var temp=res._links.self.href.split("/")
-        var id=temp[temp.length-1]
+      api.update(data,this.id).then(res => {
         api2.submit({
           user:this.$user.userId,
-          plan:id
+          plan:this.id
         }).then(res => {
           this.$message({
             message: '保存并提交成功！',

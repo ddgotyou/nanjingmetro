@@ -4,45 +4,53 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col span="8">
-              <el-form-item label="计划名称">
-              <el-select
-                style="width:100%"
-                id="type"
-                v-model="searchData.name"
-                placeholder="请选择">
-                <el-option
-                  v-for="item in names"
-                  :key="item.value"
-                  :label="item.lable"
-                  :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-          </el-col>
-          <el-col span="8">
+          <el-col span="10">
             <el-form-item label="计划时间">
               <el-date-picker
-                v-model="searchData.period"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期">
+                style="width:50%"
+                v-model="searchData.period[0]"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="date"
+                placeholder="开始日期">
+              </el-date-picker>
+              <el-date-picker
+                style="width:50%"
+                v-model="searchData.period[1]"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="date"
+                placeholder="结束日期">
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col span="8">
+          <el-col span="7">
+            <el-form-item label="计划状态">
+              <el-select
+                v-model="searchData.status"
+                style="width:100%"
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="item in statuses"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col span="7">
             <el-form-item label="讲师">
               <el-select
-              style="width:100%"
-              v-model="searchData.teacher"
-              placeholder="请选择">
-              <el-option
+                v-model="searchData.teacher"
+                style="width:100%"
+                placeholder="请选择"
+              >
+                <el-option
                   v-for="item in teachers"
                   :key="item.value"
                   :label="item.label"
-                  :value="item.value">
-              </el-option>
+                  :value="item.value"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -50,15 +58,17 @@
         <el-row>
           <el-col span="24">
             <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入"/>
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <div style="text-align: right">
-            <el-button type="primary" @click="search_commit">搜 索</el-button>
-            <el-button @click="search_reset">重 置</el-button>
-          </div>
+          <el-col span="24">
+            <div style="text-align: right">
+              <el-button type="primary" @click="search_commit">搜 索</el-button>
+              <el-button @click="search_reset">重 置</el-button>
+            </div>
+          </el-col>
         </el-row>
       </el-form>
     </el-card>
@@ -67,149 +77,214 @@
       <el-table
         :data="tableData"
         style="width: 100"
-        >
+      >
         <el-table-column
-          prop="planID"
-          label="序号"
-        />
+          type="index"
+          width="50">
+        </el-table-column>
         <el-table-column
-          prop="planName"
+          prop="name"
           label="计划名称"
         />
         <el-table-column
-          prop="period"
-          label="周期"
+          prop="startTime"
+          label="开始时间"
+        />
+        <el-table-column
+          prop="endTime"
+          label="结束时间"
         />
         <el-table-column
           prop="teacher"
           label="讲师"
         />
         <el-table-column
+          prop="status"
+          label="状态"
+        />
+        <el-table-column
           label="操作"
-          width="120">
+          width=120
+        >
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="show_details(scope.$index, tableData)"
               type="text"
-              size="small">
-              详细任务
+              size="small"
+              @click.native.prevent="show_details(scope.$index, tableData)"
+            >
+              详情
             </el-button>
           </template>
         </el-table-column>
       </el-table>
       <el-pagination style="text-align: center"
-        layout="prev, pager, next"
-        :total="500">
+        layout="total, sizes, prev, pager, next, jumper"
+        :current-page.sync="index"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size="pageSize"
+        :total="response.page.totalElements"
+        @size-change="size_change"
+        @current-change="index_change()">
       </el-pagination>
     </el-card>
   </div>
 </template>
 
 <script>
-
+import api from '@/api/training_plan/training_plan' 
 export default {
+  components: {
+    api
+  },
   data() {
     return {
       searchData: {
         name: '',
-        period: '',
+        period: ['',''],
+        status: '',
         teacher: '',
         value: ''
       },
-      names: [
-        {
-          label: '掩体计划',
-          value: '掩体计划'
-        },
-        {
-          label: '广播计划',
-          value: '广播计划'
-        },
-        {
-          label: '黒域计划',
-          value: '黒域计划'
-        }
-      ],
-      teachers: [
-        {
-          value: '章北海',
-          label: '章北海'
-        },
-        {
-          value: '艾AA',
-          label: '艾AA'
-        },
-        {
-          value: '维德',
-          label: '维德'
-        }
-      ],
-      tableData: [
-        {
-          planID: 0,
-          planName: '计划1',
-          period: '周一1-2节',
-          applicant: '程专',
-          teacher: '文忆',
-          approver: '艾AA'
-        },
-        {
-          planID: 1,
-          planName: '计划2',
-          period: '周一3-4节',
-          applicant: '旁诗丹',
-          teacher: '史布',
-          approver: '雪永望'
-        },
-        {
-          planID: 2,
-          planName: '计划3',
-          period: '周四1-2节',
-          applicant: '叶茂才',
-          teacher: '杞承恩',
-          approver: '弥水凡'
-        },
-        {
-          planID: 3,
-          planName: '计划4',
-          period: '周二5-6节',
-          applicant: '司空恨蝶',
-          teacher: '本清涵',
-          approver: '平友菱'
-        },
-        {
-          planID: 4,
-          planName: '计划5',
-          period: '周三7-8节',
-          applicant: '丰飞烟',
-          teacher: '练晗玥',
-          approver: '侨国安'
-        },
-        {
-          planID: 5,
-          planName: '计划6',
-          period: '周一1-2节',
-          applicant: '白含文',
-          teacher: '藏晗',
-          approver: '艾AA'
-        }
-      ]
+      search_status: false,
+      index: 1,
+      pageSize: 10,
+      names: [],
+      statuses: [],
+      teachers: [],
+      response: {},
+      tableData: []
     }
   },
+  created() {
+    console.log("created",this.tableData)
+    this.list();
+  },
   methods: {
-    search_commit() {
-      console.log(this.searchData)
+    isInArray(arr, value) {
+      for(var i = 0; i < arr.length; i++){
+        if(value === arr[i].value){
+          return true;
+        }
+      }
+      return false;
+    },
+    list() {
+      let that = this;
+      api.plans({
+        page: that.index-1,
+        size: that.pageSize
+      }).then( res => {
+        that.response = res
+        that.tableData = []
+        //that.names = [{label: '（任意）', value: ''}]
+        that.teachers = [{label: '（任意）', value: ''}]
+        for(var i = 0; i < res._embedded.plans.length; i++)
+        {
+          let item = {
+            name: res._embedded.plans[i].name,
+            startTime: res._embedded.plans[i].startTime,
+            endTime: res._embedded.plans[i].endTime,
+            teacher: '',
+            status: res._embedded.plans[i].status,
+            self: res._embedded.plans[i]._links.self.href
+          };
+
+          // if(!that.isInArray(that.names,item.name))
+          // {
+          //   that.names.push({label: item.name, value: item.name});
+          // }
+          // if(!that.isInArray(that.statuses,item.status))
+          // {
+          //   that.statuses.push({label: item.status, value: item.status});
+          // }
+
+          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+          {
+            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+            if(!that.isInArray(that.teachers,res._embedded.plans[i].trainers[j].username))
+            {
+              that.teachers.push({label: res._embedded.plans[i].trainers[j].username, vlaue: res._embedded.plans[i].trainers[j].username})
+            }
+          }
+          that.tableData.push(item)
+        }
+      });
+      api.planStatuses().then( res => {
+        that.statuses = [{label: '（任意）', value: ''}]
+        for(var i=0;i<res._embedded.strings.length;i++)
+        {
+          console.log(res._embedded.strings[i])
+          that.statuses.push({label: res._embedded.strings[i], value: res._embedded.strings[i]});
+        }
+      });
+    },
+    search_commit()
+    {
+      this.index=1
+      this.search_list()
+    },
+    search_list() {
+      console.log(this.searchData);
+      var params = {
+        name: this.searchData.name,
+        startTime: this.searchData.period[0],
+        endTime: this.searchData.period[1],
+        status: this.searchData.status,
+        trainer: this.searchData.teacher,
+        keyword: this.searchData.value,
+        page: this.index-1,
+        size: this.pageSize
+      };
+      let that=this;
+      api.search(params).then( res => {
+        that.response = res;
+        that.tableData = [];
+        for(var i = 0; i < res._embedded.plans.length; i++)
+        {
+          let item = {
+            name: res._embedded.plans[i].name,
+            startTime: res._embedded.plans[i].startTime,
+            endTime: res._embedded.plans[i].endTime,
+            teacher: '',
+            status: res._embedded.plans[i].status,
+            self: res._embedded.plans[i]._links.self.href
+          };
+          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+          {
+            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+          }
+          that.tableData.push(item)
+        }
+      });
+      this.search_status = true;
     },
     search_reset() {
       this.searchData = {
         name: '',
-        period: '',
+        period: ['',''],
+        status: '',
         teacher: '',
         value: ''
-      }
+      };
+      this.search_status = false;
+      this.index=1;
+      this.list();
     },
     show_details(index, data) {
-      this.$router.push({ path: 'plan_approval_details', query: { id: index }})
+      this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].self }})
+    },
+    size_change(val){
+      this.pageSize=val
+      this.index_change()
+    },
+    index_change(){
+      if(this.search_status)
+      {
+        this.search_list()
+      }
+      else{
+        this.list()
+      }
     }
   }
 }

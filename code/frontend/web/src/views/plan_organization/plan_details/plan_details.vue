@@ -6,24 +6,24 @@
         <el-row>
           <el-col span="12">
             <el-form-item label="名称">
-              <el-input id="name" v-model="baseData.name" name="name" disabled />
+              <el-input id="name" v-model="baseData.name" name="name"  readonly />
             </el-form-item>
           </el-col>
           <el-col span="12">
             <el-form-item label="专业">
-              <el-input id="speciality" v-model="baseData.speciality" name="speciality" disabled />
+              <el-input id="speciality" v-model="baseData.speciality" name="speciality" readonly />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col span="12">
             <el-form-item label="类型">
-              <el-input id="type" v-model="baseData.type" style="width:100%" disabled />
+              <el-input id="type" v-model="baseData.type" style="width:100%" readonly />
             </el-form-item>
           </el-col>
           <el-col span="12">
             <el-form-item label="计划周期">
-              <el-input id="period" v-model="baseData.period" name="period" disabled />
+              <el-input id="period" v-model="baseData.period" name="period" readonly />
             </el-form-item>
           </el-col>
         </el-row>
@@ -35,7 +35,7 @@
                 v-model="baseData.description"
                 type="textarea"
                 :rows="4"
-                disabled
+                readonly
               />
             </el-form-item>
           </el-col>
@@ -113,36 +113,53 @@
           <el-row>
             <el-col span="12">
               <el-form-item label="任务名称">
-                <el-input id="task_name" v-model="tableData_tasks[taskIndex].name" name="task_name" disabled />
+                <el-input id="task_name" v-model="tableData_tasks[taskIndex].name" name="task_name" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="任务选择">
-                <el-input id="task_option" v-model="tableData_tasks[taskIndex].chooseTask" style="width:100%" disabled />
+                <el-input id="task_option" v-model="tableData_tasks[taskIndex].chooseTask" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="12">
-              <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime + '-' + tableData_tasks[taskIndex].startTime" name="task_time" disabled />
+            <el-col span="6">
+              <el-form-item label="开始时间">
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime" name="task_time" readonly />
+              </el-form-item>
+            </el-col>
+            <el-col span="6">
+              <el-form-item label="结束时间">
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].endTime" name="task_time" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
               <el-form-item label="顺序">
-                <el-input id="task_sequence" v-model="tableData_tasks[taskIndex].order" style="width:100%" disabled />
+                <el-input id="task_sequence" v-model="tableData_tasks[taskIndex].order" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col span="12">
               <el-form-item label="类型">
-                <el-input id="task_type" v-model="tableData_tasks[taskIndex].type" style="width:100%" disabled />
+                <el-input id="task_type" v-model="tableData_tasks[taskIndex].type" style="width:100%" readonly />
               </el-form-item>
             </el-col>
             <el-col span="12">
-              <el-form-item label="评分表">
-                <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" disabled />
+              <el-form-item label="评分">
+                <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col span="12">
+              <el-form-item label="教室">
+                <el-input v-model="tableData_tasks[taskIndex].classroom" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+            <el-col span="12">
+              <el-form-item label="描述">
+                <el-input v-model="tableData_tasks[taskIndex].description" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
@@ -152,12 +169,9 @@
           :data="tableData_tasks"
           style="width: 100"
           highlight-current-row
-          @current-change="handleCurrentChange"
+          :cell-class-name="tableCellClassName"
+          @cell-click="cellClick"
         >
-          <el-table-column
-            prop="signInNumber"
-            label="任务号"
-          />
           <el-table-column
             prop="name"
             label="任务名称"
@@ -172,7 +186,6 @@
           />
         </el-table>
       </el-card>
-      <div style="text-align:right"><el-button type="primary" @click="submit">提交</el-button></div>
     </el-form>
   </div>
 </template>
@@ -202,14 +215,6 @@ export default {
       ],
       tableData_tasks: [],
       taskIndex: 0,
-      taskData: {
-        name: '1',
-        option: '2',
-        sequence: '3',
-        time: '4',
-        type: '5',
-        standard: '6'
-      },
       tab_activeName: 'students',
     }
   },
@@ -234,7 +239,14 @@ export default {
           classes: []
         };
         that.tableData_students=res.auditors;
-        that.tableData_tasks=res.tasks;
+        if(res.tasks.length==0)
+        {
+          that.tableData_tasks=[{}]
+        }
+        else
+        {
+          that.tableData_tasks=res.tasks;
+        }
       });
     },
     search_commit() {
@@ -249,14 +261,17 @@ export default {
     showDetailes(index, data) {
 
     },
-    handleCurrentChange(val) {
-      this.taskIndex = val;
+    tableCellClassName({row, column, rowIndex, columnIndex}){
+      //注意这里是解构
+      //利用单元格的 className 的回调方法，给行列索引赋值
+      row.index=rowIndex;
+      column.index=columnIndex;
+    },
+    cellClick(row, column, cell, event){
+      this.taskIndex=row.index;
     },
     filterHandler(value, row, column) {
       console.log(value, row, column)
-    },
-    submit() {
-
     }
   }
 }
