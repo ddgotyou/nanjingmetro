@@ -341,6 +341,7 @@ export default {
     getNoticeMsg(msg) {
       return msg.substring(0, 13) + "...";
     },
+    handleExport() {},
     pagingSizeChange(val) {
       console.log(`每页 ${val} 条`);
     },

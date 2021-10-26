@@ -260,6 +260,7 @@ export default {
       if (this.option === "edit") {
         studentInfo(this.id, null).then((response) => {
           this.form = response._embedded.traineeToes[0];
+          this.form.usergroup = Number(this.form.usergroup);
         });
       }
     },

@@ -94,6 +94,7 @@
                   placeholder="模糊搜索框"
                   style="width: 900px"
                   class="header-input"
+                  @keyup.enter.native="handleSearch"
                 />
               </span>
 
@@ -128,9 +129,7 @@
 
         <el-row>
           <el-form-item align="center">
-            <el-button type="primary" :disabled="disabled" @click="onSubmit"
-              >提交</el-button
-            >
+            <el-button type="primary" @click="onSubmit">提交</el-button>
             <el-button @click="onCancel">取消</el-button>
           </el-form-item>
         </el-row>
@@ -140,6 +139,8 @@
 </template>
 
 <script>
+import { listUser, searchUser } from "@/api/personnel/user_group";
+
 export default {
   data: function () {
     return {
@@ -160,6 +161,8 @@ export default {
         ],
       },
 
+      activeNames: null,
+
       roles: [
         { value: "0", label: "学员管理" },
         { value: "1", label: "教师管理" },
@@ -176,17 +179,14 @@ export default {
         key: undefined,
       },
 
+      // 可选的用户
+      usersOptional: [],
+      // 缓存的用户
       usersAdded: [],
-      usersOptional: [
-        { key: 1, label: "丁仪" },
-        { key: 2, label: "汪淼" },
-        { key: 3, label: "罗辑" },
-        { key: 4, label: "章北海" },
-      ],
       renderContent(h, option) {
         return (
           <span>
-            {option.key} . {option.label}
+            {option.key} : {option.label}
           </span>
         );
       },
@@ -198,7 +198,25 @@ export default {
   },
   methods: {
     // 加载某个用户组数据
-    loadData() {},
+    loadData() {
+      listUser(null).then((response) => {
+        this.usersOptional = response._embedded.dboxVoes;
+      });
+    },
+    handleChange() {},
+    // 模糊搜索用户
+    handleSearch() {
+      searchUser(this.query.key).then((response) => {
+        this.usersOptional = response._embedded.dboxVoes;
+      });
+    },
+    // 重置用户列表
+    handleReset() {
+      this.query.key = "";
+      this.usersOptional = []; // 不是冗余，为了视觉上先清空再出现列表
+      this.usersAdded = [];
+      this.loadData();
+    },
     // 提交新增或修改的表单
     onSubmit() {
       this.$refs["form"].validate((valid) => {

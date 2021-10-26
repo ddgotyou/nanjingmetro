@@ -96,6 +96,7 @@
             placeholder="模糊搜索框"
             style="width: 600px"
             class="header-input"
+            @keyup.enter.native="handleSearch"
           />
         </span>
 
@@ -112,75 +113,62 @@
       </div>
 
       <!-- 讲师列表 -->
-      <div>
-        <!-- 表格 -->
-        <el-table
-          v-loading="loading"
-          :data="teacherList"
-          :default-sort="{ prop: 'id', order: 'descending' }"
-          stripe
-          style="width: 100%"
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column type="selection" />
-          <!-- 不显示，用来在选择到某个讲师时同时获得其 ID -->
-          <el-table-column v-if="false" prop="id" />
-          <el-table-column prop="name" label="姓名" width="" align="center" />
-          <el-table-column prop="sex" label="性别" width="" align="center">
-            <template slot-scope="scope">
-              {{ getStudentSex(scope.row.sex) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="tel"
-            label="联系电话"
-            width=""
-            align="center"
-          />
-          <el-table-column prop="dept" label="部门" width="" align="center">
-            <template slot-scope="scope">
-              {{ getStudentDept(scope.row.dept) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="post" label="岗位" width="" align="center" />
-          <el-table-column
-            prop="status"
-            label="讲师状态"
-            width=""
-            align="center"
-          >
-            <template slot-scope="scope">
-              {{ getStudentStatus(scope.row.status) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="enabled" label="操作" align="center">
-            <template slot-scope="scope">
-              <!-- 单条详情按钮 -->
-              <el-button type="text" @click="handleDetail(scope.$index)"
-                >详情</el-button
-              >
-              <!-- 单条编辑按钮 -->
-              <el-button type="text" @click="handleEdit(scope.$index)"
-                >编辑</el-button
-              >
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table
+        v-loading="loading"
+        :data="teacherList"
+        :default-sort="{ prop: 'id', order: 'descending' }"
+        stripe
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" />
+        <!-- 不显示，用来在选择到某个讲师时同时获得其 ID -->
+        <el-table-column v-if="false" prop="id" />
+        <el-table-column prop="name" label="姓名" width="" align="center" />
+        <el-table-column prop="sex" label="性别" width="" align="center">
+          <template slot-scope="scope">
+            {{ getStudentSex(scope.row.sex) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="tel" label="联系电话" width="" align="center" />
+        <el-table-column prop="dept" label="部门" width="" align="center">
+          <template slot-scope="scope">
+            {{ getStudentDept(scope.row.dept) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="post" label="岗位" width="" align="center" />
+        <el-table-column prop="status" label="讲师状态" width="" align="center">
+          <template slot-scope="scope">
+            {{ getStudentStatus(scope.row.status) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="enabled" label="操作" align="center">
+          <template slot-scope="scope">
+            <!-- 单条详情按钮 -->
+            <el-button type="text" @click="handleDetail(scope.$index)"
+              >详情</el-button
+            >
+            <!-- 单条编辑按钮 -->
+            <el-button type="text" @click="handleEdit(scope.$index)"
+              >编辑</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
 
-        <!-- 页码 -->
-        <el-row>
-          <el-pagination
-            :current-page="page.number"
-            :page-sizes="[]"
-            :page-size="page.size"
-            :total="page.totalPages"
-            layout="total, sizes, prev, pager, next, jumper"
-            class="pagination"
-            @size-change="pagingSizeChange"
-            @current-change="pagingCurrentChange"
-          />
-        </el-row>
-      </div>
+      <!-- 页码 -->
+      <el-row>
+        <el-pagination
+          :current-page="page.number"
+          :page-sizes="[]"
+          :page-size="page.size"
+          :total="page.totalPages"
+          layout="total, sizes, prev, pager, next, jumper"
+          class="pagination"
+          @size-change="pagingSizeChange"
+          @current-change="pagingCurrentChange"
+        />
+      </el-row>
     </el-card>
   </div>
 </template>
@@ -281,7 +269,6 @@ export default {
 
       this.loading = true;
       listTeacher(null).then((response) => {
-        console.log(response);
         if (response._embedded)
           this.teacherList = response._embedded.trainerVoes;
         else this.teacherList = [];

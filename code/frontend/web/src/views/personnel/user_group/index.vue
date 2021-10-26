@@ -33,6 +33,7 @@
             placeholder="模糊搜索框"
             style="width: 700px"
             class="header-input"
+            @keyup.enter.native="handleSearch"
           />
         </span>
 
@@ -49,57 +50,48 @@
       </div>
 
       <!-- 用户组列表 -->
-      <div class="box-item">
-        <!-- 表格 -->
-        <el-table
-          v-loading="loading"
-          :data="userGroupList"
-          :default-sort="{ prop: 'creatTime', order: 'descending' }"
-          stripe
-          style="width: 100%"
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column type="selection" />
-          <!-- 不显示，用来在选择到某个学员时同时获得其 ID -->
-          <el-table-column v-if="false" prop="deptId" />
-          <el-table-column type="index" label="序号" width="" align="center" />
-          <el-table-column
-            prop="deptName"
-            label="名称"
-            width=""
-            align="center"
-          />
-          <el-table-column prop="remark" label="备注" width="" align="center" />
-          <el-table-column
-            prop="updateTime"
-            label="更新时间"
-            width=""
-            align="center"
-          />
-          <el-table-column prop="enabled" label="操作" align="center">
-            <template slot-scope="scope">
-              <!-- 单条编辑按钮 -->
-              <el-button type="text" @click="handleEdit(scope.$index)">
-                编辑</el-button
-              >
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table
+        v-loading="loading"
+        :data="userGroupList"
+        :default-sort="{ prop: 'creatTime', order: 'descending' }"
+        stripe
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" />
+        <!-- 不显示，用来在选择到某个学员时同时获得其 ID -->
+        <el-table-column v-if="false" prop="deptId" />
+        <el-table-column type="index" label="序号" width="" align="center" />
+        <el-table-column prop="deptName" label="名称" width="" align="center" />
+        <el-table-column prop="remark" label="备注" width="" align="center" />
+        <el-table-column
+          prop="updateTime"
+          label="更新时间"
+          width=""
+          align="center"
+        />
+        <el-table-column prop="enabled" label="操作" align="center">
+          <template slot-scope="scope">
+            <el-button type="text" @click="handleEdit(scope.$index)">
+              编辑</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
 
-        <!-- 页码 -->
-        <el-row>
-          <el-pagination
-            :current-page="page.number"
-            :page-sizes="[]"
-            :page-size="page.size"
-            :total="page.totalPages"
-            layout="total, sizes, prev, pager, next, jumper"
-            class="pagination"
-            @size-change="pagingSizeChange"
-            @current-change="pagingCurrentChange"
-          />
-        </el-row>
-      </div>
+      <!-- 页码 -->
+      <el-row>
+        <el-pagination
+          :current-page="page.number"
+          :page-sizes="[]"
+          :page-size="page.size"
+          :total="page.totalPages"
+          layout="total, sizes, prev, pager, next, jumper"
+          class="pagination"
+          @size-change="pagingSizeChange"
+          @current-change="pagingCurrentChange"
+        />
+      </el-row>
     </el-card>
   </div>
 </template>

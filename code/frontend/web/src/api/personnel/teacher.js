@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 查询学员列表
+// 查询讲师列表
 export function listTeacher(query) {
   return request({
     url: '/tms-account/users/getTrainer',
@@ -9,7 +9,7 @@ export function listTeacher(query) {
   })
 }
 
-// 查询学员
+// 查询讲师
 export function teacherInfo(stuId, query) {
   return request({
     url: '/tms-account/users/getTrainerById/' + stuId,
@@ -18,7 +18,7 @@ export function teacherInfo(stuId, query) {
   })
 }
 
-// 新增学员
+// 新增讲师
 export function addTeacher(data) {
   return request({
     url: '/tms-account/users/addTrainer',
@@ -27,7 +27,7 @@ export function addTeacher(data) {
   })
 }
 
-// 删除学员
+// 删除讲师
 export function delTeacher(stuId) {
   return request({
     url: '/tms-account/users/deleteTrainer/' + stuId,
@@ -35,7 +35,7 @@ export function delTeacher(stuId) {
   })
 }
 
-// 编辑学员
+// 编辑讲师
 export function editTeacher(stuId, data) {
   return request({
     url: '/tms-account/users/editTrainer/' + stuId,
@@ -44,7 +44,7 @@ export function editTeacher(stuId, data) {
   })
 }
 
-// 模糊搜索学员
+// 模糊搜索讲师
 export function searchTeacher(keyword) {
   return request({
     url: '/tms-account/users/getTrainerLike/' + keyword,

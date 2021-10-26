@@ -4,31 +4,56 @@
       <!-- 功能栏 -->
       <div slot="header">
         <div style="float: left">
-          <el-button @click="handleAdd">新增</el-button>
-          <el-button @click="handleExport">导出</el-button>
+          <!-- 新增按钮 -->
+          <el-button plain type="primary" icon="el-icon-plus" @click="handleAdd"
+            >新增</el-button
+          >
+          <!-- 导出按钮 -->
+          <el-button
+            plain
+            type="warning"
+            icon="el-icon-download"
+            @click="handleExport"
+            >导出</el-button
+          >
         </div>
 
         <span>
-          <el-input placeholder="模糊搜索框" class="header-input" />
+          <!-- 搜索框 -->
+          <el-input
+            v-model="query.key"
+            placeholder="模糊搜索框"
+            style="width: 825px"
+            class="header-input"
+            @keyup.enter.native="handleSearch"
+          />
         </span>
 
         <div style="float: right">
-          <el-button @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <!-- 搜索按钮 -->
+          <el-button type="primary" icon="el-icon-search" @click="handleSearch"
+            >搜索</el-button
+          >
+          <!-- 重置按钮 -->
+          <el-button icon="el-icon-refresh" @click="handleReset"
+            >重置</el-button
+          >
         </div>
       </div>
-      <!-- 表项 -->
+
+      <!-- 角色表格 -->
       <div class="box-item">
         <el-table
           v-loading="loading"
-          stripe
           :data="roleList"
-          style="width: 100%"
           :default-sort="{ prop: 'date', order: 'descending' }"
-          @row-click="rowClick"
-          @current-change="tableCurrentChange"
+          stripe
+          style="width: 100%"
+          @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" />
+          <!-- 不显示，用来在选择到某个学员时同时获得其 ID -->
+          <el-table-column v-if="false" prop="roleId" />
           <el-table-column type="index" label="序号" width="" align="center" />
           <el-table-column
             prop="roleName"
@@ -52,6 +77,7 @@
           </el-table-column>
         </el-table>
 
+        <!-- 页码 -->
         <el-row>
           <el-pagination
             :current-page="page.number"
@@ -75,8 +101,9 @@ import { listRole } from "@/api/personnel/role";
 export default {
   data: function () {
     return {
-      //遮罩层
-      loading: true,
+      query: {
+        key: undefined,
+      },
 
       page: {
         size: 0,
@@ -87,7 +114,12 @@ export default {
 
       roleList: [],
       selectedItem: null,
-      addVisible: false,
+      //遮罩层
+      loading: true,
+      // 当前页面的角色的列表
+      roleList: [],
+      // 选中角色的列表
+      roleSelection: null,
     };
   },
   mounted: function () {
@@ -102,21 +134,27 @@ export default {
         this.loading = false;
       });
     },
+    // 新增角色
+    handleAdd() {
+      this.$router.push("/personnel/add-role");
+    },
+    // 批量导出角色
+    handleExport() {},
+    // 模糊搜索角色
+    handleSearch() {},
+    // 重置角色列表
+    handleReset() {},
+    // 编辑选中角色
+    handleEdit() {},
+    // 当选中角色更改时，更新选中角色的列表
+    handleSelectionChange(selection) {
+      this.roleSelection = selection;
+    },
     pagingSizeChange(val) {
       console.log(`每页 ${val} 条`);
     },
     pagingCurrentChange(val) {
       console.log(`当前页: ${val}`);
-    },
-    handleAdd() {
-      this.$router.push("/personnel/new_role");
-    },
-    handleExport() {},
-    handleSearch() {},
-    handleReset() {},
-    handleEdit() {},
-    tableCurrentChange(val) {
-      this.selectedItem = val;
     },
   },
 };
@@ -130,7 +168,6 @@ export default {
 }
 
 .header-input {
-  width: 750px;
   display: inline-block;
   margin-left: 10px;
   margin-right: 10px;

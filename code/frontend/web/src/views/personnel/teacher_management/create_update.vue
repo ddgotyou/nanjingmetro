@@ -212,7 +212,7 @@ export default {
     this.loadData();
   },
   methods: {
-    loadData() {
+    async loadData() {
       // 获取用户组、部门的选择下拉框选项，获取岗位、学历、专业的建议下拉框选项
       listUserGroup(null).then((response) => {
         this.selection.usergroup = response._embedded.dboxToes;
@@ -226,8 +226,9 @@ export default {
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该讲师的字段信息
       if (this.option === "edit") {
-        teacherInfo(this.id, null).then((response) => {
+        await teacherInfo(this.id, null).then((response) => {
           this.form = response._embedded.trainerToes[0];
+          this.form.usergroup = Number(this.form.usergroup);
         });
       }
     },

@@ -9,3 +9,20 @@ export function listUserGroup(query) {
     params: query
   })
 }
+
+// 查询所有用户列表
+export function listUser(query) {
+  return request({
+    url: '/tms-account/usergroup/getAllUser',
+    method: 'get',
+    params: query
+  })
+}
+
+// 模糊搜索用户
+export function searchUser(keyword) {
+  return request({
+    url: '/tms-account/usergroup/getUserLike/' + keyword,
+    method: 'get',
+  })
+}
