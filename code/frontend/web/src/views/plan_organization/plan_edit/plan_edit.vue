@@ -7,13 +7,18 @@
           <el-col span="12">
             <el-form-item label="计划时间">
               <el-date-picker
-                style="width:100%"
+                style="width:50%"
+                v-model="searchData.period[0]"
                 value-format="yyyy-MM-dd HH:mm:ss"
-                v-model="searchData.period"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期">
+                type="date"
+                placeholder="开始日期">
+              </el-date-picker>
+              <el-date-picker
+                style="width:50%"
+                v-model="searchData.period[1]"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="date"
+                placeholder="结束日期">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -123,7 +128,7 @@
 </template>
 
 <script>
-import api from '@/api/training_plan/training_plan'
+import api from '@/api/training_plan/training_plan' 
 export default {
   components: {
     api
@@ -131,7 +136,6 @@ export default {
   data() {
     return {
       searchData: {
-        name: '',
         period: ['',''],
         status: '',
         teacher: '',
