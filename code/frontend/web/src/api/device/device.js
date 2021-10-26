@@ -34,6 +34,7 @@ module.exports={
         data: data
       })
   },
+
   planStatuses(){
       return request({
           url: '/training-plan/plans/statuses',
@@ -42,7 +43,7 @@ module.exports={
   },
   details(id){
       return request({
-          url: '/training-plan/plans/'+id,
+          url: '/device/devices/'+id,
           method: 'get'
       })
   },
@@ -62,7 +63,7 @@ module.exports={
 
   update(data,id){
       return request({
-          url: '/training-plan/plans/'+id,
+          url: '/device/devices/'+id,
           method: 'put',
           data: data
       })
