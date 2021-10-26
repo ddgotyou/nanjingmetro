@@ -78,13 +78,13 @@
     >
 
     <div style="margin: 20px"></div>
-
-    <el-table
-      :data="tableData"
-
-      style="width: 100%"
-      id="device_table"
-    >
+    <el-card class="box-card" style="width:100%">
+      <div slot="header">设备列表</div>
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+        id="device_table"
+      >
       <el-table-column type="selection" width="55" align="center">
       </el-table-column>
 
@@ -94,7 +94,9 @@
       <el-table-column prop="deviceDescription" label="状态"></el-table-column>
       <el-table-column label="操作">
         <!-- icon="el-icon-edit" -->
-        <el-button @click="handleUpdate" type="text">修改</el-button>
+        <template slot-scope="scope">
+          <el-button @click.native.prevent="edit(scope.$index, tableData)" type="text">修改</el-button>
+        </template>
       </el-table-column>
     </el-table>
     <el-row>
@@ -109,6 +111,7 @@
         @current-change="pagingCurrentChange"
       />
     </el-row>
+    </el-card>
   </div>
 </template>
 <style>
@@ -171,6 +174,11 @@ export default {
     this.getDeviceList();
   },
   methods: {
+    edit(index, data) {
+      //this.$router.push({ path: "new_device" });
+      this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
+      //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
+    },
     getDeviceList() {
       let vm = this;
       api.listDevice().then((response) => {
