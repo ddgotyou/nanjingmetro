@@ -19,6 +19,13 @@ module.exports={
             params: query
         })
     },
+    search(query){
+        return request({
+            url: '/training-plan/applications/search/findByConditions',
+            method: 'get',
+            params: query
+        })
+    },
     approve(id,data) {
         return request({
             url: '/training-plan/applications/'+id+'/approve?auditor='+data.auditor,

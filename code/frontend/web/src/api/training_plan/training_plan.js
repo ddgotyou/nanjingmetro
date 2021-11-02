@@ -62,6 +62,12 @@ module.exports={
             data: data
         })
     },
+    del(id){
+        return request({
+            url: '/training-plan/plans/'+id,
+            method: 'delete'
+        })
+    },
     update(data,id){
         return request({
             url: '/training-plan/plans/'+id,

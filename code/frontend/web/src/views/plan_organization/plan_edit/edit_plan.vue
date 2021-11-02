@@ -8,19 +8,19 @@
       <el-card class="box-card" style="width:100%">
         <div slot="header">基本信息</div>
         <el-row>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="名称">
               <el-input id="name" v-model="formData.name" name="name" />
             </el-form-item>
           </el-col>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="专业">
               <el-input id="speciality" v-model="formData.speciality" name="speciality" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="类型">
               <el-select id="type" filterable v-model="formData.type" style="width:100%" placeholder="请选择">
                 <el-option
@@ -32,7 +32,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -50,7 +50,7 @@
           </el-col>
         </el-row>
         <el-row>
-          <el-col span="24">
+          <el-col :span="24">
             <el-form-item label="描述">
               <el-input
                 id="description"
@@ -94,12 +94,12 @@
         <div slot="header">详细任务</div>
         <el-form label-position="right" label-width="80px" :model="taskData">
           <el-row>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="任务名称">
                 <el-input id="task_name" v-model="taskData.name" name="task_name" />
               </el-form-item>
             </el-col>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="任务选择">
                 <el-select v-model="taskData.option" style="width:100%" placeholder="请选择">
                   <el-option
@@ -113,7 +113,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="课时安排">
                 <el-date-picker
                   style="width:100%;"
@@ -129,14 +129,14 @@
                 <el-input id="task_time" v-model="taskData.time" name="task_time" />
               </el-form-item> -->
             </el-col>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="顺序">
                 <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="类型">
                 <el-select id="task_type" v-model="taskData.type" style="width:100%" placeholder="请选择">
                   <el-option
@@ -148,14 +148,14 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="评分">
                 <el-input-number style="width:100%;" v-model="taskData.score" :min="1" :max="100"></el-input-number>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="教室">
                 <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择">
                   <el-option
@@ -167,7 +167,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="描述">
                 <el-input v-model="taskData.description" />
               </el-form-item>
@@ -221,7 +221,7 @@
       <div class="dialog-footer">
         <el-form label-position="right" label-width="100px" :model="popData">
           <el-row>
-            <el-col span="24">
+            <el-col :span="24">
               <el-form-item label="部门">
                 <el-select v-model="popData.departmen" style="width:100%" filterable placeholder="请选择部门">
                   <el-option
@@ -235,7 +235,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="24">
+            <el-col :span="24">
               <el-form-item label="审批人">
                 <el-select
                   v-model="popData.approver"
