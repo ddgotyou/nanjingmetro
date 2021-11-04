@@ -19,6 +19,14 @@ export function listUser(query) {
   })
 }
 
+// 删除学员
+export function deleteUserGroup(id) {
+  return request({
+    url: '/system/dept/' + id,
+    method: 'delete'
+  })
+}
+
 // 模糊搜索用户
 export function searchUser(keyword) {
   return request({

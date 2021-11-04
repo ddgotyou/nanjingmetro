@@ -261,10 +261,14 @@ export default {
     // 加载讲师数据
     loadData() {
       listDept(null).then((response) => {
-        this.items.dept.options = response._embedded.dboxVoes;
+        this.items.dept.options = response._embedded.dboxVoes.filter(
+          (element) => element.value
+        );
       });
       listPost(null).then((response) => {
-        this.items.post.options = response._embedded.dboxVoes;
+        this.items.post.options = response._embedded.dboxVoes.filter(
+          (element) => element.value
+        );
       });
 
       this.loading = true;
@@ -328,18 +332,17 @@ export default {
         await delTeacher(this.teacherSelection[i].id).then((response) => {
           let code = response._embedded.responses[0].code;
           if (code === "200") flags[i] = true;
+          else this.$message.error(response._embedded.responses[0].msg);
         });
       }
 
       // 提示或刷新数据
-      // 如果标志数组中没有 false，则提示删除成功并重置数据
-      let success = (await flags.indexOf(false)) === -1;
-      if (success) {
-        this.$message.success(`删除成功！共删除 ${stuNum} 位讲师。`);
-        this.handleReset();
-      } else {
-        this.$message.error("删除失败！");
+      let successNum = await flags.filter((element) => element === true).length;
+      if (successNum > 0) {
+        this.$message.success(`删除成功！共删除 ${successNum} 位讲师。`);
       }
+
+      this.handleReset();
     },
     // 批量导入讲师
     handleImport() {

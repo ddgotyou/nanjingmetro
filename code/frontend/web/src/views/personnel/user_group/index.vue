@@ -97,7 +97,7 @@
 </template>
 
 <script>
-import { listUserGroup } from "@/api/personnel/user_group";
+import { deleteUserGroup, listUserGroup } from "@/api/personnel/user_group";
 
 export default {
   data: function () {
@@ -131,7 +131,6 @@ export default {
     loadData() {
       this.loading = true;
       listUserGroup(null).then((response) => {
-        console.log(response);
         this.userGroupList = response.data;
         this.loading = false;
       });
@@ -145,7 +144,34 @@ export default {
       this.$router.push("/personnel/add-usergroup");
     },
     // 删除某个用户组
-    handleDelete() {},
+    async handleDelete() {
+      let userGroupNum = this.userGroupSelection.length; // 选中的讲师数量
+
+      // 如果没有选中任何项，则提示并返回
+      if (userGroupNum === 0) {
+        this.$message.warning("未选中任何讲师！");
+        return;
+      }
+
+      // 逐个删除
+      let flags = new Array(userGroupNum).fill(false); // 用来记录删除是否成功的标志
+      for (var i = 0; i < userGroupNum; i++) {
+        await deleteUserGroup(this.userGroupSelection[i].deptId).then(
+          (response) => {
+            if (response.code === 200) flags[i] = true;
+            else this.$message.error(response.msg);
+          }
+        );
+      }
+
+      // 提示或刷新数据
+      let successNum = await flags.filter((element) => element === true).length;
+      if (successNum > 0) {
+        this.$message.success(`成功删除 ${successNum} 个用户组。`);
+      }
+
+      this.handleReset();
+    },
     // 批量导出用户组
     handleExport() {},
     // 模糊搜索用户组

@@ -3,7 +3,13 @@
     <!-- 主体 -->
     <el-card class="card-box" style="width: 100%">
       <!-- 学员信息表单 -->
-      <el-form label-width="80px">
+      <el-form
+        ref="form"
+        v-resize="setLabelWidth"
+        :label-width="labelWidth"
+        label-position="right"
+        class="student-form"
+      >
         <el-row>
           <el-col :span="12">
             <!-- 姓名 -->
@@ -88,9 +94,9 @@
           </el-col>
         </el-row>
         <!-- 提交与取消（返回）按钮 -->
-        <el-form-item align="center">
+        <div align="center">
           <el-button @click="onCancel">返回</el-button>
-        </el-form-item>
+        </div>
       </el-form>
     </el-card>
   </div>
@@ -98,10 +104,19 @@
 
 <script>
 import { teacherInfo } from "@/api/personnel/teacher";
+import { resize } from "@/utils/resize";
+
+const inputWidth = 375;
 
 export default {
+  directives: {
+    resize: resize(),
+  },
   data: function () {
     return {
+      // label 宽度，自适应
+      labelWidth: "auto",
+
       // 要“编辑”或者查看“详情”的学员的 id
       id: null,
 
@@ -137,12 +152,24 @@ export default {
     },
   },
   mounted: function () {
+    // 设置 label 宽度
+    this.setLabelWidth();
     // 接受 index 页面传递的参数，并保存
     this.id = this.$route.query.id;
     // 加载该学员的数据
     this.loadData();
   },
   methods: {
+    // 设置 label 宽度
+    setLabelWidth() {
+      let formWidth = this.$refs["form"].$el.clientWidth;
+      this.labelWidth = (formWidth / 2 - inputWidth) / 2;
+      if (this.labelWidth >= 100) {
+        this.labelWidth = this.labelWidth + "px";
+      } else {
+        this.labelWidth = "100px";
+      }
+    },
     // 加载数据
     loadData() {
       teacherInfo(this.id, null).then((response) => {
@@ -163,7 +190,15 @@ export default {
   margin: 20px auto;
 }
 
-.same-width {
-  width: 375px;
+.student-form {
+  .el-autocomplete {
+    width: 375px;
+  }
+  .el-input {
+    width: 375px;
+  }
+  .el-select {
+    width: 375px;
+  }
 }
 </style>
