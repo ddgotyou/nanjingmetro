@@ -146,7 +146,14 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="评分">
-                <el-input-number style="width:100%;" v-model="taskData.score" :min="1" :max="100"></el-input-number>
+                <el-select id="task_type" v-model="taskData.score" style="width:100%" placeholder="请选择">
+                  <el-option
+                    v-for="item in task_scores"
+                    :key="item.value"
+                    :label="item.lable"
+                    :value="item.value"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
           </el-row>
@@ -314,6 +321,20 @@ export default {
       kinds: [],
       task_chooses: [],
       task_types: [],
+      task_scores: [
+        {
+          value: '评分规则1',
+          label: '评分规则1'
+        },
+        {
+          value: '评分规则2',
+          label: '评分规则2'
+        },
+        {
+          value: '评分规则3',
+          label: '评分规则3'
+        }
+      ],
       classrooms: [],
       tableData: [],
       departments: [

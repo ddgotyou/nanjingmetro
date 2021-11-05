@@ -4,7 +4,7 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col :span="10">
+          <el-col :span="12">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:50%"
@@ -22,22 +22,7 @@
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
-            <el-form-item label="审批状态">
-              <el-select
-              style="width:100%"
-              v-model="searchData.status"
-              placeholder="请选择">
-              <el-option
-                  v-for="item in statuses"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-              </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="7">
+          <el-col :span="12">
             <el-form-item label="讲师">
               <el-select
               style="width:100%"
@@ -89,10 +74,6 @@
         <el-table-column
           prop="endTime"
           label="结束时间"
-        />
-        <el-table-column
-          prop="status"
-          label="申请状态"
         />
         <el-table-column
           prop="userName"
@@ -154,31 +135,12 @@ export default {
     return {
       searchData: {
         period: ['',''],
-        status: '',
         teacher: '',
         value: ''
       },
       search_status: false,
       index: 1,
       pageSize: 10,
-      statuses: [
-        {
-          value: '未审核',
-          label: '未审核'
-        },
-        {
-          value: '审核中',
-          label: '审核中'
-        },
-        {
-          value: '已通过',
-          label: '已通过'
-        },
-        {
-          value: '未通过',
-          label: '未通过'
-        }
-      ],
       teachers: [],
       response: {"page": {
         "size": 0,
@@ -194,6 +156,15 @@ export default {
     this.list()
   },
   methods: {
+    fresh(){
+      if(this.search_status)
+      {
+        this.search_list()
+      }
+      else{
+        this.list()
+      }
+    },
     list() {
       var params = {
         page: this.index-1,
@@ -228,7 +199,6 @@ export default {
       var params = {
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
-        status: this.searchData.status,
         trainer: this.searchData.teacher,
         keyword: this.searchData.value,
         page: this.index-1,
@@ -266,7 +236,6 @@ export default {
     search_reset() {
       this.searchData = {
         period: ['',''],
-        status: '',
         teacher: '',
         value: ''
       }
@@ -325,13 +294,7 @@ export default {
       this.index_change()
     },
     index_change(){
-      if(this.search_status)
-      {
-        this.search_list()
-      }
-      else{
-        this.list()
-      }
+      this.fresh()
     }
   }
 }

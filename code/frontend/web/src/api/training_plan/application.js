@@ -28,14 +28,16 @@ module.exports={
     },
     approve(id,data) {
         return request({
-            url: '/training-plan/applications/'+id+'/approve?auditor='+data.auditor,
-            method: 'post'
+            url: '/training-plan/applications/'+id+'/approve',
+            method: 'post',
+            data: data
         })
     },
     reject(id,data) {
         return request({
-            url: '/training-plan/applications/'+id+'/reject?auditor='+data.auditor+'&reason='+data.reason,
-            method: 'post'
+            url: '/training-plan/applications/'+id+'/reject',
+            method: 'post',
+            data: data
         })
     }
 }

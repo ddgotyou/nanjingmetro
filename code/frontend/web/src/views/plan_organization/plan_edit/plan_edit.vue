@@ -177,7 +177,6 @@ export default {
       return false;
     },
     list() {
-      console.log(this.searchData);
       var params = {
         status: '未申请',
         page: this.index-1,
@@ -189,21 +188,24 @@ export default {
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
         {
-          for(var i = 0; i < res._embedded.plans.length; i++)
+          if(res.hasOwnProperty('_embedded'))
           {
-            let item = {
-              name: res._embedded.plans[i].name,
-              startTime: res._embedded.plans[i].startTime,
-              endTime: res._embedded.plans[i].endTime,
-              teacher: '',
-              status: res._embedded.plans[i].status,
-              self: res._embedded.plans[i]._links.self.href
-            };
-            for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+            for(var i = 0; i < res._embedded.plans.length; i++)
             {
-              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+              let item = {
+                name: res._embedded.plans[i].name,
+                startTime: res._embedded.plans[i].startTime,
+                endTime: res._embedded.plans[i].endTime,
+                teacher: '',
+                status: res._embedded.plans[i].status,
+                self: res._embedded.plans[i]._links.self.href
+              };
+              for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+              {
+                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+              }
+              that.tableData.push(item)
             }
-            that.tableData.push(item)
           }
         }
       });
