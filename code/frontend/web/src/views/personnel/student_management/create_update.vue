@@ -251,24 +251,16 @@ export default {
         this.selection.usergroup = response._embedded.dboxToes;
       });
       listDept(null).then((response) => {
-        this.selection.dept = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.selection.dept = response._embedded.dboxVoes;
       });
       listPost(null).then((response) => {
-        this.selection.post = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.selection.post = response._embedded.dboxVoes;
       });
       listEdu(null).then((response) => {
-        this.selection.edu = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.selection.edu = response._embedded.dboxVoes;
       });
       listMajor(null).then((response) => {
-        this.selection.major = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.selection.major = response._embedded.dboxVoes;
       });
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该学员的字段信息

@@ -282,24 +282,16 @@ export default {
     // 加载学员数据
     loadData() {
       listDept(null).then((response) => {
-        this.items.dept.options = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.items.dept.options = response._embedded.dboxVoes;
       });
       listPost(null).then((response) => {
-        this.items.post.options = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.items.post.options = response._embedded.dboxVoes;
       });
       listEdu(null).then((response) => {
-        this.items.edu.options = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.items.edu.options = response._embedded.dboxVoes;
       });
       listMajor(null).then((response) => {
-        this.items.major.options = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.items.major.options = response._embedded.dboxVoes;
       });
 
       this.loading = true;

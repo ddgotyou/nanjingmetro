@@ -219,14 +219,10 @@ export default {
         this.selection.usergroup = response._embedded.dboxToes;
       });
       listDept(null).then((response) => {
-        this.selection.dept = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.selection.dept = response._embedded.dboxVoes;
       });
       listPost(null).then((response) => {
-        this.selection.post = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.selection.post = response._embedded.dboxVoes;
       });
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该讲师的字段信息

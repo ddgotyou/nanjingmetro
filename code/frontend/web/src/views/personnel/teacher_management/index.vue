@@ -261,14 +261,10 @@ export default {
     // 加载讲师数据
     loadData() {
       listDept(null).then((response) => {
-        this.items.dept.options = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.items.dept.options = response._embedded.dboxVoes;
       });
       listPost(null).then((response) => {
-        this.items.post.options = response._embedded.dboxVoes.filter(
-          (element) => element.value
-        );
+        this.items.post.options = response._embedded.dboxVoes;
       });
 
       this.loading = true;
