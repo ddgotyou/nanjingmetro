@@ -114,7 +114,7 @@
                 <el-date-picker
                   style="width:100%;"
                   value-format="yyyy-MM-dd HH:mm:ss"
-                  v-model="taskData.time"
+                  v-model="taskData.period"
                   type="datetimerange"
                   range-separator="至"
                   start-placeholder="开始日期"
@@ -122,7 +122,7 @@
                 </el-date-picker>
               </el-form-item>
               <!-- <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="taskData.time" name="task_time" />
+                <el-input id="task_time" v-model="taskData.period" name="task_time" />
               </el-form-item> -->
             </el-col>
             <el-col :span="12">
@@ -163,9 +163,9 @@
                 <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择">
                   <el-option
                     v-for="item in classrooms"
-                    :key="item.value"
+                    :key="item.label"
                     :label="item.label"
-                    :value="item.value"
+                    :value="item.label"
                   />
                 </el-select>
               </el-form-item>
@@ -307,7 +307,7 @@ export default {
         name: '',
         option: '',
         order: '',
-        time: ['',''],
+        period: ['',''],
         type: '',
         score: '',
         classroom: '',
@@ -390,8 +390,8 @@ export default {
         taskScore: this.taskData.score,
         inPlanTask: null,
         description: this.taskData.description,
-        startTime: this.taskData.time[0],
-        endTime: this.taskData.time[1],
+        startTime: this.taskData.period[0],
+        endTime: this.taskData.period[1],
         order: this.taskData.order,
         signInNumber: null,
         signOutNumber: null
@@ -472,12 +472,6 @@ export default {
           delete data[key]
         }
       }
-      var auditors=[]
-      for(var i=0;i<this.formData.people.length;i++)
-      {
-        auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
-      }
-      data.auditors=auditors
       data.tasks=this.tableData
       api.add(data).then(res => {
         this.$message({
@@ -511,12 +505,12 @@ export default {
           delete data[key]
         }
       }
-      var auditors=[]
-      for(var i=0;i<this.formData.people.length;i++)
-      {
-        auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
-      }
-      data.auditors=auditors
+      // var auditors=[]
+      // for(var i=0;i<this.formData.people.length;i++)
+      // {
+      //   auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
+      // }
+      // data.auditors=auditors
       data.tasks=this.tableData
       api.add(data).then(res => {
         var temp=res._links.self.href.split("/")

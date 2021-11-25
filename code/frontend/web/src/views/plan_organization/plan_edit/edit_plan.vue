@@ -118,15 +118,17 @@
                 <el-date-picker
                   style="width:100%;"
                   value-format="yyyy-MM-dd HH:mm:ss"
-                  v-model="taskData.time"
+                  v-model="taskData.period"
                   type="datetimerange"
                   range-separator="至"
                   start-placeholder="开始日期"
-                  end-placeholder="结束日期">
+                  end-placeholder="结束日期"
+                  :picker-options="taskPeriodOptions"
+                  @change="changePeriod()">
                 </el-date-picker>
               </el-form-item>
               <!-- <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="taskData.time" name="task_time" />
+                <el-input id="task_time" v-model="taskData.period" name="task_time" />
               </el-form-item> -->
             </el-col>
             <el-col :span="12">
@@ -164,12 +166,12 @@
           <el-row>
             <el-col :span="12">
               <el-form-item label="教室">
-                <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择">
+                <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择" clearable @change="changeClassroom()">
                   <el-option
                     v-for="item in classrooms"
-                    :key="item.value"
+                    :key="item.label"
                     :label="item.label"
-                    :value="item.value"
+                    :value="item.label"
                   />
                 </el-select>
               </el-form-item>
@@ -312,7 +314,7 @@ export default {
         name: '',
         option: '',
         order: '',
-        time: ['',''],
+        period: ['',''],
         type: '',
         score: '',
         classroom: '',
@@ -341,6 +343,11 @@ export default {
         }
       ],
       classrooms: [],
+
+      first_choose: '',
+      ischoose_classroom: false,
+      ischoose_period: false,
+
       tableData: [],
       departments: [
         {
@@ -372,7 +379,9 @@ export default {
       ],
       dialogTableVisible: false,
       dialogFormVisible: false,
-      tags: []
+      tags: [],
+
+      periods: []
     }
   },
   created() {
@@ -380,6 +389,35 @@ export default {
     this.id=temp[temp.length-1]
     this.list()
     this.getSelection()
+  },
+  computed: {
+    taskPeriodOptions() {
+      var that=this
+      return {
+        disabledDate(time) {
+          var flag=false;
+          if(that.first_choose=='classroom')
+          {
+            for(var i=0;i<that.periods.length;i++)
+            {
+              if(time>=(new Date(that.periods[i].startTime)).getTime()&&time<=(new Date(that.periods[i].endTime)).getTime())
+              {
+                flag=true
+              }
+            }
+          }
+          else{
+            var timeNow = Date.now()
+            var before=timeNow-24*60*60*1000
+            if(time.getTime()>=before)
+            {
+              flag=true;
+            }
+          }
+          return !flag;
+        }
+      }
+    }
   },
   methods: {
     list() {
@@ -396,7 +434,6 @@ export default {
           people: [],
           classes: []
         };
-        that.tableData_students=res.auditors;
         if(res.tasks.length==0)
         {
           that.tableData=[]
@@ -426,8 +463,8 @@ export default {
         taskScore: this.taskData.score,
         inPlanTask: null,
         description: this.taskData.description,
-        startTime: this.taskData.time[0],
-        endTime: this.taskData.time[1],
+        startTime: this.taskData.period[0],
+        endTime: this.taskData.period[1],
         order: this.taskData.order,
         signInNumber: null,
         signOutNumber: null
@@ -466,11 +503,65 @@ export default {
         that.classrooms=[]
         for(var i=0;i<res._embedded.classrooms.length;i++)
         {
-          var temp=res._embedded.classrooms[i]._links.self.href.split("/")
-          var classroom_id=temp[temp.length-1]
-          that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+          that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
         }
       })
+    },
+    changePeriod() {
+      if(this.first_choose=='' || this.first_choose=='period') {
+        //清空或未选择
+        if(this.taskData.period==null) {
+          this.first_choose=''
+          this.taskData.classroom=''
+          var that=this
+          api.classrooms().then( res => {
+            that.classrooms=[]
+            for(var i=0;i<res._embedded.classrooms.length;i++)
+            {
+              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+            }
+          })
+        }
+        else{
+        //选择了日期
+          this.first_choose='period'
+          var that=this
+          api.findClassrooms({
+            status:'unused',
+            startTime:that.taskData.period[0],
+            endTime:that.taskData.period[1]
+          }).then( res => {
+            that.classrooms=[]
+            for(var i=0;i<res._embedded.classrooms.length;i++)
+            {
+              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+            }
+          })
+        }
+      }
+    },
+    changeClassroom() {
+      if(this.first_choose=='' || this.first_choose=='classroom') {
+        //清空或未选择
+        if(this.taskData.classroom=='') {
+          this.first_choose=''
+          this.taskData.period=null
+          var that=this
+          this.periods=[]
+        }
+        else{
+        //选择了教室
+          this.first_choose='classroom'
+          var that=this
+          api.findAvailableTime({
+            id:1
+            //id:that.taskData.classroom
+          }).then( res => {
+            console.log(res)
+            that.periods=res._embedded.periods
+          })
+        }
+      }
     },
     save() {
       this.dialogFormVisible = false;
@@ -495,12 +586,6 @@ export default {
           delete data[key]
         }
       }
-      var auditors=[]
-      for(var i=0;i<this.formData.people.length;i++)
-      {
-        auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
-      }
-      data.auditors=auditors
       data.tasks=this.tableData
       api.update(data,this.id).then(res => {
         this.$message({
@@ -533,23 +618,24 @@ export default {
           delete data[key]
         }
       }
-      var auditors=[]
-      for(var i=0;i<this.formData.people.length;i++)
-      {
-        auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
-      }
-      data.auditors=auditors
+      // var auditors=[]
+      // for(var i=0;i<this.formData.people.length;i++)
+      // {
+      //   auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
+      // }
+      // data.auditors=auditors
       data.tasks=this.tableData
-      api.update(data,this.id).then(res => {
+      let that=this
+      api.update(data,that.id).then(res => {
         api2.submit({
-          user:this.$user.userId,
-          plan:this.id
+          user:that.$user.userId,
+          plan:that.id
         }).then(res => {
-          this.$message({
+          that.$message({
             message: '保存并提交成功！',
             type: 'success'
           });
-          this.$router.go(-1)
+          that.$router.go(-1)
           console.log("submit plan successfully!")
         })
       })

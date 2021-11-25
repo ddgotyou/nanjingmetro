@@ -74,5 +74,19 @@ module.exports={
             method: 'put',
             data: data
         })
+    },
+    findClassrooms(query){
+        return request({
+            url: '/training-plan/classrooms/search/findByTimeAndStatus',
+            method: 'get',
+            params: query
+        })
+    },
+    findAvailableTime(query){
+        return request({
+            url: '/training-plan/classrooms/search/findAvailableTime',
+            method: 'get',
+            params: query
+        })
     }
 }
