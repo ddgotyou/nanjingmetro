@@ -31,6 +31,7 @@
     "management-system"
   ],
   "dependencies": {
+    "@novnc/novnc": "^1.3.0",
     "@riophae/vue-treeselect": "0.4.0",
     "axios": "^0.21.1",
     "clipboard": "2.0.6",
