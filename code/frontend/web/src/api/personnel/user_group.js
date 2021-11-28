@@ -1,36 +1,49 @@
 import request from '@/utils/request'
-import { praseStrEmpty } from "@/utils/common";
 
-// 查询用户组列表
-export function listUserGroup(query) {
-  return request({
-    url: '/system/dept/list',
-    method: 'get',
-    params: query
-  })
-}
-
-// 查询所有用户列表
-export function listUser(query) {
-  return request({
-    url: '/tms-account/usergroup/getAllUser',
-    method: 'get',
-    params: query
-  })
-}
-
-// 删除学员
-export function deleteUserGroup(id) {
-  return request({
-    url: '/system/dept/' + id,
-    method: 'delete'
-  })
-}
-
-// 模糊搜索用户
-export function searchUser(keyword) {
-  return request({
-    url: '/tms-account/usergroup/getUserLike/' + keyword,
-    method: 'get',
-  })
+module.exports = {
+  // 新增用户组
+  add(data) {
+    return request({
+      url: '/tms-account/usergroup/addUsergroup',
+      method: 'post',
+      data: data
+    })
+  },
+  // 查询用户组列表
+  list(query) {
+    return request({
+      url: '/tms-account/usergroup/getAllUsergroup',
+      method: 'get',
+      params: query
+    })
+  },
+  // 模糊搜索用户组
+  search(keyword) {
+    return request({
+      url: '/tms-account/usergroup/getUsergroupLike/' + keyword,
+      method: 'get',
+    })
+  },
+  // 查询用户组
+  detail(id) {
+    return request({
+      url: '/tms-account/usergroup/' + id,
+      method: 'get',
+    })
+  },
+  // 编辑用户组
+  edit(id, data) {
+    return request({
+      url: '/tms-account/usergroup/editUsergroup/' + id,
+      method: 'put',
+      data: data
+    })
+  },
+  // 删除用户组
+  delete(id) {
+    return request({
+      url: '/system/dept/' + id,
+      method: 'delete'
+    })
+  },
 }

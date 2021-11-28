@@ -30,7 +30,7 @@
             </el-form-item>
             <el-form-item label="信息统计">
               <auth-radio-group
-                :value.sync="authority.synthTrainMgt.staffMgt.infoStatic"
+                :value.sync="authority.synthTrainMgt.staffMgt.infoStat"
               />
             </el-form-item>
           </el-collapse-item>
@@ -94,7 +94,7 @@
             </el-form-item>
             <el-form-item label="统计分析">
               <auth-radio-group
-                :value.sync="authority.synthTrainMgt.effectEvalMgt.staticAnaly"
+                :value.sync="authority.synthTrainMgt.effectEvalMgt.statAnaly"
               />
             </el-form-item>
           </el-collapse-item>

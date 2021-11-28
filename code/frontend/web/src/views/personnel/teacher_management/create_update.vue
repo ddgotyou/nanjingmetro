@@ -100,8 +100,8 @@
 </template>
 
 <script>
-import { addTeacher, editTeacher, teacherInfo } from "@/api/personnel/teacher";
-import { listUserGroup, listDept, listPost } from "@/api/personnel/personnel";
+import api from "@/api/personnel/teacher";
+import all from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -213,22 +213,22 @@ export default {
         this.labelWidth = "100px";
       }
     },
-    async loadData() {
+    loadData() {
       // 获取用户组、部门的选择下拉框选项，获取岗位、学历、专业的建议下拉框选项
-      listUserGroup(null).then((response) => {
+      all.userGroup(null).then((response) => {
         this.selection.usergroup = response._embedded.dboxToes;
       });
-      listDept(null).then((response) => {
+      all.dept(null).then((response) => {
         this.selection.dept = response._embedded.dboxVoes;
       });
-      listPost(null).then((response) => {
+      all.post(null).then((response) => {
         this.selection.post = response._embedded.dboxVoes;
       });
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该讲师的字段信息
       if (this.option === "edit") {
-        await teacherInfo(this.id, null).then((response) => {
-          this.form = response._embedded.trainerToes[0];
+        api.detail(this.id, null).then((response) => {
+          this.form = response;
           this.form.usergroup = Number(this.form.usergroup);
         });
       }
@@ -251,10 +251,8 @@ export default {
     },
     // 提交新增讲师的表单
     optionAdd() {
-      console.log(this.form);
-      addTeacher(this.form).then((response) => {
-        let code = response._embedded.responses[0].code;
-        if (code === "200") {
+      api.add(this.form).then((response) => {
+        if (response.code === 200) {
           this.$message.success("添加成功！");
           this.onCancel();
         } else {
@@ -265,9 +263,8 @@ export default {
     },
     // 提交修改讲师的表单
     optionEdit() {
-      editTeacher(this.id, this.form).then((response) => {
-        let code = response._embedded.responses[0].code;
-        if (code === "200") {
+      api.edit(this.id, this.form).then((response) => {
+        if (response.code === 200) {
           this.$message.success("修改成功！");
           this.onCancel();
         } else {

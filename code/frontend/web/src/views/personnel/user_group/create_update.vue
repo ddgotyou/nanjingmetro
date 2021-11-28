@@ -14,9 +14,25 @@
                 <el-form-item label="名称">
                   <el-input v-model="form.name"></el-input>
                 </el-form-item>
+                <!-- 用户组类型 -->
+                <el-form-item label="用户组类型">
+                  <el-select v-model="form.roleType" placeholder="请选择">
+                    <el-option
+                      v-for="type in selection.types"
+                      :key="type.key"
+                      :label="type.label"
+                      :value="type.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
                 <!-- 权限模板 -->
                 <el-form-item label="权限模板">
-                  <el-select v-model="form.authTemplate" placeholder="权限模板">
+                  <el-select
+                    v-model="form.authTemplate"
+                    placeholder="请选择"
+                    @change="handleChangeRole"
+                  >
                     <el-option
                       v-for="role in selection.roles"
                       :key="role.key"
@@ -31,7 +47,7 @@
                   <el-input
                     v-model="form.remark"
                     type="textarea"
-                    rows="7"
+                    rows="5"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -89,9 +105,10 @@
                 v-model="usersAdded"
                 :data="usersOptional"
                 :render-content="renderContent"
-                :titles="['可添加用户', '暂存添加用户']"
+                :titles="['可添加用户', '已添加用户']"
                 :button-texts="['取消添加', '添加用户']"
                 class="transfer"
+                @change="handleChangeUser"
               ></el-transfer>
             </el-row>
           </el-card>
@@ -109,7 +126,9 @@
 </template>
 
 <script>
-import { listUser, searchUser } from "@/api/personnel/user_group";
+import api from "@/api/personnel/user_group";
+import user from "@/api/personnel/user";
+import role from "@/api/personnel/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 
 export default {
@@ -118,9 +137,15 @@ export default {
   },
   data: function () {
     return {
+      // 操作类型，“提交”或“编辑”
+      option: "",
+      // 要“编辑”的用户组 ID
+      id: undefined,
+
       // 用户组表单
       form: {
         name: "",
+        roleType: "",
         authTemplate: null,
         remark: "",
         authority: {
@@ -132,7 +157,7 @@ export default {
               tchMgt: "", // 讲师管理
               usrGrp: "", // 用户组
               roleMgt: "", // 角色管理
-              infoStatic: "1", // 信息统计
+              infoStatic: "", // 信息统计
             },
             // 培训组织管理
             trianOrgMgt: {
@@ -164,9 +189,9 @@ export default {
           visualDispSys: "",
           // 系统功能
           sysFunc: {
-            login: "1", // 登录系统
-            logout: "2", // 退出系统
-            chgPsw: "3", // 修改密码
+            login: "", // 登录系统
+            logout: "", // 退出系统
+            chgPsw: "", // 修改密码
           },
           // PAD 考评终端
           padEvalTerm: "",
@@ -175,12 +200,16 @@ export default {
         users: [],
       },
 
+      // 模板的权限表
+      template: {},
+
       // 选择框内容
       selection: {
-        roles: [
-          { key: "1", value: "0", label: "管理员" },
-          { key: "2", value: "1", label: "教师" },
-          { key: "3", value: "2", label: "学员" },
+        roles: [],
+        types: [
+          { key: "1", value: "管理员", label: "管理员" },
+          { key: "2", value: "讲师", label: "讲师" },
+          { key: "3", value: "学员", label: "学员" },
         ],
       },
 
@@ -203,20 +232,84 @@ export default {
     };
   },
   mounted: function () {
+    // 接受 index 页面传递的参数，并保存
+    this.option = this.$route.query.option;
+    this.id = this.$route.query.id;
     // 获取所有用户，填入穿梭框
     this.loadData();
   },
   methods: {
     // 加载某个用户组数据
-    loadData() {
-      listUser(null).then((response) => {
+    async loadData() {
+      // 获取所有角色模板
+      role.list(null).then((response) => {
+        this.selection.roles = response._embedded.groupVoes.map(
+          (element, index) => {
+            return { key: index, value: element.id, label: element.name };
+          }
+        );
+      });
+
+      // 获取所有用户
+      user.list(null).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
+
+      // 如果是“编辑”，还需要填入用户组信息
+      if (this.option === "edit") {
+        await api.detail(this.id).then((response) => {
+          console.log(response);
+          this.form = response;
+          for (let i in this.form.users) {
+            let user = this.usersOptional.find(
+              (element) => element.value === this.form.users[i]
+            );
+            this.usersAdded.push(user.key);
+          }
+        });
+      }
     },
-    handleChange() {},
+    // 权限模板发生改变
+    handleChangeRole(value) {
+      // 返回对应 id 的角色的详细信息
+      role.detial(this.form.authTemplate).then((response) => {
+        // 将权限模板填充到对应表单
+        this.form.authority = response.authority;
+        // 保存原模板
+        this.template = response.authority;
+      });
+    },
+    // 用户组的用户发生改变
+    handleChangeUser(value, direction, movedKeys) {
+      if (direction === "left") {
+        // 删除
+        for (let i in movedKeys) {
+          // 找到 key 对应的用户
+          let user = this.usersOptional.find(
+            (element) => element.key === movedKeys[i]
+          );
+          // 获取用户在表单的 users 数组中的索引
+          let index = this.form.users.findIndex(
+            (element) => element === user.value
+          );
+          // 在表单的 users 数组中删除该用户
+          this.form.users.splice(index, 1);
+        }
+      } else if (direction === "right") {
+        // 添加
+        for (let i in movedKeys) {
+          // 找到 key 对应的用户
+          let user = this.usersOptional.find(
+            (element) => element.key === movedKeys[i]
+          );
+          // 将用户名添加到表单的 users 数组中
+          this.form.users.push(user.value);
+        }
+      }
+    },
     // 模糊搜索用户
     handleSearch() {
-      searchUser(this.query.key).then((response) => {
+      user.search(this.query.key).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
     },
@@ -227,12 +320,42 @@ export default {
       this.usersAdded = [];
       this.loadData();
     },
+    // 提交新增用户组的表单
+    optionAdd() {
+      api.add(this.form).then((response) => {
+        if (response.code === 200) {
+          this.$message.success("添加成功！");
+          this.onCancel();
+        } else {
+          this.$message.error(response.msg);
+        }
+      });
+    },
+    // 提交修改用户组的表单
+    optionEdit() {
+      api.edit(this.id, this.form).then((response) => {
+        if (response.code === 200) {
+          this.$message.success("修改成功！");
+          this.onCancel();
+        } else {
+          this.$message.error(response.msg);
+        }
+      });
+    },
     // 提交新增或修改的表单
     onSubmit() {
+      // 处理权限模板是否做出了修改
+      if (this.form.authority === this.template) {
+        this.form.authTemplate = null;
+      }
+      // 处理用户
+      if (!this.form.users) this.form.users = [];
       console.log(this.form);
-      return;
+
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          if (this.option === "add") this.optionAdd();
+          else if (this.option === "edit") this.optionEdit();
         } else {
           this.$message.error("请按提示填写正确内容！");
         }

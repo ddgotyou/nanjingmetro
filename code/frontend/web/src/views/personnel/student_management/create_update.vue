@@ -122,14 +122,8 @@
 </template>
 
 <script>
-import { addStudent, editStudent, studentInfo } from "@/api/personnel/student";
-import {
-  listUserGroup,
-  listDept,
-  listPost,
-  listEdu,
-  listMajor,
-} from "@/api/personnel/personnel";
+import api from "@/api/personnel/student";
+import all from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -143,9 +137,9 @@ export default {
       // label 宽度，自适应
       labelWidth: "auto",
 
-      // 操作类型，“提交”、“编辑”或“详情”
+      // 操作类型，“提交”或“编辑”
       option: "",
-      // 要“编辑”或者查看“详情”的学员的 id
+      // 要“编辑”的用户组 ID
       id: null,
 
       // 添加部门的基础 key
@@ -245,28 +239,29 @@ export default {
         this.labelWidth = "100px";
       }
     },
+    // 加载数据
     loadData() {
-      // 获取用户组、部门的选择下拉框选项，获取岗位、学历、专业的建议下拉框选项
-      listUserGroup(null).then((response) => {
+      // 获取用户组、部门、岗位、学历、专业的下拉框选项
+      all.userGroup(null).then((response) => {
         this.selection.usergroup = response._embedded.dboxToes;
       });
-      listDept(null).then((response) => {
+      all.dept(null).then((response) => {
         this.selection.dept = response._embedded.dboxVoes;
       });
-      listPost(null).then((response) => {
+      all.post(null).then((response) => {
         this.selection.post = response._embedded.dboxVoes;
       });
-      listEdu(null).then((response) => {
+      all.edu(null).then((response) => {
         this.selection.edu = response._embedded.dboxVoes;
       });
-      listMajor(null).then((response) => {
+      all.major(null).then((response) => {
         this.selection.major = response._embedded.dboxVoes;
       });
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该学员的字段信息
       if (this.option === "edit") {
-        studentInfo(this.id, null).then((response) => {
-          this.form = response._embedded.traineeToes[0];
+        api.detail(this.id, null).then((response) => {
+          this.form = response;
           this.form.usergroup = Number(this.form.usergroup);
         });
       }
@@ -289,9 +284,8 @@ export default {
     },
     // 提交新增学员的表单
     optionAdd() {
-      addStudent(this.form).then((response) => {
-        let code = response._embedded.responses[0].code;
-        if (code === "200") {
+      api.add(this.form).then((response) => {
+        if (response.code === 200) {
           this.$message.success("添加成功！");
           this.onCancel();
         } else {
@@ -302,9 +296,8 @@ export default {
     },
     // 提交修改学员的表单
     optionEdit() {
-      editStudent(this.id, this.form).then((response) => {
-        let code = response._embedded.responses[0].code;
-        if (code === "200") {
+      api.edit(this.id, this.form).then((response) => {
+        if (response.code === 200) {
           this.$message.success("修改成功！");
           this.onCancel();
         } else {

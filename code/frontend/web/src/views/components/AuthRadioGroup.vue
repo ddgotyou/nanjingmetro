@@ -15,10 +15,10 @@ export default {
   data() {
     return {
       authoritys: [
-        { key: "1", value: "1", label: "允许" },
-        { key: "2", value: "2", label: "仅查看" },
-        { key: "3", value: "3", label: "仅本人" },
-        { key: "4", value: "4", label: "禁止访问" },
+        { key: "1", value: "permit", label: "允许" },
+        { key: "2", value: "view", label: "仅查看" },
+        { key: "3", value: "private", label: "仅本人" },
+        { key: "4", value: "forbidden", label: "禁止访问" },
       ],
     };
   },

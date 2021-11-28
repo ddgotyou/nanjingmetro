@@ -23,7 +23,7 @@
             <!-- 性别 -->
             <el-form-item label="性别">
               <el-input
-                :value="getTeacherSex"
+                :value="getSex"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -65,7 +65,7 @@
             <!-- 部门 -->
             <el-form-item label="部门">
               <el-input
-                :value="getTeacherDept"
+                :value="getDept"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -81,7 +81,7 @@
             <!-- 讲师状态 -->
             <el-form-item label="讲师状态">
               <el-input
-                :value="getTeacherStatus"
+                :value="getStatus"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import { teacherInfo } from "@/api/personnel/teacher";
+import api from "@/api/personnel/teacher";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -139,15 +139,15 @@ export default {
 
   computed: {
     // 将“0/1”转换为“男/女”
-    getTeacherSex() {
+    getSex() {
       return this.form.sex === "0" ? "男" : "女";
     },
     // 将部门数组转换为字符串
-    getTeacherDept() {
+    getDept() {
       return this.form.dept.join("，");
     },
     // 将“0/1”转换为“正式/临时”
-    getTeacherStatus() {
+    getStatus() {
       return this.form.status === "0" ? "正式" : "临时";
     },
   },
@@ -172,7 +172,7 @@ export default {
     },
     // 加载数据
     loadData() {
-      teacherInfo(this.id, null).then((response) => {
+      api.detail(this.id, null).then((response) => {
         this.form = response._embedded.trainerToes[0];
       });
     },

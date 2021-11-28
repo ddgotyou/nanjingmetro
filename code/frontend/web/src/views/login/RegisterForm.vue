@@ -166,7 +166,7 @@
 </template>
 
 <script>
-import { listDept, listPost } from "@/api/personnel/personnel";
+import all from "@/api/personnel/selection";
 
 export default {
   name: "Register",

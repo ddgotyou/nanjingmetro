@@ -16,7 +16,11 @@
                 </el-form-item>
                 <!-- 权限模板 -->
                 <el-form-item label="权限模板">
-                  <el-select v-model="form.authTemplate" placeholder="权限模板">
+                  <el-select
+                    v-model="form.authTemplate"
+                    placeholder="权限模板"
+                    @change="handleChange"
+                  >
                     <el-option
                       v-for="role in selection.roles"
                       :key="role.key"
@@ -61,6 +65,7 @@
 </template>
 
 <script>
+import api from "@/api/personnel/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 
 export default {
@@ -69,14 +74,17 @@ export default {
   },
   data: function () {
     return {
-      // 用户组表单
+      // 操作类型，“提交”或“编辑”
+      option: "",
+      // 要“编辑”的角色 ID
+      id: undefined,
+
+      // 角色表单
       form: {
         name: "",
         authTemplate: null,
         remark: "",
         authority: {
-          // 标记
-          flag: "false",
           // 综合培训管理
           synthTrainMgt: {
             // 人员管理
@@ -85,7 +93,7 @@ export default {
               tchMgt: "", // 讲师管理
               usrGrp: "", // 用户组
               roleMgt: "", // 角色管理
-              infoStatic: "1", // 信息统计
+              infoStatic: "", // 信息统计
             },
             // 培训组织管理
             trianOrgMgt: {
@@ -117,9 +125,9 @@ export default {
           visualDispSys: "",
           // 系统功能
           sysFunc: {
-            login: "1", // 登录系统
-            logout: "2", // 退出系统
-            chgPsw: "3", // 修改密码
+            login: "", // 登录系统
+            logout: "", // 退出系统
+            chgPsw: "", // 修改密码
           },
           // PAD 考评终端
           padEvalTerm: "",
@@ -128,22 +136,76 @@ export default {
 
       // 选择框内容
       selection: {
-        roles: [
-          { key: "1", value: "0", label: "管理员" },
-          { key: "2", value: "1", label: "教师" },
-          { key: "3", value: "2", label: "学员" },
-        ],
+        roles: [],
       },
     };
   },
-  mounted: function () {},
+  mounted: function () {
+    // 接受 index 页面传递的参数，并保存
+    this.option = this.$route.query.option;
+    this.id = this.$route.query.id;
+    // 获取所有角色，填入穿梭框
+    this.loadData();
+  },
   methods: {
+    // 加载数据
+    loadData() {
+      // 获取所有角色模板
+      api.list(null).then((response) => {
+        this.selection.roles = response._embedded.groupVoes.map(
+          (element, index) => {
+            return { key: index, value: element.id, label: element.name };
+          }
+        );
+      });
+
+      // 如果是“编辑”，还需要填入角色信息
+      if (this.option === "edit") {
+        api.detail(this.id).then((response) => {
+          this.form = response;
+        });
+      }
+    },
+    // 权限模板发生改变
+    handleChange(value) {
+      // 返回对应 id 的角色的详细信息
+      api.detail(this.form.authTemplate).then((response) => {
+        // 将权限模板填充到对应表单
+        this.form.authority = response.authority;
+        // 保存原模板
+        this.template = response.authority;
+      });
+    },
+    // 提交新增用户组的表单
+    optionAdd() {
+      api.add(this.form).then((response) => {
+        if (response.code === 200) {
+          this.$message.success("添加成功！");
+          this.onCancel();
+        } else {
+          this.$message.error(response.msg);
+        }
+      });
+    },
+    // 提交修改用户组的表单
+    optionEdit() {
+      api.edit(this.id, this.form).then((response) => {
+        if (response.code === 200) {
+          this.$message.success("修改成功！");
+          this.onCancel();
+        } else {
+          this.$message.error(response.msg);
+        }
+      });
+    },
     // 提交新增或修改的表单
     onSubmit() {
-      console.log(this.form);
-      return;
+      this.form.authTemplate = null;
+
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          if (this.option === "add") this.optionAdd();
+          else if (this.option === "edit") this.optionEdit();
         } else {
           this.$message.error("请按提示填写正确内容！");
         }

@@ -18,7 +18,7 @@
             </el-form-item>
             <!-- 性别 -->
             <el-form-item label="性别">
-              <el-input :value="getStudentSex" :readonly="true"></el-input>
+              <el-input :value="getSex" :readonly="true"></el-input>
             </el-form-item>
             <!-- 联系电话 -->
             <el-form-item label="联系电话">
@@ -40,7 +40,7 @@
           <el-col :span="12">
             <!-- 部门 -->
             <el-form-item label="部门">
-              <el-input :value="getStudentDept" :readonly="true"></el-input>
+              <el-input :value="getDept" :readonly="true"></el-input>
             </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
@@ -56,7 +56,7 @@
             </el-form-item>
             <!-- 学员状态 -->
             <el-form-item label="学员状态">
-              <el-input :value="getStudentStatus" :readonly="true"></el-input>
+              <el-input :value="getStatus" :readonly="true"></el-input>
             </el-form-item>
             <!-- 电子档案 -->
             <el-form-item>
@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import { studentInfo } from "@/api/personnel/student";
+import api from "@/api/personnel/student";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -111,15 +111,15 @@ export default {
 
   computed: {
     // 将“0/1”转换为“男/女”
-    getStudentSex() {
+    getSex() {
       return this.form.sex === "0" ? "男" : "女";
     },
     // 将部门数组转换为字符串
-    getStudentDept() {
+    geDept() {
       return this.form.dept.join("，");
     },
     // 将“0/1”转换为“正式/临时”
-    getStudentStatus() {
+    getStatus() {
       return this.form.status === "0" ? "正式" : "临时";
     },
   },
@@ -144,7 +144,7 @@ export default {
     },
     // 加载数据
     loadData() {
-      studentInfo(this.id, null).then((response) => {
+      api.detail(this.id, null).then((response) => {
         this.form = response._embedded.traineeToes[0];
       });
     },
