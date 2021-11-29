@@ -233,9 +233,9 @@ export default {
           name: res.name,
           speciality: res.major,
           type: res.type,
-          period: res.startTime+'-'+res.endTime,
+          period: res.startTime.substr(0,10)+'至'+res.endTime.substr(0,10),
           description: res.detailed,
-          people: [],
+          people: res.people,
           classes: []
         };
         that.tableData_students=res.auditors;

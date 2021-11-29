@@ -34,7 +34,7 @@
                 style="width:100%;"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 v-model="formData.period"
-                type="datetimerange"
+                type="daterange"
                 range-separator="至"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期">
@@ -112,18 +112,38 @@
             <el-col :span="12">
               <el-form-item label="课时安排">
                 <el-date-picker
-                  style="width:100%;"
-                  value-format="yyyy-MM-dd HH:mm:ss"
-                  v-model="taskData.period"
-                  type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期">
+                  style="width:50%;"
+                  value-format="yyyy-MM-dd"
+                  v-model="taskData.date"
+                  type="date"
+                  placeholder="选择日期"
+                  @change="changePeriod">
                 </el-date-picker>
+                <el-time-picker
+                  style="width:25%;"
+                  placeholder="起始时间"
+                  format="HH:mm"
+                  value-format="HH:mm:ss"
+                  :disabled="taskData.date==null"
+                  v-model="taskData.period[0]"
+                  :picker-options="{
+                    selectableRange: ['18:30:00 - 20:30:00', '22:30:00 - 23:30:00']
+                  }"
+                  @change="changePeriod">
+                </el-time-picker>
+                <el-time-picker
+                  style="width:25%;"
+                  placeholder="结束时间"
+                  format="HH:mm"
+                  value-format="HH:mm:ss"
+                  :disabled="taskData.date==null||taskData.period[0]==null"
+                  v-model="taskData.period[1]"
+                  :picker-options="{
+                    selectableRange: ['18:30:00 - 20:30:00', '22:30:00 - 23:30:00']
+                  }"
+                  @change="changePeriod">
+                </el-time-picker>
               </el-form-item>
-              <!-- <el-form-item label="课时安排">
-                <el-input id="task_time" v-model="taskData.period" name="task_time" />
-              </el-form-item> -->
             </el-col>
             <el-col :span="12">
               <el-form-item label="顺序">
@@ -160,12 +180,12 @@
           <el-row>
             <el-col :span="12">
               <el-form-item label="教室">
-                <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择">
+                <el-select v-model="taskData.classroom" style="width:100%" clearable placeholder="请选择" @change="changeClassroom">
                   <el-option
                     v-for="item in classrooms"
-                    :key="item.label"
+                    :key="item.value"
                     :label="item.label"
-                    :value="item.label"
+                    :value="item.value"
                   />
                 </el-select>
               </el-form-item>
@@ -227,7 +247,7 @@
           <el-row>
             <el-col :span="24">
               <el-form-item label="部门">
-                <el-select v-model="popData.departmen" style="width:100%" filterable placeholder="请选择部门">
+                <el-select v-model="popData.department" style="width:100%" filterable placeholder="请选择部门" @change="changeDep">
                   <el-option
                     v-for="item in departments"
                     :key="item.value"
@@ -251,7 +271,7 @@
                 >
                   <el-option
                     v-for="item in approvers"
-                    :key="item.value"
+                    :key="item.key"
                     :label="item.label"
                     :value="item.value"
                   />
@@ -272,10 +292,12 @@
 <script>
 import api from '@/api/training_plan/training_plan' 
 import api2 from '@/api/training_plan/application'
+import api3 from '@/api/training_plan/account'
 export default {
   components: {
     api,
-    api2
+    api2,
+    api3
   },
   data() {
     return {
@@ -307,7 +329,8 @@ export default {
         name: '',
         option: '',
         order: '',
-        period: ['',''],
+        date: null,
+        period: [null,null],
         type: '',
         score: '',
         classroom: '',
@@ -337,37 +360,15 @@ export default {
       ],
       classrooms: [],
       tableData: [],
-      departments: [
-        {
-          value: '古筝部',
-          label: '古筝部'
-        },
-        {
-          value: '智子部',
-          label: '智子部'
-        },
-        {
-          value: '掩体部',
-          label: '掩体部'
-        }
-      ],
-      approvers: [
-        {
-          value: '章北海',
-          label: '章北海'
-        },
-        {
-          value: '艾AA',
-          label: '艾AA'
-        },
-        {
-          value: '维德',
-          label: '维德'
-        }
-      ],
+      departments: [],
+      approvers: [],
+      approvers_res: [],
       dialogTableVisible: false,
       dialogFormVisible: false,
-      tags: []
+      tags: [],
+
+      first_choose: '',
+      periods: []
     }
   },
   created() {
@@ -382,23 +383,28 @@ export default {
       console.log(tab, event)
     },
     addTask() {
-      this.tableData.push({
-        classroom: this.taskData.classroom,
-        name: this.taskData.name,
-        chooseTask: this.taskData.option,
-        type: this.taskData.type,
-        taskScore: this.taskData.score,
-        inPlanTask: null,
-        description: this.taskData.description,
-        startTime: this.taskData.period[0],
-        endTime: this.taskData.period[1],
-        order: this.taskData.order,
-        signInNumber: null,
-        signOutNumber: null
-      })
-      this.tableData.sort(function (a,b) {
-        return a.order-b.order;
-      })
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.order==''||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+        this.$message.error('表单内存在空值！');
+      }
+      else{
+        this.tableData.push({
+          classroom: this.taskData.classroom,
+          name: this.taskData.name,
+          chooseTask: this.taskData.option,
+          type: this.taskData.type,
+          taskScore: this.taskData.score,
+          inPlanTask: null,
+          description: this.taskData.description,
+          startTime: this.taskData.date+' '+this.taskData.period[0],
+          endTime: this.taskData.date+' '+this.taskData.period[1],
+          order: this.taskData.order,
+          signInNumber: null,
+          signOutNumber: null
+        })
+        this.tableData.sort(function (a,b) {
+          return a.order-b.order;
+        })
+      }
     },
     deleteRow(index, tableData) {
       this.tableData.splice(index, 1)
@@ -447,6 +453,38 @@ export default {
           }
         }
       })
+      api3.getTrainee().then( res => {
+        that.people_data=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.hashMaps.length;i++)
+          {
+            that.people_data.push({label:res._embedded.hashMaps[i].name,key:res._embedded.hashMaps[i].id})
+          }
+        }
+      })
+      api3.getDepts().then( res => {
+        that.departments=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.dboxVoes.length;i++)
+          {
+            that.departments.push({label:res._embedded.dboxVoes[i].label,value:res._embedded.dboxVoes[i].key})
+          }
+        }
+      })
+      api3.getAuditor(this.$user.userId,'').then( res => {
+        that.approvers=[]
+        that.approvers_res=res._embedded.auditorVoes
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.auditorVoes.length;i++)
+          {
+            that.approvers.push({label:res._embedded.auditorVoes[i].name,key:res._embedded.auditorVoes[i].id,value:i})
+          }
+          console.log(that.approvers)
+        }
+      })
     },
     save() {
       this.dialogFormVisible = false;
@@ -460,27 +498,26 @@ export default {
         searchText: this.formData.name,
         startTime: this.formData.period[0],
         endTime: this.formData.period[1],
+        trainees: this.formData.people,
         auditors: [],
         trainers: [],
-        tasks: [],
+        tasks: this.tableData,
         user: this.$user.userId
       }
-      for(var key in data)
-      {
-        if(data[key]=='')
-        {
-          delete data[key]
-        }
+
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0){
+        this.$message.error('表单内存在空值！');
       }
-      data.tasks=this.tableData
-      api.add(data).then(res => {
-        this.$message({
-          message: '保存成功！',
-          type: 'success'
-        });
-        this.$router.go(-1)
-        console.log("add new plan successfully!")
-      })
+      else{
+        api.add(data).then(res => {
+            this.$message({
+              message: '保存成功！',
+              type: 'success'
+          });
+          this.$router.go(-1)
+          console.log("add new plan successfully!")
+        })
+      }
     },
     commit(){
       this.dialogFormVisible = false;
@@ -494,38 +531,107 @@ export default {
         searchText: this.formData.name,
         startTime: this.formData.period[0],
         endTime: this.formData.period[1],
+        trainees: this.formData.people,
         auditors: [],
         trainers: [],
-        tasks: []
+        tasks: this.tableData,
       }
-      for(var key in data)
+      var auditors=[]
+      for(var i=0;i<this.popData.approver.length;i++)
       {
-        if(data[key]=='')
-        {
-          delete data[key]
+        auditors.push(this.approvers_res[this.popData.approver[i]])
+      }
+      data.auditors=auditors
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){
+        this.$message.error('表单内存在空值！');
+      }
+      else{
+        api.add(data).then(res => {
+          var temp=res._links.self.href.split("/")
+          var id=temp[temp.length-1]
+          api2.submit({
+            user:this.$user.userId,
+            plan:id
+          }).then(res => {
+            this.$message({
+              message: '保存并提交成功！',
+              type: 'success'
+            });
+            this.$router.go(-1)
+            console.log("submit plan successfully!")
+          })
+        })
+      }
+    },
+    changePeriod() {
+      if(this.first_choose=='' || this.first_choose=='period') {
+        //清空或未选择
+        if(this.taskData.date==null&&this.taskData.period[0]==null&&this.taskData.period[1]==null) {
+          this.first_choose=''
+          this.taskData.classroom=''
+          var that=this
+          api.classrooms().then( res => {
+            that.classrooms=[]
+            for(var i=0;i<res._embedded.classrooms.length;i++)
+            {
+              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+            }
+          })
+        }
+        else if(this.taskData.date!=null&&this.taskData.period[0]!=null&&this.taskData.period[1]!=null) {
+        //选择了日期
+          this.first_choose='period'
+          var that=this
+          api.findClassrooms({
+            status:'unused',
+            startTime:that.taskData.date+' '+that.taskData.period[0],
+            endTime:that.taskData.date+' '+that.taskData.period[1]
+          }).then( res => {
+            that.classrooms=[]
+            for(var i=0;i<res._embedded.classrooms.length;i++)
+            {
+              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+            }
+          })
         }
       }
-      // var auditors=[]
-      // for(var i=0;i<this.formData.people.length;i++)
-      // {
-      //   auditors.push({user:this.formData.people[i],username:this.formData.people[i],userRole:null,approved:null})
-      // }
-      // data.auditors=auditors
-      data.tasks=this.tableData
-      api.add(data).then(res => {
-        var temp=res._links.self.href.split("/")
-        var id=temp[temp.length-1]
-        api2.submit({
-          user:this.$user.userId,
-          plan:id
-        }).then(res => {
-          this.$message({
-            message: '保存并提交成功！',
-            type: 'success'
-          });
-          this.$router.go(-1)
-          console.log("submit plan successfully!")
-        })
+    },
+    changeClassroom() {
+      if(this.first_choose=='' || this.first_choose=='classroom') {
+        //清空或未选择
+        if(this.taskData.classroom=='') {
+          this.first_choose=''
+          this.taskData.period=null
+          var that=this
+          this.periods=[]
+        }
+        else{
+        //选择了教室
+          this.first_choose='classroom'
+          var that=this
+          api.findAvailableTime({
+            //id:1
+            id:that.taskData.classroom
+          }).then( res => {
+            console.log(res)
+            that.periods=res._embedded.periods
+          })
+        }
+      }
+    },
+    changeDep(){
+      var that=this
+      api3.getAuditor(this.$user.userId,this.popData.department).then( res => {
+        that.approvers=[]
+        that.approvers_res=res._embedded.auditorVoes
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.auditorVoes.length;i++)
+          {
+            that.approvers.push({label:res._embedded.auditorVoes[i].name,key:res._embedded.auditorVoes[i].id,value:i})
+          }
+          console.log(that.approvers)
+        }
       })
     }
   }
