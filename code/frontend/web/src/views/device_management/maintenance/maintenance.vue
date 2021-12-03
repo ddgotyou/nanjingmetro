@@ -131,6 +131,7 @@
 <script>
 import pdf from 'vue-pdf'
 import api from '@/api/device/device_2.js'
+import axios from 'axios'
 
 export default { 
   name: 'ComplexTable',
@@ -149,7 +150,8 @@ export default {
   },
   components: {
       pdf,
-      api
+      api,
+      axios
   },
   data() {
     return {
@@ -210,6 +212,48 @@ export default {
     })
   },
   methods: {
+    downloadFile(){
+        return new Promise((resolve, reject) => {
+          // console.log(`${url} 请求数据，参数=>`, JSON.stringify(options))
+          // axios.defaults.headers['content-type'] = 'application/json;charset=UTF-8'
+          axios({
+            method: 'post',
+            url: "http://127.0.0.2:8000/pdf/getpdf", // 请求地址
+            responseType: 'blob' // 表明返回服务器返回的数据类型
+          }).then(
+            response => {
+              console.log("下载响应",response)
+              resolve(response.data)
+              let blob = new Blob([response.data], {
+                type: 'application/vnd.ms-excel'
+              })
+              // console.log(blob)
+              // let fileName = Date.parse(new Date()) + '.xlsx'
+              // 切割出文件名
+              //let fileNameEncode = response.headers['content-disposition'].split("filename=")[1];
+              // 解码
+              let fileName = "test1.pdf"
+              // console.log("fileName",fileName)
+              if (window.navigator.msSaveOrOpenBlob) {
+                // console.log(2)
+                navigator.msSaveBlob(blob, fileName)
+              } else {
+                // console.log(3)
+                var link = document.createElement('a')
+                link.href = window.URL.createObjectURL(blob)
+                link.download = fileName
+                link.click()
+                //释放内存
+                window.URL.revokeObjectURL(link.href)
+              }
+            },
+            err => {
+              reject(err)
+            }
+          )
+        })
+      },
+
     tableRowClassName({row,index}){
       var sp=true;
       if(!this.listQuery.shixunshi_key===-1){
@@ -268,16 +312,7 @@ export default {
     },
 
     download1 (data,fileName) {
-        if (!data) {
-            return
-        }
-        let url = window.URL.createObjectURL(new Blob([data]));
-        let link = document.createElement('a');
-        link.style.display = 'none';
-        link.href = url;
-        link.setAttribute('download', fileName);
-        document.body.appendChild(link);
-        link.click();
+        this.downloadFile();
     },  
 
     previewPDF(scope){
