@@ -1,35 +1,31 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="searchData"
-      :inline="true"
-    >
-      <el-form-item prop="roleName">
-        <!-- v-model="queryParams.roleName" -->
-        <el-input id="search" v-model="searchData.value" name="search_value" placeholder="请输入搜索关键词"
-          clearable
-          size="small"
-          style="width: 240px" />
-      </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="search_commit"
-          >搜 索</el-button
-        >
-        <el-button icon="el-icon-refresh" size="mini" @click="search_reset"
-          >重 置</el-button
-        >
-      </el-form-item>
-    </el-form>
-
-    <el-row>
-      <el-col :span="2">
-        <el-button plain @click="dialogFormVisible = true"
-          >新增实验室</el-button
-        >
+    <el-card class="box-card" style="width:100%">
+      <div slot="header">筛选</div>
+      <el-form label-position="right" label-width="80px" :model="searchData">
+        <el-row>
+          <el-col span="24">
+            <el-form-item label="模糊搜索">
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="请输入搜索关键词" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col span="12">
+            <div style="text-align: left">
+              <!-- 三个按钮 新增实验室是对话框，新增设备是页面 -->
+              <el-button type="primary" @click="dialogFormVisible = true">新增实验室</el-button>
+              <el-button type="primary" @click="add">新增设备</el-button>
+              <el-button @click="handleDelete">删 除</el-button>
+            </div>
+          </el-col>
+          <el-col span="12">
+            <div style="text-align: right">
+              <el-button type="primary" @click="search_commit">搜 索</el-button>
+              <el-button @click="search_reset">重 置</el-button>
+            </div>
+          </el-col>
+        </el-row>
         <el-dialog title="新增实验室" :visible.sync="dialogFormVisible">
           <el-form :model="newlabForm">
             <el-form-item label="名称" label-width="100px">
@@ -39,55 +35,58 @@
               ></el-input>
             </el-form-item>
             <el-form-item label="类型" label-width="100px">
-              <el-input v-model="newlabForm.type"></el-input>
+              <el-select
+                v-model="newlabForm.type"
+                name="type"
+                placeholder="请选择"
+                style="width: 95%"
+              >
+                <el-option label="教学室" value="教学室"></el-option>
+                <el-option label="实训室" value="实训室"></el-option>
+              </el-select>
             </el-form-item>
             <el-form-item label="描述" label-width="100px">
               <el-input
                 type="textarea"
                 :autosize="{ minRows: 2, maxRows: 4 }"
-                v-model="textarea2"
+                v-model="newlabForm.description"
               >
               </el-input>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
             <el-button @click="dialogFormVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogFormVisible = false"
+            <el-button type="primary" @click="addclassroom"
               >确 定</el-button
             >
           </div>
         </el-dialog>
-      </el-col>
-      <el-col :span="2" offset="2">
-        <el-button plain @click="add">新增设备</el-button>
-      </el-col>
-      <el-col :span="2" offset="2">
-        <el-button plain @click="search">删除记录</el-button>
-      </el-col>
-    </el-row>
-
-    <div style="margin: 20px"></div>
-
-    <el-button
-      type="primary"
-      plain
-      icon="el-icon-download"
-      size="mini"
-      @click="exportExcel"
-      >导出</el-button
-    >
-
+      </el-form>
+    </el-card>
     <div style="margin: 20px"></div>
     <el-card class="box-card" style="width:100%">
-      <div slot="header">设备列表</div>
+      <div slot="header">
+        <span>设备列表</span>
+        <el-button
+      type="text"
+      style="float: right; padding: 3px 0"
+      plain
+      icon="el-icon-download"
+      @click="exportExcel"
+      >导出</el-button>
+      </div>
+
       <el-table
+        v-loading="loading"
         :data="tableData"
         style="width: 100%"
         id="device_table"
+        highlight-current-row
+        @selection-change="handleSelectionChange"
       >
-      <el-table-column type="selection" width="55" align="center">
-      </el-table-column>
-
+      <el-table-column type="selection" width="55" align="center"></el-table-column>
+      <!-- 不显示，用来在选择到某个设备时同时获得其 ID -->
+      <el-table-column v-if="false" label="ID" prop="deviceId"/>
       <el-table-column type="index" label="序号" width="100"> </el-table-column>
       <el-table-column prop="deviceClassroom" label="实验室名称"> </el-table-column>
       <el-table-column prop="deviceName" label="设备"> </el-table-column>
@@ -95,10 +94,11 @@
       <el-table-column label="操作">
         <!-- icon="el-icon-edit" -->
         <template slot-scope="scope">
-          <el-button @click.native.prevent="edit(scope.$index, tableData)" type="text">修改</el-button>
+          <el-button @click.native.prevent="edit(scope.$index)" type="text">修改</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <!-- 页码 -->
     <el-row>
       <el-pagination
         :current-page="currentPage"
@@ -136,12 +136,6 @@ export default {
     api
   },
   data() {
-    const item = {
-      student: "王一二",
-      state: "",
-      process: "2021-01-01",
-      score: "",
-    };
     return {
       searchData: {
         name: '',
@@ -150,18 +144,21 @@ export default {
       },
       search_status: false,
       index: 1,
-
+      // 遮罩层
+      loading: true,
       teachers: [],
       response: {},
       tableData: [],
       deviceList: [],
+      deviceSelection: [],
 
       dialogFormVisible: false,
       newlabForm: {
         pass: "",
         checkPass: "",
       },
-      //showSearch: true,
+      classroomid:{},
+
       pageSizes: [100, 200, 300, 400],
       pageSize: 100,
       totalPage: 400,
@@ -170,20 +167,68 @@ export default {
   },
 
   created() {
-    console.log("created",this.tableData)
+    //console.log("created",this.tableData)
     this.getDeviceList();
   },
   methods: {
-    edit(index, data) {
-      //this.$router.push({ path: "new_device" });
-      this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
+    //新增实验室
+    addclassroom(){
+      this.dialogFormVisible = false
+      var data={
+        "name": this.newlabForm.name,
+        "description": this.newlabForm.description,
+        "type": this.newlabForm.type,
+      }
+      api.addClassroom(data).then(response => {
+        this.$message.success("新增实验室成功！")
+      });
+      //清空
+      this.newlabForm={};
+    },
+    //修改设备
+    edit(index) {
+      let id = this.tableData[index].deviceId;
+      console.log("修改设备信息")
+      console.log(id);
+
+      //前往修改页面
+      this.$router.push({
+        path: 'device_edit',
+        query: { id },
+      });
+      //this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
       //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
     },
+    //获取设备列表
     getDeviceList() {
-      let vm = this;
+      this.loading = true;
       api.listDevice().then((response) => {
-        vm.tableData = response._embedded.devices;
+        this.tableData = [];
+        //this.tableData = response._embedded.devices;
+        api.classrooms().then( res => {
+          //实验室列表
+          this.classrooms=[]
+          for(var i=0;i<res._embedded.classrooms.length;i++)
+          {
+            var temp=res._embedded.classrooms[i]._links.self.href.split("/")
+            var classroom_id=temp[temp.length-1]
+            this.classroomid[classroom_id] = res._embedded.classrooms[i].name
+            //this.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+          }
+          //console.log(this.classrooms)
+          for(var i = 0; i < response._embedded.devices.length; i++)
+          {
+            let item = {
+              deviceClassroom: this.classroomid[response._embedded.devices[i].deviceClassroom],
+              deviceName: response._embedded.devices[i].deviceName,
+              deviceDescription: response._embedded.devices[i].deviceStatusVO.name,
+              deviceId:response._embedded.devices[i].deviceId,
+            };
+            this.tableData.push(item)
+          }
+        })
       });
+      this.loading = false;
     },
     // list() {
     //   console.log(this.searchData);
@@ -209,19 +254,7 @@ export default {
     //     }
     //   });
     // },
-    handleEdit() {
-      dialogFormVisible = true;
-    },
-    // submitForm(formName) {
-    //   this.$refs[formName].validate((valid) => {
-    //     if (valid) {
-    //       alert("submit!");
-    //     } else {
-    //       console.log("error submit!!");
-    //       return false;
-    //     }
-    //   });
-    // },
+
     // 前往新增设备页面
     add() {
       this.$router.push({ path: "new_device" });
@@ -236,7 +269,6 @@ export default {
       var params = {
         name: "1",
         keyword: this.searchData.value,
-
       };
       let that=this;
       api.search(params).then( res => {
@@ -248,6 +280,7 @@ export default {
             deviceName: res._embedded.devices[i].deviceName,
             deviceClassroom: res._embedded.devices[i].deviceClassroom,
             deviceDescription: res._embedded.devices[i].deviceDescription,
+
           };
           that.tableData.push(item)
         }
@@ -266,27 +299,47 @@ export default {
       this.index=1;
       this.list();
     },
-    handleClose(done) {
-      this.$confirm("确认关闭？")
-        .then((_) => {
-          done();
-        })
-        .catch((_) => {});
+    handleSelectionChange(selection) {
+      this.deviceSelection = selection;
     },
-    handleUpdate(row) {
-      this.reset();
-      this.getTreeselect();
-      const userId = row.userId || this.ids;
-      getUser(userId).then(response => {
-        this.form = response.data;
-        this.postOptions = response.posts;
-        this.roleOptions = response.roles;
-        this.form.postIds = response.postIds;
-        this.form.roleIds = response.roleIds;
-        this.open = true;
-        this.title = "修改用户";
-        this.form.password = "";
-      });
+    // 删除设备
+    async handleDelete() {
+      let deviceNum = this.deviceSelection.length; // 选中的数量
+      // 如果没有选中任何项，则提示并返回
+      if (deviceNum === 0) {
+        this.$message.warning("未选中任何设备！");
+        return;
+      }
+      // 逐个删除
+      let flags = new Array(deviceNum).fill(false); // 用来记录删除是否成功的标志
+      for (var i = 0; i < deviceNum; i++) {
+          var params = {
+          deviceIds: this.deviceSelection[i].deviceId,
+        };
+        api.deldevice(params)
+        flags[i] = true;
+        // api.deldevice(params).then((response) => {
+        //   let code = response._embedded.responses[0].code;
+        //   if (code === "200") flags[i] = true;
+        // });
+      }
+      //this.$message.success(`删除成功！共删除 ${deviceNum} 个设备。`);
+      //this.getDeviceList();
+
+      //提示或刷新数据
+      //如果标志数组中没有 false，则提示删除成功并重置数据
+      let success = (await flags.indexOf(false)) === -1;
+      if (success) {
+        this.$message.success(`删除成功！共删除 ${deviceNum} 个设备。`);
+        this.loading= true;
+        this.getDeviceList();
+        this.loading= false;
+      } else {
+        this.$message.error("删除失败！");
+      }
+      this.loading= true;
+      this.getDeviceList();
+      this.loading= false;
     },
     pagingSizeChange(val) {
       console.log(`每页 ${val} 条`);
@@ -320,12 +373,7 @@ export default {
       }
       return wbout;
     },
-    goNeweq() {
-      this.$router.push("/equnew");
-    },
-    goEqadmin() {
-      this.$router.push("/equadmin");
-    },
+
   },
 };
 </script>
