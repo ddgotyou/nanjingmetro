@@ -77,7 +77,7 @@ module.exports={
     },
     findClassrooms(query){
         return request({
-            url: '/training-plan/classrooms/search/findByTimeAndStatus',
+            url: '/training-plan/classrooms/search/findAvailableClassrooms',
             method: 'get',
             params: query
         })

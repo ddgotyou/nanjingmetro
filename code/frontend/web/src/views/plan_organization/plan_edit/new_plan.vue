@@ -37,7 +37,8 @@
                 type="daterange"
                 range-separator="至"
                 start-placeholder="开始日期"
-                end-placeholder="结束日期">
+                end-placeholder="结束日期"
+                :picker-options="taskPeriodOptions">
               </el-date-picker>
             </el-form-item>
             <!-- <el-form-item label="计划周期">
@@ -117,7 +118,8 @@
                   v-model="taskData.date"
                   type="date"
                   placeholder="选择日期"
-                  @change="changePeriod">
+                  :picker-options="taskPeriodOptions"
+                  @change="changeDate">
                 </el-date-picker>
                 <el-time-picker
                   style="width:25%;"
@@ -127,9 +129,9 @@
                   :disabled="taskData.date==null"
                   v-model="taskData.period[0]"
                   :picker-options="{
-                    selectableRange: ['18:30:00 - 20:30:00', '22:30:00 - 23:30:00']
+                    selectableRange: startTimeRange
                   }"
-                  @change="changePeriod">
+                  @change="changeStartTime">
                 </el-time-picker>
                 <el-time-picker
                   style="width:25%;"
@@ -139,9 +141,9 @@
                   :disabled="taskData.date==null||taskData.period[0]==null"
                   v-model="taskData.period[1]"
                   :picker-options="{
-                    selectableRange: ['18:30:00 - 20:30:00', '22:30:00 - 23:30:00']
+                    selectableRange: endTimeRange
                   }"
-                  @change="changePeriod">
+                  @change="changeEndTime">
                 </el-time-picker>
               </el-form-item>
             </el-col>
@@ -368,11 +370,24 @@ export default {
       tags: [],
 
       first_choose: '',
-      periods: []
+      periods: [],
+      startTimeRange: [],
+      endTimeRange: []
     }
   },
   created() {
     this.getSelection()
+  },
+  computed: {
+    taskPeriodOptions() {
+      return {
+        disabledDate(time) {
+          var timeNow = Date.now()
+          var before=timeNow-24*60*60*1000
+          return !(time.getTime()>=before)
+        }
+      }
+    }
   },
   methods: {
     submit(form) {
@@ -539,7 +554,11 @@ export default {
       var auditors=[]
       for(var i=0;i<this.popData.approver.length;i++)
       {
-        auditors.push(this.approvers_res[this.popData.approver[i]])
+        auditors.push({
+          user:this.approvers_res[this.popData.approver[i]].id,
+          username:this.approvers_res[this.popData.approver[i]].name,
+          approved:this.approvers_res[this.popData.approver[i]].approved
+        })
       }
       data.auditors=auditors
       if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){
@@ -563,12 +582,15 @@ export default {
         })
       }
     },
-    changePeriod() {
+    changeDate() {
       if(this.first_choose=='' || this.first_choose=='period') {
         //清空或未选择
-        if(this.taskData.date==null&&this.taskData.period[0]==null&&this.taskData.period[1]==null) {
+        if(this.taskData.date==null) {
+          this.taskData.period=[null,null]
           this.first_choose=''
           this.taskData.classroom=''
+          this.startTimeRange=[]
+          this.endTimeRange=[]
           var that=this
           api.classrooms().then( res => {
             that.classrooms=[]
@@ -578,14 +600,99 @@ export default {
             }
           })
         }
+        else if(this.taskData.period[0]==null)
+        {
+          this.taskData.period[1]=null
+        }
         else if(this.taskData.date!=null&&this.taskData.period[0]!=null&&this.taskData.period[1]!=null) {
         //选择了日期
           this.first_choose='period'
           var that=this
           api.findClassrooms({
-            status:'unused',
-            startTime:that.taskData.date+' '+that.taskData.period[0],
-            endTime:that.taskData.date+' '+that.taskData.period[1]
+            date: that.taskData.date,
+            startTime: that.taskData.period[0],
+            endTime: that.taskData.period[1]
+          }).then( res => {
+            that.classrooms=[]
+            for(var i=0;i<res._embedded.classrooms.length;i++)
+            {
+              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+            }
+          })
+        }
+      }
+      else if(this.first_choose=='classroom')
+      {
+        var that=this
+        that.taskData.period=[null,null]
+        if (that.taskData.date!=null) {
+          api.findAvailableTime({
+            id: that.taskData.classroom,
+            date: that.taskData.date
+          }).then( res => {
+            that.periods=[]
+            that.startTimeRange=[]
+            for(var i=0;i<res._embedded.periods.length;i++)
+            {
+              that.periods.push({startTime:res._embedded.periods[i].startTime.substr(11,19),endTime:res._embedded.periods[i].endTime.substr(11,19)})
+              that.startTimeRange.push(res._embedded.periods[i].startTime.substr(11,19)+' - '+res._embedded.periods[i].endTime.substr(11,19))
+            }
+          })
+        }
+      }
+    },
+    changeStartTime() {
+      if(this.first_choose=='' || this.first_choose=='period') {
+        //清空或未选择
+        if(this.taskData.period[0]==null)
+        {
+          this.taskData.period[1]=null
+        }
+        else if(this.taskData.date!=null&&this.taskData.period[0]!=null&&this.taskData.period[1]!=null) {
+        //选择了日期
+          this.first_choose='period'
+          var that=this
+          api.findClassrooms({
+            date: that.taskData.date,
+            startTime: that.taskData.period[0],
+            endTime: that.taskData.period[1]
+          }).then( res => {
+            that.classrooms=[]
+            for(var i=0;i<res._embedded.classrooms.length;i++)
+            {
+              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+            }
+          })
+        }
+      }
+      else if(this.first_choose=='classroom')
+      {
+        var that=this
+        that.taskData.period[1]=null
+        if (that.taskData.period[0]!=null) {
+          for(var i=0;i<that.periods.length;i++)
+          {
+            // if(new Date(that.taskData.period[0]).getTime() >= new Date(that.periods[i].startTime).getTime() && new Date(that.taskData.period[0]).getTime() <= new Date(that.periods[i].endTime).getTime())
+            if(that.taskData.period[0] >= that.periods[i].startTime && that.taskData.period[0] <= that.periods[i].endTime)
+            {
+              
+              that.endTimeRange=[that.taskData.period[0]+' - '+that.periods[i].endTime]
+              break
+            }
+          }
+        }
+      }
+    },
+    changeEndTime() {
+      if(this.first_choose=='' || this.first_choose=='period') {
+        if(this.taskData.date!=null&&this.taskData.period[0]!=null&&this.taskData.period[1]!=null) {
+        //选择了日期
+          this.first_choose='period'
+          var that=this
+          api.findClassrooms({
+            date: that.taskData.date,
+            startTime: that.taskData.period[0],
+            endTime: that.taskData.period[1]
           }).then( res => {
             that.classrooms=[]
             for(var i=0;i<res._embedded.classrooms.length;i++)
@@ -601,21 +708,16 @@ export default {
         //清空或未选择
         if(this.taskData.classroom=='') {
           this.first_choose=''
-          this.taskData.period=null
-          var that=this
-          this.periods=[]
+          this.taskData.date=null
+          this.taskData.period=[null, null]
+          this.startTimeRange=[]
+          this.endTimeRange=[]
         }
         else{
-        //选择了教室
+        //选择了教室或者换了教室
           this.first_choose='classroom'
-          var that=this
-          api.findAvailableTime({
-            //id:1
-            id:that.taskData.classroom
-          }).then( res => {
-            console.log(res)
-            that.periods=res._embedded.periods
-          })
+          this.taskData.date=null
+          this.taskData.period=[null, null]
         }
       }
     },
