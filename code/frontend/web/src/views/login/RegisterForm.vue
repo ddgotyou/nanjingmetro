@@ -55,6 +55,22 @@
           />
         </el-input>
       </el-form-item>
+      <!-- 角色类别 -->
+      <el-form-item>
+        <el-select v-model="form.type" placeholder="角色类型">
+          <svg-icon
+            slot="prefix"
+            icon-class="user"
+            class="el-input__icon input-icon"
+          />
+          <el-option
+            v-for="item in selection.type"
+            :key="item.key"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
       <!-- 按钮 -->
       <el-form-item style="width: 100%">
         <!-- 下一步 -->
@@ -111,7 +127,7 @@
         <el-input v-model="form.email" placeholder="邮箱"></el-input>
       </el-form-item>
       <!-- 部门 -->
-      <el-form-item>
+      <!-- <el-form-item>
         <el-select
           v-model="form.dept"
           filterable
@@ -127,9 +143,9 @@
             :value="item.value"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <!-- 岗位 -->
-      <el-form-item>
+      <!-- <el-form-item>
         <el-select
           v-model="form.post"
           filterable
@@ -143,7 +159,7 @@
             :value="item.value"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <!-- 按钮 -->
       <el-form-item>
         <el-col :span="12" align="center">
@@ -167,6 +183,7 @@
 
 <script>
 import all from "@/api/personnel/selection";
+import api from "@/api/personnel/register";
 
 export default {
   name: "Register",
@@ -178,6 +195,7 @@ export default {
       form: {
         username: "",
         password: "",
+        type: "",
         code: "",
         name: "",
         sex: "",
@@ -194,6 +212,11 @@ export default {
         ],
         dept: [],
         post: [],
+        type: [
+          { key: "1", label: "管理员", value: "管理员" },
+          { key: "2", label: "讲师", value: "讲师" },
+          { key: "3", label: "学员", value: "学员" },
+        ],
       },
       registerRules: {
         username: [
@@ -251,7 +274,15 @@ export default {
       this.$emit("return");
     },
     handleSubmit() {
-      console.log(this.form);
+      api.register(this.form).then((response) => {
+        console.log(response);
+        if (response) {
+          this.$message.success("注册成功！");
+          this.$router.push("/");
+        } else {
+          this.$message.error("注册失败！");
+        }
+      });
     },
     handleCancel() {
       this.displayNextStep = false;

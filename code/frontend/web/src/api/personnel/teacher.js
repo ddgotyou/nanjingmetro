@@ -10,17 +10,17 @@ module.exports = {
     })
   },
   // 查询讲师列表
-  list(query) {
+  list(query, page, size) {
     return request({
-      url: '/tms-account/users/getTrainer',
+      url: '/tms-account/users/getTrainer' + '?page=' + page + '&size=' + size,
       method: 'get',
       params: query
     })
   },
   // 模糊搜索讲师
-  search(keyword) {
+  search(keyword, page, size) {
     return request({
-      url: '/tms-account/users/getTrainerLike/' + keyword,
+      url: '/tms-account/users/getTrainerLike/' + keyword + '?page=' + page + '&size=' + size,
       method: 'get',
     })
   },

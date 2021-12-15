@@ -258,7 +258,6 @@ export default {
       // 如果是“编辑”，还需要填入用户组信息
       if (this.option === "edit") {
         await api.detail(this.id).then((response) => {
-          console.log(response);
           this.form = response;
           for (let i in this.form.users) {
             let user = this.usersOptional.find(
@@ -272,7 +271,7 @@ export default {
     // 权限模板发生改变
     handleChangeRole(value) {
       // 返回对应 id 的角色的详细信息
-      role.detial(this.form.authTemplate).then((response) => {
+      role.detail(this.form.authTemplate).then((response) => {
         // 将权限模板填充到对应表单
         this.form.authority = response.authority;
         // 保存原模板

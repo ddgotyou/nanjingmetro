@@ -99,13 +99,13 @@
       <el-row>
         <el-pagination
           :current-page="page.number"
-          :page-sizes="[]"
+          :page-sizes="[4, 5]"
           :page-size="page.size"
-          :total="page.totalPages"
+          :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
           class="pagination"
-          @size-change="pagingSizeChange"
-          @current-change="pagingCurrentChange"
+          @size-change="pageSizeChange"
+          @current-change="pageCurrentChange"
         />
       </el-row>
     </el-card>
@@ -132,7 +132,7 @@ export default {
 
       // 页码
       page: {
-        size: 0,
+        size: 4,
         totalElements: 0,
         totalPages: 0,
         number: 0,
@@ -143,13 +143,27 @@ export default {
     this.loadData();
   },
   methods: {
-    // 加载一页用户组数据
-    loadData() {
+    // 用户组列表
+    data(query, page, size) {
       this.loading = true;
-      api.list(null).then((response) => {
-        this.list = response._embedded.groupVoes;
+      api.list(query, page, size).then((response) => {
+        this.list = response._embedded ? response._embedded.groupVoes : [];
+        this.page = response.page;
         this.loading = false;
       });
+    },
+    // 模糊搜索
+    search(key, page, size) {
+      this.loading = true;
+      api.search(key, page, size).then((response) => {
+        this.list = response._embedded ? response._embedded.groupVoes : [];
+        this.page = response.page;
+        this.loading = false;
+      });
+    },
+    // 加载一页用户组数据
+    loadData() {
+      this.data(null, 0, this.page.size);
     },
     // 当选中用户组更改时，更新选中用户组的列表
     handleSelectionChange(selection) {
@@ -215,11 +229,7 @@ export default {
     handleSearch() {
       if (!this.query.key) return;
 
-      this.loading = true;
-      api.search(this.query.key).then((response) => {
-        this.list = response._embedded ? response._embedded.groupVoes : [];
-        this.loading = false;
-      });
+      this.search(this.query.key, 0, this.page.size);
     },
     // 重置用户组数据
     handleReset() {
@@ -236,11 +246,20 @@ export default {
         query: { option: "edit", id: id },
       });
     },
-    pagingSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    pageSizeChange(size) {
+      if (!this.query.key) {
+        this.data(this.query, 0, size);
+      } else {
+        this.search(this.query.key, 0, size);
+      }
     },
-    pagingCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+    pageCurrentChange(number) {
+      console.log(number);
+      if (!this.query.key) {
+        this.data(this.query, number, this.page.size);
+      } else {
+        this.search(this.query.key, number, this.page.size);
+      }
     },
   },
 };

@@ -10,17 +10,17 @@ module.exports = {
     })
   },
   // 查询用户组列表
-  list(query) {
+  list(query, page, size) {
     return request({
-      url: '/tms-account/usergroup/getAllUsergroup',
+      url: '/tms-account/usergroup/getAllUsergroup' + '?page=' + page + '&size=' + size,
       method: 'get',
       params: query
     })
   },
   // 模糊搜索用户组
-  search(keyword) {
+  search(keyword, page, size) {
     return request({
-      url: '/tms-account/usergroup/getUsergroupLike/' + keyword,
+      url: '/tms-account/usergroup/getUsergroupLike/' + keyword + '?page=' + page + '&size=' + size,
       method: 'get',
     })
   },

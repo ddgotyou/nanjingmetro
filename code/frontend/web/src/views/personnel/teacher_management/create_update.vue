@@ -56,9 +56,26 @@
             </el-form-item>
             <!-- 部门 -->
             <el-form-item label="部门">
-              <el-select v-model="form.dept" multiple filterable allow-create>
+              <el-select
+                v-model="form.dept"
+                multiple
+                filterable
+                allow-create
+                @change="handelChange"
+              >
                 <el-option
                   v-for="item in selection.dept"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <!-- 组长 -->
+            <el-form-item label="是否组长">
+              <el-select v-model="form.leader" multiple>
+                <el-option
+                  v-for="item in selection.leader"
                   :key="item.key"
                   :label="item.label"
                   :value="item.value"
@@ -120,10 +137,6 @@ export default {
       // 要“编辑”或者查看“详情”的讲师的 id
       id: null,
 
-      // 添加部门的基础 key
-      baseKey: 999,
-      // 添加部门输入框的当前值
-      deptInput: undefined,
       // 新增、编辑和详情的表单
       form: {
         name: undefined,
@@ -135,6 +148,7 @@ export default {
         dept: [],
         post: "",
         status: "",
+        leader: [],
       },
 
       // 表单中的选择框选项
@@ -150,6 +164,7 @@ export default {
           { key: "1", label: "正式", value: "0" },
           { key: "2", label: "临时", value: "1" },
         ],
+        leader: [{ key: "0", label: "是", value: null }],
       },
 
       rules: {
@@ -233,21 +248,18 @@ export default {
         });
       }
     },
-    // 添加一个部门
-    handleAdd() {
-      let isExist =
-        this.selection.dept
-          .map((element) => element.value)
-          .indexOf(this.deptInput) === -1;
-      if (isExist) {
-        this.selection.dept.push({
-          key: (this.baseKey += 1),
-          label: this.deptInput,
-          value: this.deptInput,
+    // 部门值改变
+    handelChange(value) {
+      // 更新 leader 选项
+      let key = 0;
+      this.selection.leader = [{ key: "0", label: "不是", value: null }];
+      value.forEach((element) => {
+        this.selection.leader.push({
+          key: (key += 1),
+          label: element,
+          value: element,
         });
-      }
-      this.form.dept.push(this.deptInput);
-      this.deptInput = undefined;
+      });
     },
     // 提交新增讲师的表单
     optionAdd() {

@@ -176,11 +176,11 @@
           :current-page="page.number"
           :page-sizes="[]"
           :page-size="page.size"
-          :total="page.totalPages"
+          :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
           class="pagination"
-          @size-change="pagingSizeChange"
-          @current-change="pagingCurrentChange"
+          @size-change="pageSizeChange"
+          @current-change="pageCurrentChange"
         />
       </el-row>
     </el-card>
@@ -268,6 +268,24 @@ export default {
     this.loadData();
   },
   methods: {
+    // 学员列表
+    data(query, page, size) {
+      this.loading = true;
+      api.list(query, page, size).then((response) => {
+        this.list = response._embedded ? response._embedded.trainerVoes : [];
+        this.page = response.page;
+        this.loading = false;
+      });
+    },
+    // 模糊搜索
+    search(key, page, size) {
+      this.loading = true;
+      api.search(key, page, size).then((response) => {
+        this.list = response._embedded ? response._embedded.trainerVoes : [];
+        this.page = response.page;
+        this.loading = false;
+      });
+    },
     // 加载讲师数据
     loadData() {
       all.dept(null).then((response) => {
@@ -277,13 +295,7 @@ export default {
         this.items.post.options = response._embedded.dboxVoes;
       });
 
-      this.loading = true;
-      api.list(null).then((response) => {
-        if (response._embedded) this.list = response._embedded.trainerVoes;
-        else this.list = [];
-        // this.page = response.page;
-        this.loading = false;
-      });
+      this.data(null, 0, this.page.size);
     },
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
     handleItemChange() {
@@ -380,18 +392,10 @@ export default {
     handleSearch() {
       // 如果关键词为空，则说明不是模糊搜索
       if (!this.query.key) {
-        this.loading = true;
-        api.list(this.query).then((response) => {
-          this.list = response._embedded ? response._embedded.trainerVoes : [];
-          this.loading = false;
-        });
+        this.data(this.query, 0, this.page.size);
       } // 否则，说明是模糊搜索
       else {
-        this.loading = true;
-        api.search(this.query.key).then((response) => {
-          this.list = response._embedded ? response._embedded.trainerVoes : [];
-          this.loading = false;
-        });
+        this.search(this.query.key, 0, this.page.size);
       }
     },
     // 重置讲师列表
@@ -424,11 +428,20 @@ export default {
         query: { id: id },
       });
     },
-    pagingSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    pageSizeChange(size) {
+      if (!this.query.key) {
+        this.data(this.query, 0, size);
+      } else {
+        this.search(this.query.key, 0, size);
+      }
     },
-    pagingCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+    pageCurrentChange(number) {
+      console.log(number);
+      if (!this.query.key) {
+        this.data(this.query, number, this.page.size);
+      } else {
+        this.search(this.query.key, number, this.page.size);
+      }
     },
   },
 };

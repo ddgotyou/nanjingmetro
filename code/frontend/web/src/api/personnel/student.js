@@ -10,17 +10,17 @@ module.exports = {
     })
   },
   // 查询学员列表
-  list(query) {
+  list(query, page, size) {
     return request({
-      url: '/tms-account/users/getTrainee',
+      url: '/tms-account/users/getTrainee' + '?page=' + page + '&size=' + size,
       method: 'get',
       params: query
     })
   },
   // 模糊搜索学员
-  search(keyword) {
+  search(keyword, page, size) {
     return request({
-      url: '/tms-account/users/getTraineeLike/' + keyword,
+      url: '/tms-account/users/getTraineeLike/' + keyword + '?page=' + page + '&size=' + size,
       method: 'get',
     })
   },
