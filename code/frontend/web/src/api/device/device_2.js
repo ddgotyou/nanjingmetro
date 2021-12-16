@@ -27,7 +27,7 @@ module.exports={
 
   listRepairOption(query) {
     return request({
-      url: '/device/worksheets/getList',
+      url: '/device/devices/getList',
       method: 'get',
       params: query
     })

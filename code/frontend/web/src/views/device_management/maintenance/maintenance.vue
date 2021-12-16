@@ -9,6 +9,10 @@
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
         Reset
       </el-button>
+      <!-- input type="file" id="fileExport" @change="handleFileChange()" ref="inputer">
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="upload_test()">
+        上传测试
+      </el-button-->
       <br/>
       <el-select placeholder="实训室" clearable style="width: 150px" class="filter-item" @change="refresh()" v-model="temp.classroom">
         <el-option v-for="item in shixunshi_Options" :key="item" :label="item" :value="item" />
@@ -22,10 +26,7 @@
         <el-option v-for="item in zhouqi_Options" :key="item" :label="item" :value="item" />
       </el-select>
       &nbsp;
-      <el-select placeholder="维护时间" clearable style="width: 150px" class="filter-item" @change="refresh()" v-model="temp.time">
-        <el-option v-for="item in weihushijian_Options" :key="item" :label="item" :value="item" />
-      </el-select>
-      &nbsp;
+
       <el-select placeholder="维保人员" clearable style="width: 250px" class="filter-item" @change="refresh()" v-model="temp.user">
         <el-option v-for="item in weihurenyuan_Options" :key="item" :label="item" :value="item" />
       </el-select>
@@ -35,7 +36,7 @@
     <el-dialog title="详细信息" :visible.sync="dialogTableVisible1">
       <el-form label-position="left" label-width="180px" style="margin-left: 10%;">
         <el-form-item label="实训室名称">
-          <label style="font-weight:normal;">实训室123</label>
+          <label style="font-weight:normal;">classroom123</label>
         </el-form-item>
         <el-form-item label="设备id">
           <label style="font-weight:normal;">{{this.list[this.now_num].re_device}}</label>
@@ -92,17 +93,18 @@
       
     >
       <el-table-column label="序号" type="index" sortable align="center" style="width: 5%"></el-table-column>
-      <el-table-column label="实训室名称" style="width: 20%" align="center">
-          <span>实训室123</span>
-      </el-table-column>
 
-      <el-table-column label="设备" style="width: 15%" property="re_deviceName"></el-table-column>
+      <el-table-column label="实训室名称" style="width: 20%" align="center" property="re_classroomName">classroom123</el-table-column>
+
+      <el-table-column label="设备" style="width: 15%" align="center" property="re_deviceName"></el-table-column>
 
       <el-table-column label="周期" style="width: 15%" align="center" property="re_period"></el-table-column>
 
       <el-table-column label="维护时间" style="width: 15%" property="re_time"></el-table-column>
 
       <el-table-column label="维保人员" align="center" style="width: 15%" property="re_peopleName"></el-table-column>
+
+      <el-table-column label="预计维修日期" align="center" style="width: 15%" property="reminderDay"></el-table-column>
 
       <el-table-column label="操作" align="center" style="width: 15%" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -176,6 +178,9 @@ export default {
       weihushijian_Options:[],
       weihurenyuan_Options:[],
 
+      //formData,
+      //file,
+
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
 
@@ -183,7 +188,6 @@ export default {
         classroom:"",
         device:"",
         period:"",
-        time:"",
         user:"",
         keyword:""
       },
@@ -195,7 +199,7 @@ export default {
       this.temp
     ).then((res)=>{
       this.list=res._embedded.workSheets;
-      //console.log(this.list);
+      console.log(this.list);
     }).catch((error)=>{
       this.$message({
           message: '没有检索到维修信息',
@@ -213,16 +217,17 @@ export default {
   },
   methods: {
     downloadFile(){
-        return new Promise((resolve, reject) => {
+        this.$message.error("pdf下载功能尚未实现~");
+        /*return new Promise((resolve, reject) => {
           // console.log(`${url} 请求数据，参数=>`, JSON.stringify(options))
           // axios.defaults.headers['content-type'] = 'application/json;charset=UTF-8'
           axios({
             method: 'post',
-            url: "http://127.0.0.2:8000/pdf/getpdf", // 请求地址
+            url: "http://localhost:9002/protocols/download?fileName=test1.pdf", // 请求地址
             responseType: 'blob' // 表明返回服务器返回的数据类型
           }).then(
             response => {
-              console.log("下载响应",response)
+              //console.log("下载响应",response)
               resolve(response.data)
               let blob = new Blob([response.data], {
                 type: 'application/vnd.ms-excel'
@@ -251,7 +256,7 @@ export default {
               reject(err)
             }
           )
-        })
+        })*/
       },
 
     tableRowClassName({row,index}){
@@ -266,6 +271,7 @@ export default {
     },
 
     show_details(scope){
+      //console.log(scope);
       this.dialogTableVisible1 = true; 
       this.now_num=scope.$index;
     },
@@ -274,6 +280,8 @@ export default {
       api.listMaintenance(
         this.temp
       ).then((res)=>{
+        console.log("dashabi");
+        console.log(res);
         this.list=res._embedded.workSheets;
         //console.log(this.list);
       }).catch((error)=>{
@@ -313,7 +321,43 @@ export default {
 
     download1 (data,fileName) {
         this.downloadFile();
-    },  
+    },
+
+    handleFileChange (e) {
+      let inputDOM = this.$refs.inputer;
+      this.file = inputDOM.files[0];// 通过DOM取文件数据
+      let size = Math.floor(this.file.size / 1024);//计算文件的大小　
+      this.formData=new FormData();//new一个formData事件
+      this.formData.append("file",this.file);
+　　},
+
+    upload_test(){
+      console.log(this.formData);
+      console.log(this.file);
+
+      /*let params = this.formData;
+
+        axios.post('http://localhost:9002/protocols/upload', {files: params}, {headers: {'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'}}).then(res => {
+          console.log(res);
+        }).catch(error => {
+          alert('更新用户数据失败' + error)
+        })*/
+
+
+
+      //axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
+      this.$http({
+        method: 'post',
+        url:'http://localhost:9002/protocols/upload',
+        headers:{
+          "Content-Type":"multipart/form-data; boundary=<calculated when request is sent>",
+        },
+        files:this.formData, //在此处上传文件
+        }).then(function(res){
+            console.log(res,"此处应该是请求成功的回调")　　
+        })
+
+    },
 
     previewPDF(scope){
       //this.pdfsrc = pdf.createLoadingTask(this.pdfsrc)
