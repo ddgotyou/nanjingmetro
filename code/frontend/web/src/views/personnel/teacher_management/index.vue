@@ -1,121 +1,135 @@
 <template>
   <div class="app-container">
-    <!-- 顶部筛选栏 -->
-    <div>
-      <!-- 姓名筛选框 -->
-      <el-input
-        v-model="query.name"
-        placeholder="姓名"
-        style="width: 150px"
-        class="mr10"
-      />
-      <!-- 身份证号筛选框 -->
-      <el-input
-        v-model="query.idcard"
-        placeholder="身份证号"
-        style="width: 200px"
-        class="mr10"
-      />
-      <!-- 其他选择类筛选框 -->
-      <el-select
-        v-model="dimensions"
-        multiple
-        collapse-tags
-        placeholder="请选择筛选项（可多选）"
-        style="width: 200px"
-        class="mr10"
-        @change="handleItemChange"
-      >
-        <el-option
-          v-for="(item, key) in items"
-          :key="item.key"
-          :label="item.label"
-          :value="key"
-        >
-        </el-option>
-      </el-select>
-      <template v-for="item in items">
-        <el-select
-          v-model="item.value"
-          v-if="item.visible"
-          :key="item.key"
-          :placeholder="item.label"
-          style="width: 100px"
-          class="mr10"
-          @change="handleOptionChange"
-        >
-          <el-option
-            v-for="option in item.options"
-            :key="option.key"
-            :label="option.label"
-            :value="option.value"
-          />
-        </el-select>
-      </template>
-    </div>
+    <!-- 筛选栏 -->
+    <el-card class="card-box">
+      <!-- 标题栏 -->
+      <div slot="header">筛选框</div>
 
-    <!-- 主体 -->
-    <el-card class="card-box" style="width: 100%">
-      <!-- 功能栏 -->
-      <div slot="header">
-        <div style="float: left">
-          <!-- 新增按钮 -->
-          <el-button plain type="primary" icon="el-icon-plus" @click="handleAdd"
-            >新增</el-button
-          >
-          <!-- 删除按钮 -->
-          <el-button
-            plain
-            type="danger"
-            icon="el-icon-delete"
-            @click="handleDelete"
-            >删除</el-button
-          >
-          <!-- 导入按钮 -->
-          <el-button
-            plain
-            type="info"
-            icon="el-icon-upload2"
-            @click="handleImport"
-            >导入</el-button
-          >
-          <!-- 导出按钮 -->
-          <el-button
-            plain
-            type="warning"
-            icon="el-icon-download"
-            @click="handleExport"
-            >导出</el-button
-          >
-        </div>
-
-        <span>
+      <!-- 筛选选项 -->
+      <el-form label-width="auto" label-position="right" @submit.native.prevent>
+        <el-row :gutter="10">
+          <el-col :span="3">
+            <el-form-item>
+              <!-- 姓名筛选框 -->
+              <el-input v-model="query.name" placeholder="姓名" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="4">
+            <el-form-item>
+              <!-- 身份证号筛选框 -->
+              <el-input v-model="query.idcard" placeholder="身份证号" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="17">
+            <el-form-item>
+              <!-- 其他选择类筛选框 -->
+              <el-select
+                v-model="dimensions"
+                multiple
+                collapse-tags
+                placeholder="请选择筛选项（多选）"
+                style="width: 200px"
+                class="mr10"
+                @change="handleItemChange"
+              >
+                <el-option
+                  v-for="(item, key) in items"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="key"
+                >
+                </el-option>
+              </el-select>
+              <template v-for="item in items">
+                <el-select
+                  v-model="item.value"
+                  v-if="item.visible"
+                  :key="item.key"
+                  :placeholder="item.label"
+                  style="width: 150px"
+                  class="mr10"
+                  @change="handleOptionChange"
+                >
+                  <el-option
+                    v-for="option in item.options"
+                    :key="option.key"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
+              </template>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item>
           <!-- 搜索框 -->
           <el-input
             v-model="query.key"
             placeholder="模糊搜索框"
-            style="width: 600px"
-            class="header-input"
             @keyup.enter.native="handleSearch"
           />
-        </span>
+        </el-form-item>
+        <el-form-item>
+          <div style="float: left">
+            <!-- 新增按钮 -->
+            <el-button
+              plain
+              type="primary"
+              icon="el-icon-plus"
+              @click="handleAdd"
+              >新增</el-button
+            >
+            <!-- 删除按钮 -->
+            <el-button
+              plain
+              type="danger"
+              icon="el-icon-delete"
+              @click="handleDelete"
+              >删除</el-button
+            >
+            <!-- 导入按钮 -->
+            <el-button
+              plain
+              type="info"
+              icon="el-icon-upload2"
+              @click="handleImport"
+              >导入</el-button
+            >
+            <!-- 导出按钮 -->
+            <el-button
+              plain
+              type="warning"
+              icon="el-icon-download"
+              @click="handleExport"
+              >导出</el-button
+            >
+          </div>
+          <div style="float: right">
+            <!-- 搜索按钮 -->
+            <el-button
+              type="primary"
+              icon="el-icon-search"
+              @click="handleSearch"
+              >搜索</el-button
+            >
+            <!-- 重置按钮 -->
+            <el-button icon="el-icon-refresh" @click="handleReset"
+              >重置</el-button
+            >
+          </div>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-        <div style="float: right">
-          <!-- 搜索按钮 -->
-          <el-button type="primary" icon="el-icon-search" @click="handleSearch"
-            >搜索</el-button
-          >
-          <!-- 重置按钮 -->
-          <el-button icon="el-icon-refresh" @click="handleReset"
-            >重置</el-button
-          >
-        </div>
-      </div>
+    <!-- 主体 -->
+    <el-card class="card-box">
+      <!-- 标题栏 -->
+      <div slot="header">讲师列表</div>
 
       <!-- 讲师列表 -->
       <el-table
         v-loading="loading"
-        :data="teacherList"
+        :data="list"
         :default-sort="{ prop: 'id', order: 'descending' }"
         stripe
         style="width: 100%"
@@ -127,19 +141,19 @@
         <el-table-column prop="name" label="姓名" width="" align="center" />
         <el-table-column prop="sex" label="性别" width="" align="center">
           <template slot-scope="scope">
-            {{ getStudentSex(scope.row.sex) }}
+            {{ getSex(scope.row.sex) }}
           </template>
         </el-table-column>
         <el-table-column prop="tel" label="联系电话" width="" align="center" />
         <el-table-column prop="dept" label="部门" width="" align="center">
           <template slot-scope="scope">
-            {{ getStudentDept(scope.row.dept) }}
+            {{ getDept(scope.row.dept) }}
           </template>
         </el-table-column>
         <el-table-column prop="post" label="岗位" width="" align="center" />
         <el-table-column prop="status" label="讲师状态" width="" align="center">
           <template slot-scope="scope">
-            {{ getStudentStatus(scope.row.status) }}
+            {{ getStatus(scope.row.status) }}
           </template>
         </el-table-column>
         <el-table-column prop="enabled" label="操作" align="center">
@@ -162,11 +176,11 @@
           :current-page="page.number"
           :page-sizes="[]"
           :page-size="page.size"
-          :total="page.totalPages"
+          :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
           class="pagination"
-          @size-change="pagingSizeChange"
-          @current-change="pagingCurrentChange"
+          @size-change="pageSizeChange"
+          @current-change="pageCurrentChange"
         />
       </el-row>
     </el-card>
@@ -174,12 +188,8 @@
 </template>
 
 <script>
-import {
-  listTeacher,
-  delTeacher,
-  searchTeacher,
-} from "@/api/personnel/teacher";
-import { listDept, listPost } from "@/api/personnel/personnel";
+import api from "@/api/personnel/teacher";
+import all from "@/api/personnel/selection";
 
 export default {
   data: function () {
@@ -240,9 +250,9 @@ export default {
       // 遮罩层
       loading: true,
       // 当前页面的讲师的列表
-      teacherList: [],
+      list: [],
       // 选中讲师的列表
-      teacherSelection: [],
+      selection: [],
 
       // 页码
       page: {
@@ -258,52 +268,63 @@ export default {
     this.loadData();
   },
   methods: {
-    // 加载讲师数据
-    loadData() {
-      listDept(null).then((response) => {
-        this.items.dept.options = response._embedded.dboxVoes;
-      });
-      listPost(null).then((response) => {
-        this.items.post.options = response._embedded.dboxVoes;
-      });
-
+    // 学员列表
+    data(query, page, size) {
       this.loading = true;
-      listTeacher(null).then((response) => {
-        if (response._embedded)
-          this.teacherList = response._embedded.trainerVoes;
-        else this.teacherList = [];
-        // this.page = response.page;
+      api.list(query, page, size).then((response) => {
+        this.list = response._embedded ? response._embedded.trainerVoes : [];
+        this.page = response.page;
         this.loading = false;
       });
     },
+    // 模糊搜索
+    search(key, page, size) {
+      this.loading = true;
+      api.search(key, page, size).then((response) => {
+        this.list = response._embedded ? response._embedded.trainerVoes : [];
+        this.page = response.page;
+        this.loading = false;
+      });
+    },
+    // 加载讲师数据
+    loadData() {
+      all.dept(null).then((response) => {
+        this.items.dept.options = response._embedded.dboxVoes;
+      });
+      all.post(null).then((response) => {
+        this.items.post.options = response._embedded.dboxVoes;
+      });
+
+      this.data(null, 0, this.page.size);
+    },
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
     handleItemChange() {
-      for (var key in this.items) {
+      for (let key in this.items) {
         let selected = this.dimensions.indexOf(key) !== -1;
         this.items[key].visible = selected ? true : false;
       }
     },
     // 当某个选择框更改时，将其值绑定到查询字典 query 中的对应字段
     handleOptionChange() {
-      for (var key in this.items) {
+      for (let key in this.items) {
         this.query[key] = this.items[key].value;
       }
     },
     // 将“0/1”转换为“男/女”
-    getStudentSex(sex) {
+    getSex(sex) {
       return sex === "0" ? "男" : "女";
     },
     // 将部门数组转换为字符串
-    getStudentDept(dept) {
+    getDept(dept) {
       return dept.join("，");
     },
     // 将“0/1”转换为“正式/临时”
-    getStudentStatus(status) {
+    getStatus(status) {
       return status === "0" ? "正式" : "临时";
     },
     // 当选中讲师更改时，更新选中讲师列表
     handleSelectionChange(selection) {
-      this.teacherSelection = selection;
+      this.selection = selection;
     },
     // 新增讲师
     handleAdd() {
@@ -314,32 +335,50 @@ export default {
     },
     // 删除讲师
     async handleDelete() {
-      let stuNum = this.teacherSelection.length; // 选中的讲师数量
+      let count = this.selection.length; // 选中的讲师数量
 
       // 如果没有选中任何项，则提示并返回
-      if (stuNum === 0) {
+      if (count === 0) {
         this.$message.warning("未选中任何讲师！");
         return;
       }
 
-      // 逐个删除
-      let flags = new Array(stuNum).fill(false); // 用来记录删除是否成功的标志
-      for (var i = 0; i < stuNum; i++) {
-        await delTeacher(this.teacherSelection[i].id).then((response) => {
-          let code = response._embedded.responses[0].code;
-          if (code === "200") flags[i] = true;
-        });
-      }
+      // 删除确认
+      await this.$confirm("是否确认删除选中的讲师？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        // 这是个伪并行，虽然删除任务逐个开始，
+        // 但是相比于请求的时间，迭代的时间可以忽略不计
+        let promises = [];
+        // 逐个删除
+        for (let i in this.selection) {
+          let promise = new Promise((resolve, reject) => {
+            api
+              .delete(this.selection[i].id)
+              .then((response) => resolve(response))
+              .catch((error) => reject(error.message));
+          });
+          promises.push(promise);
+        }
 
-      // 提示或刷新数据
-      // 如果标志数组中没有 false，则提示删除成功并重置数据
-      let success = (await flags.indexOf(false)) === -1;
-      if (success) {
-        this.$message.success(`删除成功！共删除 ${stuNum} 位讲师。`);
-        this.handleReset();
-      } else {
-        this.$message.error("删除失败！");
-      }
+        // 保证所有并行任务完成后
+        Promise.all(promises)
+          .then(
+            // resolve
+            (values) => {
+              let count = values.filter((value) => value.code === 200).length;
+              if (count !== 0)
+                this.$message.success(`成功删除${count}位讲师。`);
+            },
+            // reject
+            (errors) => {
+              console.log(errors);
+            }
+          )
+          .finally(() => this.handleReset());
+      });
     },
     // 批量导入讲师
     handleImport() {
@@ -353,30 +392,18 @@ export default {
     handleSearch() {
       // 如果关键词为空，则说明不是模糊搜索
       if (!this.query.key) {
-        this.loading = true;
-        listTeacher(this.query).then((response) => {
-          this.teacherList = response._embedded
-            ? response._embedded.trainerVoes
-            : [];
-          this.loading = false;
-        });
+        this.data(this.query, 0, this.page.size);
       } // 否则，说明是模糊搜索
       else {
-        this.loading = true;
-        searchTeacher(this.query.key).then((response) => {
-          this.teacherList = response._embedded
-            ? response._embedded.trainerVoes
-            : [];
-          this.loading = false;
-        });
+        this.search(this.query.key, 0, this.page.size);
       }
     },
     // 重置讲师列表
     handleReset() {
       // 清空查询字典
-      for (var key in this.query) this.query[key] = undefined;
+      for (let key in this.query) this.query[key] = undefined;
       // 清空选择框值并隐藏
-      for (var key in this.items) {
+      for (let key in this.items) {
         this.items[key].value = undefined;
         this.items[key].visible = false;
       }
@@ -387,7 +414,7 @@ export default {
     },
     // 编辑某个讲师
     handleEdit(index) {
-      let id = this.teacherList[index].id;
+      let id = this.list[index].id;
       this.$router.push({
         path: "/personnel/edit-teacher",
         query: { option: "edit", id: id },
@@ -395,36 +422,35 @@ export default {
     },
     // 查看某个讲师详情
     handleDetail(index) {
-      let id = this.teacherList[index].id;
+      let id = this.list[index].id;
       this.$router.push({
         path: "/personnel/teacher-detail",
         query: { id: id },
       });
     },
-    pagingSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    pageSizeChange(size) {
+      if (!this.query.key) {
+        this.data(this.query, 0, size);
+      } else {
+        this.search(this.query.key, 0, size);
+      }
     },
-    pagingCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+    pageCurrentChange(number) {
+      console.log(number);
+      if (!this.query.key) {
+        this.data(this.query, number, this.page.size);
+      } else {
+        this.search(this.query.key, number, this.page.size);
+      }
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.mr10 {
-  margin-right: 10px;
-}
-
 .card-box {
   max-width: 100%;
   margin: 20px auto;
-}
-
-.header-input {
-  display: inline-block;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 .pagination {

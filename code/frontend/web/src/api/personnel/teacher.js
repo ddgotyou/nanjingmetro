@@ -1,53 +1,50 @@
 import request from '@/utils/request'
 
-// 查询讲师列表
-export function listTeacher(query) {
-  return request({
-    url: '/tms-account/users/getTrainer',
-    method: 'get',
-    params: query
-  })
-}
-
-// 查询讲师
-export function teacherInfo(stuId, query) {
-  return request({
-    url: '/tms-account/users/getTrainerById/' + stuId,
-    method: 'get',
-    params: query
-  })
-}
-
-// 新增讲师
-export function addTeacher(data) {
-  return request({
-    url: '/tms-account/users/addTrainer',
-    method: 'post',
-    data: data
-  })
-}
-
-// 删除讲师
-export function delTeacher(stuId) {
-  return request({
-    url: '/tms-account/users/deleteTrainer/' + stuId,
-    method: 'delete'
-  })
-}
-
-// 编辑讲师
-export function editTeacher(stuId, data) {
-  return request({
-    url: '/tms-account/users/editTrainer/' + stuId,
-    method: 'put',
-    data: data
-  })
-}
-
-// 模糊搜索讲师
-export function searchTeacher(keyword) {
-  return request({
-    url: '/tms-account/users/getTrainerLike/' + keyword,
-    method: 'get',
-  })
+module.exports = {
+  // 新增讲师
+  add(data) {
+    return request({
+      url: '/tms-account/users/addTrainer',
+      method: 'post',
+      data: data
+    })
+  },
+  // 查询讲师列表
+  list(query, page, size) {
+    return request({
+      url: '/tms-account/users/getTrainer' + '?page=' + page + '&size=' + size,
+      method: 'get',
+      params: query
+    })
+  },
+  // 模糊搜索讲师
+  search(keyword, page, size) {
+    return request({
+      url: '/tms-account/users/getTrainerLike/' + keyword + '?page=' + page + '&size=' + size,
+      method: 'get',
+    })
+  },
+  // 查询讲师
+  detail(id, query) {
+    return request({
+      url: '/tms-account/users/getTrainerById/' + id,
+      method: 'get',
+      params: query
+    })
+  },
+  // 编辑讲师
+  edit(id, data) {
+    return request({
+      url: '/tms-account/users/editTrainer/' + id,
+      method: 'put',
+      data: data
+    })
+  },
+  // 删除讲师
+  delete(id) {
+    return request({
+      url: '/tms-account/users/deleteTrainer/' + id,
+      method: 'delete'
+    })
+  },
 }

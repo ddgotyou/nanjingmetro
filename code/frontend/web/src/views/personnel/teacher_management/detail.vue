@@ -3,7 +3,13 @@
     <!-- 主体 -->
     <el-card class="card-box" style="width: 100%">
       <!-- 学员信息表单 -->
-      <el-form label-width="80px">
+      <el-form
+        ref="form"
+        v-resize="setLabelWidth"
+        :label-width="labelWidth"
+        label-position="right"
+        class="student-form"
+      >
         <el-row>
           <el-col :span="12">
             <!-- 姓名 -->
@@ -17,7 +23,7 @@
             <!-- 性别 -->
             <el-form-item label="性别">
               <el-input
-                :value="getTeacherSex"
+                :value="getSex"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -59,7 +65,7 @@
             <!-- 部门 -->
             <el-form-item label="部门">
               <el-input
-                :value="getTeacherDept"
+                :value="getDept"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -75,7 +81,7 @@
             <!-- 讲师状态 -->
             <el-form-item label="讲师状态">
               <el-input
-                :value="getTeacherStatus"
+                :value="getStatus"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -88,20 +94,29 @@
           </el-col>
         </el-row>
         <!-- 提交与取消（返回）按钮 -->
-        <el-form-item align="center">
+        <div align="center">
           <el-button @click="onCancel">返回</el-button>
-        </el-form-item>
+        </div>
       </el-form>
     </el-card>
   </div>
 </template>
 
 <script>
-import { teacherInfo } from "@/api/personnel/teacher";
+import api from "@/api/personnel/teacher";
+import { resize } from "@/utils/resize";
+
+const inputWidth = 375;
 
 export default {
+  directives: {
+    resize: resize(),
+  },
   data: function () {
     return {
+      // label 宽度，自适应
+      labelWidth: "auto",
+
       // 要“编辑”或者查看“详情”的学员的 id
       id: null,
 
@@ -124,28 +139,40 @@ export default {
 
   computed: {
     // 将“0/1”转换为“男/女”
-    getTeacherSex() {
+    getSex() {
       return this.form.sex === "0" ? "男" : "女";
     },
     // 将部门数组转换为字符串
-    getTeacherDept() {
+    getDept() {
       return this.form.dept.join("，");
     },
     // 将“0/1”转换为“正式/临时”
-    getTeacherStatus() {
+    getStatus() {
       return this.form.status === "0" ? "正式" : "临时";
     },
   },
   mounted: function () {
+    // 设置 label 宽度
+    this.setLabelWidth();
     // 接受 index 页面传递的参数，并保存
     this.id = this.$route.query.id;
     // 加载该学员的数据
     this.loadData();
   },
   methods: {
+    // 设置 label 宽度
+    setLabelWidth() {
+      let formWidth = this.$refs["form"].$el.clientWidth;
+      this.labelWidth = (formWidth / 2 - inputWidth) / 2;
+      if (this.labelWidth >= 100) {
+        this.labelWidth = this.labelWidth + "px";
+      } else {
+        this.labelWidth = "100px";
+      }
+    },
     // 加载数据
     loadData() {
-      teacherInfo(this.id, null).then((response) => {
+      api.detail(this.id, null).then((response) => {
         this.form = response._embedded.trainerToes[0];
       });
     },
@@ -163,7 +190,15 @@ export default {
   margin: 20px auto;
 }
 
-.same-width {
-  width: 375px;
+.student-form {
+  .el-autocomplete {
+    width: 375px;
+  }
+  .el-input {
+    width: 375px;
+  }
+  .el-select {
+    width: 375px;
+  }
 }
 </style>

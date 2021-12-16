@@ -3,16 +3,24 @@
     <!-- 主体 -->
     <el-card class="card-box" style="width: 100%">
       <!-- 学员信息表单 -->
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form
+        ref="form"
+        v-resize="setLabelWidth"
+        :model="form"
+        :rules="rules"
+        :label-width="labelWidth"
+        label-position="right"
+        class="student-form"
+      >
         <el-row>
           <el-col :span="12">
             <!-- 姓名 -->
             <el-form-item label="姓名" prop="name">
-              <el-input v-model="form.name" class="same-width"></el-input>
+              <el-input v-model="form.name"></el-input>
             </el-form-item>
             <!-- 性别 -->
             <el-form-item label="性别">
-              <el-select v-model="form.sex" class="same-width">
+              <el-select v-model="form.sex">
                 <el-option
                   v-for="item in selection.sex"
                   :key="item.key"
@@ -23,19 +31,19 @@
             </el-form-item>
             <!-- 联系电话 -->
             <el-form-item label="联系电话">
-              <el-input v-model="form.tel" class="same-width"></el-input>
+              <el-input v-model="form.tel"></el-input>
             </el-form-item>
             <!-- 邮箱 -->
             <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" class="same-width"></el-input>
+              <el-input v-model="form.email"></el-input>
             </el-form-item>
             <!-- 身份证号 -->
             <el-form-item label="身份证号" prop="idcard">
-              <el-input v-model="form.idcard" class="same-width"></el-input>
+              <el-input v-model="form.idcard"></el-input>
             </el-form-item>
             <!-- 用户组 -->
             <el-form-item label="用户组">
-              <el-select v-model="form.usergroup" class="same-width">
+              <el-select v-model="form.usergroup">
                 <el-option
                   v-for="item in selection.usergroup"
                   :key="item.key"
@@ -48,61 +56,68 @@
           <el-col :span="12">
             <!-- 部门 -->
             <el-form-item label="部门">
-              <el-row class="same-width">
-                <el-col :span="11">
-                  <el-select v-model="form.dept" multiple collapse-tags>
-                    <el-option
-                      v-for="item in selection.dept"
-                      :key="item.key"
-                      :label="item.label"
-                      :value="item.value"
-                    />
-                  </el-select>
-                </el-col>
-                <el-col :span="9">
-                  <auto-complete
-                    v-model="deptInput"
-                    :suggestions="selection.dept"
-                    placeholder=""
-                  />
-                </el-col>
-                <el-col :span="4">
-                  <el-button
-                    plain
-                    type="primary"
-                    icon="el-icon-plus"
-                    @click="handleAdd"
-                  ></el-button>
-                </el-col>
-              </el-row>
+              <el-select
+                v-model="form.dept"
+                filterable
+                allow-create
+                multiple
+                @change="handelChange"
+              >
+                <el-option
+                  v-for="item in selection.dept"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <!-- 组长 -->
+            <el-form-item label="是否组长" multiple>
+              <el-select v-model="form.leader">
+                <el-option
+                  v-for="item in selection.leader"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
-              <auto-complete
-                v-model="form.post"
-                :suggestions="suggestion.post"
-                class="same-width"
-              />
+              <el-select v-model="form.post" filterable allow-create>
+                <el-option
+                  v-for="item in selection.post"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
             <!-- 学历 -->
             <el-form-item label="学历">
-              <auto-complete
-                v-model="form.edu"
-                :suggestions="suggestion.edu"
-                class="same-width"
-              />
+              <el-select v-model="form.edu" filterable allow-create>
+                <el-option
+                  v-for="item in selection.edu"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
             <!-- 专业 -->
             <el-form-item label="专业">
-              <auto-complete
-                v-model="form.major"
-                :suggestions="suggestion.major"
-                class="same-width"
-              />
+              <el-select v-model="form.major" filterable allow-create>
+                <el-option
+                  v-for="item in selection.major"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
             <!-- 学员状态 -->
             <el-form-item label="学员状态">
-              <el-select v-model="form.status" class="same-width">
+              <el-select v-model="form.status">
                 <el-option
                   v-for="item in selection.status"
                   :key="item.key"
@@ -111,49 +126,39 @@
                 />
               </el-select>
             </el-form-item>
-            <!-- 电子档案 -->
-            <el-form-item>
-              <el-button>查看电子档案</el-button>
-              <el-button>导出电子档案</el-button>
-            </el-form-item>
           </el-col>
         </el-row>
         <!-- 提交与取消（返回）按钮 -->
-        <el-form-item align="center">
+        <div align="center">
           <el-button type="primary" @click="onSubmit">提交</el-button>
           <el-button @click="onCancel">取消</el-button>
-        </el-form-item>
+        </div>
       </el-form>
     </el-card>
   </div>
 </template>
 
 <script>
-import { addStudent, editStudent, studentInfo } from "@/api/personnel/student";
-import {
-  listUserGroup,
-  listDept,
-  listPost,
-  listEdu,
-  listMajor,
-} from "@/api/personnel/personnel";
-import AutoComplete from "../AutoComplete.vue";
+import api from "@/api/personnel/student";
+import all from "@/api/personnel/selection";
+import { resize } from "@/utils/resize";
+
+const inputWidth = 375;
 
 export default {
-  components: {
-    AutoComplete,
+  directives: {
+    resize: resize(),
   },
   data: function () {
     return {
-      // 操作类型，“提交”、“编辑”或“详情”
+      // label 宽度，自适应
+      labelWidth: "auto",
+
+      // 操作类型，“提交”或“编辑”
       option: "",
-      // 要“编辑”或者查看“详情”的学员的 id
+      // 要“编辑”的用户组 ID
       id: null,
 
-      // 添加部门的基础 key
-      baseKey: 999,
-      // 添加部门输入框的当前值
-      deptInput: undefined,
       // 新增、编辑和详情的表单
       form: {
         name: undefined,
@@ -167,6 +172,7 @@ export default {
         edu: "",
         major: "",
         status: "",
+        leader: undefined,
       },
 
       // 表单中的选择框选项
@@ -177,16 +183,14 @@ export default {
         ],
         usergroup: [],
         dept: [],
+        post: [],
+        edu: [],
+        major: [],
         status: [
           { key: "1", label: "正式", value: "0" },
           { key: "2", label: "临时", value: "1" },
         ],
-      },
-
-      suggestion: {
-        post: [],
-        edu: [],
-        major: [],
+        leader: [{ key: "0", label: "不是", value: null }],
       },
 
       rules: {
@@ -231,6 +235,8 @@ export default {
 
   computed: {},
   mounted: function () {
+    // 设置 label 宽度
+    this.setLabelWidth();
     // 接受 index 页面传递的参数，并保存
     this.option = this.$route.query.option;
     this.id = this.$route.query.id;
@@ -238,53 +244,60 @@ export default {
     this.loadData();
   },
   methods: {
+    // 设置 label 宽度
+    setLabelWidth() {
+      let formWidth = this.$refs["form"].$el.clientWidth;
+      this.labelWidth = (formWidth / 2 - inputWidth) / 2;
+      if (this.labelWidth >= 100) {
+        this.labelWidth = this.labelWidth + "px";
+      } else {
+        this.labelWidth = "100px";
+      }
+    },
+    // 加载数据
     loadData() {
-      // 获取用户组、部门的选择下拉框选项，获取岗位、学历、专业的建议下拉框选项
-      listUserGroup(null).then((response) => {
+      // 获取用户组、部门、岗位、学历、专业的下拉框选项
+      all.userGroup(null).then((response) => {
         this.selection.usergroup = response._embedded.dboxToes;
       });
-      listDept(null).then((response) => {
+      all.dept(null).then((response) => {
         this.selection.dept = response._embedded.dboxVoes;
       });
-      listPost(null).then((response) => {
-        this.suggestion.post = response._embedded.dboxVoes;
+      all.post(null).then((response) => {
+        this.selection.post = response._embedded.dboxVoes;
       });
-      listEdu(null).then((response) => {
-        this.suggestion.edu = response._embedded.dboxVoes;
+      all.edu(null).then((response) => {
+        this.selection.edu = response._embedded.dboxVoes;
       });
-      listMajor(null).then((response) => {
-        this.suggestion.major = response._embedded.dboxVoes;
+      all.major(null).then((response) => {
+        this.selection.major = response._embedded.dboxVoes;
       });
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该学员的字段信息
       if (this.option === "edit") {
-        studentInfo(this.id, null).then((response) => {
-          this.form = response._embedded.traineeToes[0];
+        api.detail(this.id, null).then((response) => {
+          this.form = response;
           this.form.usergroup = Number(this.form.usergroup);
         });
       }
     },
-    // 添加一个部门
-    handleAdd() {
-      let isExist =
-        this.selection.dept
-          .map((element) => element.value)
-          .indexOf(this.deptInput) === -1;
-      if (isExist) {
-        this.selection.dept.push({
-          key: (this.baseKey += 1),
-          label: this.deptInput,
-          value: this.deptInput,
+    // 部门值改变
+    handelChange(value) {
+      // 更新 leader 选项
+      let key = 0;
+      this.selection.leader = [{ key: "0", label: "不是", value: null }];
+      value.forEach((element) => {
+        this.selection.leader.push({
+          key: (key += 1),
+          label: element,
+          value: element,
         });
-      }
-      this.form.dept.push(this.deptInput);
-      this.deptInput = undefined;
+      });
     },
     // 提交新增学员的表单
     optionAdd() {
-      addStudent(this.form).then((response) => {
-        let code = response._embedded.responses[0].code;
-        if (code === "200") {
+      api.add(this.form).then((response) => {
+        if (response.code === 200) {
           this.$message.success("添加成功！");
           this.onCancel();
         } else {
@@ -295,9 +308,8 @@ export default {
     },
     // 提交修改学员的表单
     optionEdit() {
-      editStudent(this.id, this.form).then((response) => {
-        let code = response._embedded.responses[0].code;
-        if (code === "200") {
+      api.edit(this.id, this.form).then((response) => {
+        if (response.code === 200) {
           this.$message.success("修改成功！");
           this.onCancel();
         } else {
@@ -330,7 +342,12 @@ export default {
   margin: 20px auto;
 }
 
-.same-width {
-  width: 375px;
+.student-form {
+  .el-input {
+    width: 375px;
+  }
+  .el-select {
+    width: 375px;
+  }
 }
 </style>
