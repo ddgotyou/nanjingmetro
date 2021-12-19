@@ -115,7 +115,7 @@ export default {
       return this.form.sex === "0" ? "男" : "女";
     },
     // 将部门数组转换为字符串
-    geDept() {
+    getDept() {
       return this.form.dept.join("，");
     },
     // 将“0/1”转换为“正式/临时”
@@ -145,7 +145,7 @@ export default {
     // 加载数据
     loadData() {
       api.detail(this.id, null).then((response) => {
-        this.form = response._embedded.traineeToes[0];
+        this.form = response;
       });
     },
     // 返回上一级菜单
