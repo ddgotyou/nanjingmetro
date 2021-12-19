@@ -61,7 +61,7 @@
                 filterable
                 allow-create
                 multiple
-                @change="handelChange"
+                @change="handleChange"
               >
                 <el-option
                   v-for="item in selection.dept"
@@ -72,13 +72,14 @@
               </el-select>
             </el-form-item>
             <!-- 组长 -->
-            <el-form-item label="是否组长" multiple>
-              <el-select v-model="form.leader">
+            <el-form-item label="是否组长">
+              <el-select v-model="form.leader" multiple @change="handleSelect">
                 <el-option
                   v-for="item in selection.leader"
                   :key="item.key"
                   :label="item.label"
                   :value="item.value"
+                  :disabled="item.disabled"
                 />
               </el-select>
             </el-form-item>
@@ -142,6 +143,7 @@
 import api from "@/api/personnel/student";
 import all from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
+import elementIcons from "../../components/icons/element-icons";
 
 const inputWidth = 375;
 
@@ -172,7 +174,7 @@ export default {
         edu: "",
         major: "",
         status: "",
-        leader: undefined,
+        leader: [],
       },
 
       // 表单中的选择框选项
@@ -190,7 +192,7 @@ export default {
           { key: "1", label: "正式", value: "0" },
           { key: "2", label: "临时", value: "1" },
         ],
-        leader: [{ key: "0", label: "不是", value: null }],
+        leader: [],
       },
 
       rules: {
@@ -278,21 +280,44 @@ export default {
         api.detail(this.id, null).then((response) => {
           this.form = response;
           this.form.usergroup = Number(this.form.usergroup);
+          this.handleChange(this.form.dept);
         });
       }
     },
     // 部门值改变
-    handelChange(value) {
+    handleChange(value) {
       // 更新 leader 选项
       let key = 0;
-      this.selection.leader = [{ key: "0", label: "不是", value: null }];
+      this.selection.leader = [
+        { key: "0", label: "不是", value: "", disabled: false },
+      ];
       value.forEach((element) => {
         this.selection.leader.push({
           key: (key += 1),
           label: element,
           value: element,
+          disabled: false,
         });
       });
+    },
+    // 选择组长
+    handleSelect(value) {
+      // 什么也没选
+      if (value.length === 0) {
+        this.selection.leader.forEach((element) => {
+          element.disabled = false;
+        });
+      } // 选了“不是”
+      else if (value.indexOf("") !== -1) {
+        this.selection.leader.forEach((element) => {
+          if (element.value !== "") element.disabled = true;
+        });
+      } // 没有选“不是”
+      else {
+        this.selection.leader.forEach((element) => {
+          if (element.value === "") element.disabled = true;
+        });
+      }
     },
     // 提交新增学员的表单
     optionAdd() {
@@ -308,6 +333,9 @@ export default {
     },
     // 提交修改学员的表单
     optionEdit() {
+      if (this.form.leader && this.form.leader[0] === "")
+        this.form.leader = null;
+
       api.edit(this.id, this.form).then((response) => {
         if (response.code === 200) {
           this.$message.success("修改成功！");

@@ -173,7 +173,7 @@ export default {
     // 加载数据
     loadData() {
       api.detail(this.id, null).then((response) => {
-        this.form = response._embedded.trainerToes[0];
+        this.form = response;
       });
     },
     // 返回上一级菜单
