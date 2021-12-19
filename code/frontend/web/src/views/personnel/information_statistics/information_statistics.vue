@@ -23,7 +23,7 @@
         <el-image
           style="width: 800px; height: 400px"
           :src="url"
-          :fit="fill"
+          fit="fill"
         ></el-image>
       </div>
       <div class="desc-box">统计信息说明</div>
@@ -35,6 +35,7 @@
 export default {
   data() {
     return {
+      url: "",
       dimensions: [],
       options: [
         { value: "1", label: "性别" },

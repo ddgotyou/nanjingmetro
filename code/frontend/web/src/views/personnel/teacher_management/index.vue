@@ -173,8 +173,8 @@
       <!-- 页码 -->
       <el-row>
         <el-pagination
-          :current-page="page.number"
-          :page-sizes="[]"
+          :current-page="page.number + 1"
+          :page-sizes="[4, 5]"
           :page-size="page.size"
           :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
@@ -256,7 +256,7 @@ export default {
 
       // 页码
       page: {
-        size: 0,
+        size: 4,
         totalElements: 0,
         totalPages: 0,
         number: 0,
@@ -438,9 +438,9 @@ export default {
     pageCurrentChange(number) {
       console.log(number);
       if (!this.query.key) {
-        this.data(this.query, number, this.page.size);
+        this.data(this.query, number - 1, this.page.size);
       } else {
-        this.search(this.query.key, number, this.page.size);
+        this.search(this.query.key, number - 1, this.page.size);
       }
     },
   },
