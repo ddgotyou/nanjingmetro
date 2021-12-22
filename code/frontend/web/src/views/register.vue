@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="login">
     <!-- 注册 -->
     <el-form
-      v-if="displayRegister"
+      v-if="display"
       ref="registerForm"
       :model="form"
       :rules="registerRules"
@@ -94,9 +94,10 @@
 
     <!-- 下一步 -->
     <el-form
-      v-if="displayNextStep"
+      v-if="!display"
       ref="nextStepForm"
       :model="form"
+      :rules="registerRules"
       class="register-form"
     >
       <!-- 姓名 -->
@@ -119,13 +120,14 @@
         <el-input v-model="form.tel" placeholder="联系方式"></el-input>
       </el-form-item>
       <!-- 身份证号 -->
-      <el-form-item>
+      <el-form-item prop="idcard">
         <el-input v-model="form.idcard" placeholder="身份证号"></el-input>
       </el-form-item>
       <!-- 邮箱 -->
-      <el-form-item>
+      <el-form-item prop="email">
         <el-input v-model="form.email" placeholder="邮箱"></el-input>
       </el-form-item>
+      <el-form-item> </el-form-item>
       <!-- 部门 -->
       <!-- <el-form-item>
         <el-select
@@ -178,19 +180,22 @@
         </el-col>
       </el-form-item>
     </el-form>
+
+    <!--  底部  -->
+    <div class="el-login-footer">
+      <!-- <span>Copyright © 2018-2021 <a href="http://www.avantport.com">Avantport</a> All Rights Reserved.</span> -->
+    </div>
   </div>
 </template>
 
 <script>
-import all from "@/api/personnel/selection";
-import api from "@/api/personnel/register";
+import { register } from "@/api/register";
 
 export default {
   name: "Register",
-  props: ["display"],
   data() {
     return {
-      displayNextStep: false,
+      display: true,
       password2: "",
       form: {
         username: "",
@@ -201,9 +206,7 @@ export default {
         sex: "",
         tel: "",
         idcard: "",
-        emial: "",
-        dept: [],
-        post: "",
+        email: "",
       },
       selection: {
         sex: [
@@ -213,9 +216,8 @@ export default {
         dept: [],
         post: [],
         type: [
-          { key: "1", label: "管理员", value: "管理员" },
-          { key: "2", label: "讲师", value: "讲师" },
-          { key: "3", label: "学员", value: "学员" },
+          { key: "1", label: "正式", value: "0" },
+          { key: "2", label: "临时", value: "1" },
         ],
       },
       registerRules: {
@@ -225,31 +227,36 @@ export default {
         password: [
           { required: true, trigger: "blur", message: "密码不能为空" },
         ],
+        idcard: [
+          { required: true, trigger: "blur", message: "请输入身份证号" },
+          {
+            pattern: /(^\d{18}$)|(^\d{17}(\d|X|x)$)/,
+            trigger: "blur",
+            message: "证件号码格式有误",
+          },
+        ],
+        email: [
+          { required: true, trigger: "blur", message: "请输入邮箱地址" },
+          {
+            type: "email",
+            trigger: ["blur", "change"],
+            message: "邮箱地址格式有误",
+          },
+        ],
       },
-
-      // 添加部门的基础 key
-      baseKey: 999,
-      // 添加部门输入框的当前值
-      deptInput: undefined,
     };
   },
-  computed: {
-    displayRegister: {
-      get() {
-        return this.display;
+  watch: {
+    $route: {
+      handler: function (route) {
+        this.redirect = route.query && route.query.redirect;
       },
-      set(value) {
-        this.$emit("display", value);
-      },
+      immediate: true,
     },
   },
   mounted: function () {
     // 加载下拉框数据
     this.loadData();
-  },
-  created() {
-    // this.getCode();
-    // this.getCookie();
   },
   methods: {
     async loadData() {
@@ -261,50 +268,69 @@ export default {
       // });
     },
     handleNextStep() {
-      if (this.form.password !== this.password2) {
-        this.$message.error("两次输入的密码不一致！");
-        this.password2 = "";
-        return;
-      }
-
-      this.displayRegister = false;
-      this.displayNextStep = true;
+      this.$refs["registerForm"].validate((valid) => {
+        if (valid) {
+          if (this.form.password !== this.password2) {
+            this.$message.error("两次输入的密码不一致！");
+            this.password2 = "";
+            return;
+          } else {
+            this.display = false;
+          }
+        } else {
+          this.$message.error("请按提示填写正确内容！");
+        }
+      });
     },
     handleReturn() {
-      this.$emit("return");
+      this.$router.push({ path: "/login" }).catch(() => {});
     },
     handleSubmit() {
-      api.register(this.form).then((response) => {
-        console.log(response);
-        if (response) {
-          this.$message.success("注册成功！");
-          this.$router.push("/");
+      this.$refs["nextStepForm"].validate((valid) => {
+        if (valid) {
+          register(this.form).then((response) => {
+            console.log(response);
+            if (response) {
+              this.$message.success("注册成功！");
+              this.$router.push("/login");
+            } else {
+              this.$message.error("注册失败！");
+            }
+          });
         } else {
-          this.$message.error("注册失败！");
+          this.$message.error("请按提示填写正确内容！");
         }
       });
     },
     handleCancel() {
-      this.displayNextStep = false;
-      this.displayRegister = true;
+      this.display = true;
     },
   },
 };
 </script>
 
 <style rel="stylesheet/scss" lang="scss">
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-image: url("../assets/images/login-background.jpeg");
+  background-size: cover;
+}
 .title {
   margin: 0px auto 30px auto;
   text-align: center;
   color: #707070;
 }
-
 .register-form {
   border-radius: 6px;
   background: #fbfdfd;
   width: 400px;
   padding: 25px 25px 5px 25px;
-  text-align: center;
+  position: absolute;
+  right: 120px;
+  bottom: 100px;
   .el-input {
     width: 350px;
     height: 38px;
