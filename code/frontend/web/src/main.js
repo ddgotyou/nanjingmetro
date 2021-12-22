@@ -21,6 +21,8 @@ import { parseTime, resetForm, addDateRange, selectDictLabel, selectDictLabels, 
 import Pagination from "@/components/Pagination";
 // 自定义表格工具扩展
 import RightToolbar from "@/components/RightToolbar"
+import JsonExcel from 'vue-json-excel'
+
 
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
@@ -48,6 +50,7 @@ Vue.prototype.msgInfo = function (msg) {
 // 全局组件挂载
 Vue.component('Pagination', Pagination)
 Vue.component('RightToolbar', RightToolbar)
+Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(permission)
 

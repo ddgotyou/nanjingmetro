@@ -96,13 +96,17 @@
               >导入</el-button
             >
             <!-- 导出按钮 -->
-            <el-button
-              plain
-              type="warning"
-              icon="el-icon-download"
-              @click="handleExport"
-              >导出</el-button
-            >
+            <el-button plain type="warning" icon="el-icon-download">
+              <download-excel
+                :data="table"
+                :fields="fields"
+                type="xls"
+                header="讲师列表"
+                name="讲师列表"
+                style="float: right"
+                >导出
+              </download-excel>
+            </el-button>
           </div>
           <div style="float: right">
             <!-- 搜索按钮 -->
@@ -190,10 +194,25 @@
 <script>
 import api from "@/api/personnel/teacher";
 import all from "@/api/personnel/selection";
+import JsonExcel from "vue-json-excel";
 
 export default {
+  components: {
+    DownloadExcel: JsonExcel,
+  },
   data: function () {
     return {
+      // 导出Excel表格的表头设置
+      fields: {
+        姓名: "name",
+        性别: "sex",
+        联系电话: "tel",
+        部门: "dept",
+        岗位: "post",
+        讲师状态: "usertype",
+      },
+      table: [],
+
       // 按条件筛选
       query: {
         name: undefined,
@@ -293,6 +312,9 @@ export default {
       });
       all.post(null).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
+      });
+      api.list(null).then((response) => {
+        this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
 
       this.data(null, 0, this.page.size);
