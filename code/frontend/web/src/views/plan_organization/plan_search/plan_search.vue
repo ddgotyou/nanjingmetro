@@ -4,20 +4,25 @@
       <div slot="header">筛选</div>
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="计划时间">
               <el-date-picker
-                style="width:100%"
+                style="width:50%"
+                v-model="searchData.period[0]"
                 value-format="yyyy-MM-dd HH:mm:ss"
-                v-model="searchData.period"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期">
+                type="date"
+                placeholder="开始日期">
+              </el-date-picker>
+              <el-date-picker
+                style="width:50%"
+                v-model="searchData.period[1]"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="date"
+                placeholder="结束日期">
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col span="7">
+          <el-col :span="7">
             <el-form-item label="计划状态">
               <el-select
                 v-model="searchData.status"
@@ -33,7 +38,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col span="7">
+          <el-col :span="7">
             <el-form-item label="讲师">
               <el-select
                 v-model="searchData.teacher"
@@ -51,14 +56,14 @@
           </el-col>
         </el-row>
         <el-row>
-          <el-col span="24">
+          <el-col :span="24">
             <el-form-item label="模糊搜索">
               <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col span="24">
+          <el-col :span="24">
             <div style="text-align: right">
               <el-button type="primary" @click="search_commit">搜 索</el-button>
               <el-button @click="search_reset">重 置</el-button>
@@ -146,7 +151,13 @@ export default {
       names: [],
       statuses: [],
       teachers: [],
-      response: {},
+      response: {"page": {
+        "size": 0,
+        "totalElements": 0,
+        "totalPages": 0,
+        "number": 0
+        }
+      },
       tableData: []
     }
   },
@@ -173,43 +184,40 @@ export default {
         that.tableData = []
         //that.names = [{label: '（任意）', value: ''}]
         that.teachers = [{label: '（任意）', value: ''}]
-        for(var i = 0; i < res._embedded.plans.length; i++)
+        if(res.hasOwnProperty('_embedded'))
         {
-          let item = {
-            name: res._embedded.plans[i].name,
-            startTime: res._embedded.plans[i].startTime,
-            endTime: res._embedded.plans[i].endTime,
-            teacher: '',
-            status: res._embedded.plans[i].status,
-            self: res._embedded.plans[i]._links.self.href
-          };
-
-          // if(!that.isInArray(that.names,item.name))
-          // {
-          //   that.names.push({label: item.name, value: item.name});
-          // }
-          // if(!that.isInArray(that.statuses,item.status))
-          // {
-          //   that.statuses.push({label: item.status, value: item.status});
-          // }
-
-          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+          for(var i = 0; i < res._embedded.plans.length; i++)
           {
-            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
-            if(!that.isInArray(that.teachers,res._embedded.plans[i].trainers[j].username))
+            let item = {
+              name: res._embedded.plans[i].name,
+              startTime: res._embedded.plans[i].startTime,
+              endTime: res._embedded.plans[i].endTime,
+              teacher: '',
+              status: res._embedded.plans[i].status,
+              self: res._embedded.plans[i]._links.self.href
+            };
+
+            for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
             {
-              that.teachers.push({label: res._embedded.plans[i].trainers[j].username, vlaue: res._embedded.plans[i].trainers[j].username})
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+              if(!that.isInArray(that.teachers,res._embedded.plans[i].trainers[j].username))
+              {
+                that.teachers.push({label: res._embedded.plans[i].trainers[j].username, vlaue: res._embedded.plans[i].trainers[j].username})
+              }
             }
+            that.tableData.push(item)
           }
-          that.tableData.push(item)
         }
       });
       api.planStatuses().then( res => {
         that.statuses = [{label: '（任意）', value: ''}]
-        for(var i=0;i<res._embedded.strings.length;i++)
+        if(res.hasOwnProperty('_embedded'))
         {
-          console.log(res._embedded.strings[i])
-          that.statuses.push({label: res._embedded.strings[i], value: res._embedded.strings[i]});
+          for(var i=0;i<res._embedded.strings.length;i++)
+          {
+            console.log(res._embedded.strings[i])
+            that.statuses.push({label: res._embedded.strings[i], value: res._embedded.strings[i]});
+          }
         }
       });
     },
@@ -221,7 +229,6 @@ export default {
     search_list() {
       console.log(this.searchData);
       var params = {
-        name: this.searchData.name,
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: this.searchData.status,
@@ -234,21 +241,24 @@ export default {
       api.search(params).then( res => {
         that.response = res;
         that.tableData = [];
-        for(var i = 0; i < res._embedded.plans.length; i++)
+        if(res.hasOwnProperty('_embedded'))
         {
-          let item = {
-            name: res._embedded.plans[i].name,
-            startTime: res._embedded.plans[i].startTime,
-            endTime: res._embedded.plans[i].endTime,
-            teacher: '',
-            status: res._embedded.plans[i].status,
-            self: res._embedded.plans[i]._links.self.href
-          };
-          for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+          for(var i = 0; i < res._embedded.plans.length; i++)
           {
-            item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+            let item = {
+              name: res._embedded.plans[i].name,
+              startTime: res._embedded.plans[i].startTime,
+              endTime: res._embedded.plans[i].endTime,
+              teacher: '',
+              status: res._embedded.plans[i].status,
+              self: res._embedded.plans[i]._links.self.href
+            };
+            for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+            {
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+            }
+            that.tableData.push(item)
           }
-          that.tableData.push(item)
         }
       });
       this.search_status = true;

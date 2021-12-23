@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import RFB from "@novnc/novnc/core/rfb"
+//import RFB from "@novnc/novnc/core/rfb"
 
 export default {
   data() {

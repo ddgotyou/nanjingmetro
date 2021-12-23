@@ -4,31 +4,31 @@
       <el-card class="box-card" style="width:100%">
         <div slot="header">基本信息</div>
         <el-row>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="名称">
               <el-input id="name" v-model="baseData.name" name="name"  readonly />
             </el-form-item>
           </el-col>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="专业">
               <el-input id="speciality" v-model="baseData.speciality" name="speciality" readonly />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="类型">
               <el-input id="type" v-model="baseData.type" style="width:100%" readonly />
             </el-form-item>
           </el-col>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="计划周期">
               <el-input id="period" v-model="baseData.period" name="period" readonly />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col span="24">
+          <el-col :span="24">
             <el-form-item label="描述">
               <el-input
                 id="description"
@@ -44,7 +44,7 @@
       <el-card class="box-card" style="width:100%">
         <div slot="header">人员</div>
         <el-row>
-          <el-col span="20">
+          <el-col :span="20">
             <el-form-item label="模糊搜索">
               <el-input
                 id="search"
@@ -54,7 +54,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col span="4" style="text-align: right">
+          <el-col :span="4" style="text-align: right">
             <el-button type="primary" @click="search_commit">搜 索</el-button>
             <el-button @click="search_reset">重 置</el-button>
           </el-col>
@@ -111,38 +111,55 @@
         <div slot="header">详细任务</div>
         <el-form label-position="right" label-width="80px" :model="tableData_tasks[taskIndex]">
           <el-row>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="任务名称">
                 <el-input id="task_name" v-model="tableData_tasks[taskIndex].name" name="task_name" readonly />
               </el-form-item>
             </el-col>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="任务选择">
                 <el-input id="task_option" v-model="tableData_tasks[taskIndex].chooseTask" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="12">
-              <el-form-item label="课时安排">
+            <el-col :span="6">
+              <el-form-item label="开始时间">
                 <el-input id="task_time" v-model="tableData_tasks[taskIndex].startTime" name="task_time" readonly />
               </el-form-item>
             </el-col>
-            <el-col span="12">
+            <el-col :span="6">
+              <el-form-item label="结束时间">
+                <el-input id="task_time" v-model="tableData_tasks[taskIndex].endTime" name="task_time" readonly />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
               <el-form-item label="顺序">
                 <el-input id="task_sequence" v-model="tableData_tasks[taskIndex].order" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
-            <el-col span="12">
+            <el-col :span="12">
               <el-form-item label="类型">
                 <el-input id="task_type" v-model="tableData_tasks[taskIndex].type" style="width:100%" readonly />
               </el-form-item>
             </el-col>
-            <el-col span="12">
-              <el-form-item label="评分表">
+            <el-col :span="12">
+              <el-form-item label="评分">
                 <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="教室">
+                <el-input v-model="tableData_tasks[taskIndex].classroom" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="描述">
+                <el-input v-model="tableData_tasks[taskIndex].description" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
@@ -196,7 +213,7 @@ export default {
           name: '售票部'
         }
       ],
-      tableData_tasks: [],
+      tableData_tasks: [{}],
       taskIndex: 0,
       tab_activeName: 'students',
     }
@@ -216,9 +233,9 @@ export default {
           name: res.name,
           speciality: res.major,
           type: res.type,
-          period: res.startTime+'-'+res.endTime,
+          period: res.startTime.substr(0,10)+'至'+res.endTime.substr(0,10),
           description: res.detailed,
-          people: [],
+          people: res.people,
           classes: []
         };
         that.tableData_students=res.auditors;

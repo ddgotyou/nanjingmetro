@@ -1,3 +1,4 @@
+
 'use strict'
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
@@ -34,8 +35,7 @@ module.exports = {
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
-        //target: `http://58.246.120.42:9000`,
-        target:`http://139.224.212.195:8080`,
+        target: `http://139.224.212.195:8080`,
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
@@ -80,7 +80,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()
@@ -110,8 +110,8 @@ module.exports = {
             })
           config.optimization.runtimeChunk('single'),
           {
-             from: path.resolve(__dirname, './public/robots.txt'), //防爬虫文件
-             to: './', //到根目录下
+            from: path.resolve(__dirname, './public/robots.txt'), //防爬虫文件
+            to: './', //到根目录下
           }
         }
       )
