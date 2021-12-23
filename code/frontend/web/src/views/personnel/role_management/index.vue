@@ -99,7 +99,7 @@
         <!-- 页码 -->
         <el-row>
           <el-pagination
-            :current-page="page.number"
+            :current-page="page.number + 1"
             :page-sizes="[4, 5]"
             :page-size="page.size"
             :total="page.totalElements"
@@ -162,7 +162,7 @@ export default {
       });
     },
     loadData() {
-      this.data(null, 0, this, this.page.size);
+      this.data(null, 0, this.page.size);
     },
     // 新增角色
     handleAdd() {
@@ -255,9 +255,9 @@ export default {
     },
     pageCurrentChange(number) {
       if (!this.query.key) {
-        this.data(this.query, number, this.page.size);
+        this.data(null, number - 1, this.page.size);
       } else {
-        this.search(this.query.key, number, this.page.size);
+        this.search(this.query.key, number - 1, this.page.size);
       }
     },
   },
