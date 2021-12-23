@@ -111,7 +111,7 @@
 </style>
 
 <script>
-import api from '@/api/device/device_2.js'
+import * as api from "@/api/device/device_2.js"
 
 export default { 
   name: 'ComplexTable',

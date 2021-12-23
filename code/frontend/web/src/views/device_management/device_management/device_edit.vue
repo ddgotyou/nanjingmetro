@@ -203,7 +203,7 @@
 </style>
 
 <script>
-import api from "@/api/device/device"
+import * as api from "@/api/device/device.js"
 
 export default {
   components: {
