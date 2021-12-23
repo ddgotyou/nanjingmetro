@@ -490,9 +490,10 @@ export default {
       })
       api3.getAuditor(this.$user.userId,'').then( res => {
         that.approvers=[]
-        that.approvers_res=res._embedded.auditorVoes
+        that.approvers_res=[]
         if(res.hasOwnProperty('_embedded'))
         {
+          that.approvers_res=res._embedded.auditorVoes
           for(var i=0;i<res._embedded.auditorVoes.length;i++)
           {
             that.approvers.push({label:res._embedded.auditorVoes[i].name,key:res._embedded.auditorVoes[i].id,value:i})
