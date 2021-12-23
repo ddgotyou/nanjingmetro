@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import api from "@/api/personnel/role";
+import * as api from "@/api/personnel/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 
 export default {

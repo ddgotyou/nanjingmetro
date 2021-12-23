@@ -126,9 +126,9 @@
 </template>
 
 <script>
-import api from "@/api/personnel/user_group";
-import user from "@/api/personnel/user";
-import role from "@/api/personnel/role";
+import * as api from "@/api/personnel/user_group";
+import * as user from "@/api/personnel/user";
+import * as role from "@/api/personnel/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 
 export default {

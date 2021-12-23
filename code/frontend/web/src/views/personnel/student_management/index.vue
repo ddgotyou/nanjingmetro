@@ -194,8 +194,8 @@
 </template>
 
 <script>
-import api from "@/api/personnel/student";
-import all from "@/api/personnel/selection";
+import * as api from "@/api/personnel/student";
+import * as all from "@/api/personnel/selection";
 import JsonExcel from "vue-json-excel";
 
 export default {
