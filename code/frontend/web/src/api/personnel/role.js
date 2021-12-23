@@ -10,17 +10,17 @@ module.exports = {
     })
   },
   // 查询角色列表
-  list(query) {
+  list(query, page, size) {
     return request({
-      url: '/tms-account/role/getAllRole',
+      url: '/tms-account/role/getAllRole' + '?page=' + page + '&size=' + size,
       method: 'get',
       params: query
     })
   },
   // 模糊搜索角色
-  search(keyword) {
+  search(keyword, page, size) {
     return request({
-      url: '/tms-account/role/getRoleLike/' + keyword,
+      url: '/tms-account/role/getRoleLike/' + keyword + '?page=' + page + '&size=' + size,
       method: 'get',
     })
   },
