@@ -96,13 +96,17 @@
               >导入</el-button
             >
             <!-- 导出按钮 -->
-            <el-button
-              plain
-              type="warning"
-              icon="el-icon-download"
-              @click="handleExport"
-              >导出</el-button
-            >
+            <el-button plain type="warning" icon="el-icon-download">
+              <download-excel
+                :data="table"
+                :fields="fields"
+                type="xls"
+                header="讲师列表"
+                name="讲师列表"
+                style="float: right"
+                >导出
+              </download-excel>
+            </el-button>
           </div>
           <div style="float: right">
             <!-- 搜索按钮 -->
@@ -173,8 +177,8 @@
       <!-- 页码 -->
       <el-row>
         <el-pagination
-          :current-page="page.number"
-          :page-sizes="[]"
+          :current-page="page.number + 1"
+          :page-sizes="[4, 5]"
           :page-size="page.size"
           :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
@@ -190,10 +194,25 @@
 <script>
 import api from "@/api/personnel/teacher";
 import all from "@/api/personnel/selection";
+import JsonExcel from "vue-json-excel";
 
 export default {
+  components: {
+    DownloadExcel: JsonExcel,
+  },
   data: function () {
     return {
+      // 导出Excel表格的表头设置
+      fields: {
+        姓名: "name",
+        性别: "sex",
+        联系电话: "tel",
+        部门: "dept",
+        岗位: "post",
+        讲师状态: "usertype",
+      },
+      table: [],
+
       // 按条件筛选
       query: {
         name: undefined,
@@ -256,7 +275,7 @@ export default {
 
       // 页码
       page: {
-        size: 0,
+        size: 4,
         totalElements: 0,
         totalPages: 0,
         number: 0,
@@ -293,6 +312,9 @@ export default {
       });
       all.post(null).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
+      });
+      api.list(null).then((response) => {
+        this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
 
       this.data(null, 0, this.page.size);
@@ -438,9 +460,9 @@ export default {
     pageCurrentChange(number) {
       console.log(number);
       if (!this.query.key) {
-        this.data(this.query, number, this.page.size);
+        this.data(this.query, number - 1, this.page.size);
       } else {
-        this.search(this.query.key, number, this.page.size);
+        this.search(this.query.key, number - 1, this.page.size);
       }
     },
   },
