@@ -292,9 +292,9 @@
 </template>
 
 <script>
-import api from '@/api/training_plan/training_plan' 
-import api2 from '@/api/training_plan/application'
-import api3 from '@/api/training_plan/account'
+import * as api from '@/api/training_plan/training_plan' 
+import * as api2 from '@/api/training_plan/application'
+import * as api3 from '@/api/training_plan/account'
 export default {
   components: {
     api,

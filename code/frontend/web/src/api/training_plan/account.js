@@ -4,23 +4,25 @@
  */
 import request from '@/utils/request'
 
-module.exports={
-    getTrainee() {
-        return request({
-            url: '/tms-account/users/getAllTraineeInPlan',
-            method: 'get'
-        })
-    },
-    getDepts() {
-        return request({
-            url: '/tms-account/depts/getDepts',
-            method: 'get'
-        })
-    },
-    getAuditor(uid,deptid) {
-        return request({
-            url: '/tms-account/users/getAuditorList/'+uid+'/'+deptid,
-            method: 'get'
-        })
-    }
+function getTrainee() {
+    return request({
+        url: '/tms-account/users/getAllTraineeInPlan',
+        method: 'get'
+    })
+}
+function getDepts() {
+    return request({
+        url: '/tms-account/depts/getDepts',
+        method: 'get'
+    })
+}
+function getAuditor(uid,deptid) {
+    return request({
+        url: '/tms-account/users/getAuditorList/'+uid+'/'+deptid,
+        method: 'get'
+    })
+}
+
+export{
+    getTrainee,getDepts,getAuditor
 }

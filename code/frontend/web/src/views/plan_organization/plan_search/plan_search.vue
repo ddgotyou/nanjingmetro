@@ -131,7 +131,7 @@
 </template>
 
 <script>
-import api from '@/api/training_plan/training_plan' 
+import * as api from '@/api/training_plan/training_plan' 
 export default {
   components: {
     api
