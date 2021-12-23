@@ -382,8 +382,8 @@ export default {
   created() {
     var temp=this.$route.query.self.split("/")
     this.id=temp[temp.length-1]
-    this.list()
     this.getSelection()
+    this.list()
   },
   computed: {
     taskPeriodOptions() {
@@ -408,9 +408,13 @@ export default {
           type: res.type,
           period: [res.startTime,res.endTime],
           description: res.detailed,
-          people: res.trainees,
+          people: [],
           classes: []
         };
+        for(var i=0;i<res.trainees.length;i++)
+        {
+          that.formData.people.push(res.trainees[i].user)
+        }
         if(res.tasks.length==0)
         {
           that.tableData=[]
@@ -524,9 +528,10 @@ export default {
       })
       api3.getAuditor(this.$user.userId,'').then( res => {
         that.approvers=[]
-        that.approvers_res=res._embedded.auditorVoes
+        that.approvers_res=[]
         if(res.hasOwnProperty('_embedded'))
         {
+          that.approvers_res=res._embedded.auditorVoes
           for(var i=0;i<res._embedded.auditorVoes.length;i++)
           {
             that.approvers.push({label:res._embedded.auditorVoes[i].name,key:res._embedded.auditorVoes[i].id,value:i})
@@ -591,7 +596,7 @@ export default {
         auditors.push({
           user:this.approvers_res[this.popData.approver[i]].id,
           username:this.approvers_res[this.popData.approver[i]].name,
-          approved:this.approvers_res[this.popData.approver[i]].approved
+          approved:'未审核'
         })
       }
       data.auditors=auditors
