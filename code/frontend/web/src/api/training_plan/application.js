@@ -10,7 +10,7 @@ function submit(data) {
         method: 'post',
         data: data
     })
-}s
+}
 function list(query) {
     return request({
         url: '/training-plan/applications',
