@@ -96,7 +96,7 @@
               调整任务
             </el-button>
             <el-button
-              @click.native.prevent=""
+              @click.native.prevent="score(scope.$index, tableData)"
               type="text"
               size="small">
               评分
@@ -405,6 +405,9 @@ export default {
     },
     show_details(index, data) {
       this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].self }})
+    },
+    score(index, data) {
+      this.$router.push({ path: 'pad' })
     },
     size_change(val){
       this.pageSize=val
