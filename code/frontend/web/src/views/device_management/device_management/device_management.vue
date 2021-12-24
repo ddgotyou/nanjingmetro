@@ -129,7 +129,7 @@
 <script>
 import FileSaver from "file-saver";
 import XLSX from "xlsx";
-import api from "@/api/device/device"
+import * as api from "@/api/device/device.js"
 
 export default {
   components: {

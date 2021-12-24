@@ -136,7 +136,7 @@
 </style>
 
 <script>
-import api from '@/api/device/device_2.js'
+import * as api from "@/api/device/device_2.js"
 
 export default {
   name: 'ComplexTable',
@@ -230,10 +230,10 @@ export default {
       this.temp.status="";
       this.temp.keyword="";
 
-      api.listMaintenance(
+      api.listRepair(
         this.temp
       ).then((res)=>{
-        this.list=res._embedded.workSheets;
+        this.list = res._embedded.devices.filter(v=>v.deviceStatusVO.name!==null);
         //console.log(this.list);
       }).catch((error)=>{
         this.$message({
