@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import api from "@/api/personnel/user_group";
+import * as api from "@/api/personnel/user_group";
 
 export default {
   data: function () {

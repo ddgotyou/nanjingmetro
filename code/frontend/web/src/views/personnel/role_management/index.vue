@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import api from "@/api/personnel/role";
+import * as api from "@/api/personnel/role";
 
 export default {
   data: function () {

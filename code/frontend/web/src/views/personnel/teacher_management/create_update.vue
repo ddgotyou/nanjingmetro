@@ -118,8 +118,8 @@
 </template>
 
 <script>
-import api from "@/api/personnel/teacher";
-import all from "@/api/personnel/selection";
+import * as api from "@/api/personnel/teacher";
+import * as all from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
