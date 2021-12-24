@@ -52,16 +52,11 @@
     "vue": "2.6.12",
     "vue-count-to": "1.0.13",
     "vue-cropper": "0.5.5",
-    "vue-json-excel":"^0.3.0",
     "vue-router": "3.4.9",
     "vuedraggable": "2.24.3",
     "vuex": "3.6.0",
-<<<<<<< HEAD
     "xlsx": "^0.17.4",
-=======
-    "xlsx": "^0.17.2",
->>>>>>> d064db06b67069b81ecf0c9bb9f27b955cc26b86
-    "vue-json-excel":"^0.3.0"
+    "vue-json-excel": "^0.3.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.4.6",
