@@ -115,7 +115,7 @@
 </style>
 
 <script>
-import * as api from "@/api/device/device.js"
+import api from "@/api/device/device"
 
 export default {
   components: {

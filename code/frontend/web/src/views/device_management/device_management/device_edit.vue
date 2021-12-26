@@ -203,7 +203,7 @@
 </style>
 
 <script>
-import * as api from "@/api/device/device.js"
+import * as api from "@/api/device/device"
 
 export default {
   components: {
@@ -290,6 +290,10 @@ export default {
     },
     //添加维保信息
     addWorksheet(){
+      if(this.repairData.re_rule == "" || this.repairData.re_time == "" || this.repairData.re_people == "" || this.repairData.re_period == ""){
+        this.$message.error("您输入的维保信息不完善，请确认后再添加");
+        return;
+      }
       var data={
         re_device: this.id,
         re_status: this.repairData.re_time,
