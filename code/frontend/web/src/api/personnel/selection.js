@@ -1,6 +1,5 @@
 import request from '@/utils/request'
 
-
 // 查询用户组下拉框选项
 function userGroup(query) {
   return request({

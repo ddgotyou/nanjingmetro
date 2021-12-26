@@ -34,7 +34,7 @@
                     action="https://jsonplaceholder.typicode.com/posts/"
                     :on-preview="handlePreview"
                     :on-remove="handleRemove"
-                    :before-remove="beforeRemove"
+                    :on-change="handleChange"
                     multiple
                     :limit="3"
                     :on-exceed="handleExceed"
@@ -55,11 +55,28 @@
 <script>
 export default {
   data: function () {
-    return {};
+    return {
+      fileList: [],
+    };
   },
   computed: {},
   mounted: function () {},
-  methods: {},
+  methods: {
+    handlePreview() {},
+    handleRemove() {},
+    handleExceed() {},
+    handleChange(file) {
+      console.log(file);
+      let reader = new FileReader();
+      if (typeof FileReader === "undefined") {
+        // 如果浏览器不支持 FileReader
+        this.$message.warning("您的浏览器不支持文件读取。");
+        return;
+      }
+
+      reader.readAsArrayBuffer(file.raw); //读任意文件
+    },
+  },
 };
 </script>
 
