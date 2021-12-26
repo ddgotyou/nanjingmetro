@@ -4,10 +4,10 @@
     <div class="filter-container">
       <el-input placeholder="Message" style="width: 800px;" class="filter-item" v-model="temp.keyword"/>
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="refresh()">
-        Search
+        搜索
       </el-button>
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
-        Reset
+        重置
       </el-button>
       <!-- input type="file" id="fileExport" @change="handleFileChange()" ref="inputer">
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="upload_test()">
@@ -111,7 +111,7 @@
 </style>
 
 <script>
-import * as api from "@/api/device/device_2.js"
+import * as api from '@/api/device/device_2.js'
 
 export default { 
   name: 'ComplexTable',
@@ -169,7 +169,7 @@ export default {
       this.temp
     ).then((res)=>{
       this.list=res._embedded.workSheets;
-      //console.log(this.list);
+      console.log(this.list);
     }).catch((error)=>{
       this.$message({
           message: '没有检索到维修信息',
