@@ -4,10 +4,10 @@
     <div class="filter-container">
       <el-input placeholder="Message" style="width: 800px;" class="filter-item" v-model="temp.keyword"/>
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="refresh()">
-        Search
+        搜索
       </el-button>
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
-        Reset
+        重置
       </el-button>
       <br/>
       <el-select placeholder="实训室" clearable style="width: 150px" class="filter-item" @change="refresh()" v-model="temp.classroom">
@@ -136,7 +136,7 @@
 </style>
 
 <script>
-import * as api from "@/api/device/device_2.js"
+import api from '@/api/device/device_2.js'
 
 export default {
   name: 'ComplexTable',
@@ -230,10 +230,10 @@ export default {
       this.temp.status="";
       this.temp.keyword="";
 
-      api.listRepair(
+      api.listMaintenance(
         this.temp
       ).then((res)=>{
-        this.list = res._embedded.devices.filter(v=>v.deviceStatusVO.name!==null);
+        this.list=res._embedded.workSheets;
         //console.log(this.list);
       }).catch((error)=>{
         this.$message({
