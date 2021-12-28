@@ -189,7 +189,7 @@
                 <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择" clearable @change="changeClassroom()">
                   <el-option
                     v-for="item in classrooms"
-                    :key="item.label"
+                    :key="item.value"
                     :label="item.label"
                     :value="item.value"
                   />
