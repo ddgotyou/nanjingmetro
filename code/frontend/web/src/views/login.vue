@@ -136,7 +136,7 @@ export default {
           if (this.loginForm.rememberMe) {
             Cookies.set("username", this.loginForm.username, { expires: 30 });
             Cookies.set("password", encrypt(this.loginForm.password), {
-              expires: 30,
+              expires: 300,
             });
             Cookies.set("rememberMe", this.loginForm.rememberMe, {
               expires: 30,

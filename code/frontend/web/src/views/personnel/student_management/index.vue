@@ -306,11 +306,18 @@ export default {
     // 学员列表
     data(query, page, size) {
       this.loading = true;
-      api.list(query, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.traineeVoes : [];
-        this.page = response.page;
-        this.loading = false;
-      });
+      api
+        .list(query, page, size)
+        .then((response) => {
+          this.list = response._embedded.traineeVoes;
+          this.page = response.page;
+          this.loading = false;
+        })
+        .catch((error) => {
+          // console.log(JSON.stringify(error));
+          this.list = [];
+          this.loading = false;
+        });
     },
     // 模糊搜索
     search(key, page, size) {
@@ -323,26 +330,24 @@ export default {
     },
     // 加载学员数据
     loadData() {
-      all.dept(null).then((response) => {
+      all.dept({}).then((response) => {
         this.items.dept.options = response._embedded.dboxVoes;
       });
-      all.post(null).then((response) => {
+      all.post({}).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
       });
-      all.edu(null).then((response) => {
+      all.edu({}).then((response) => {
         this.items.edu.options = response._embedded.dboxVoes;
       });
-      all.major(null).then((response) => {
+      all.major({}).then((response) => {
         this.items.major.options = response._embedded.dboxVoes;
       });
-      api.list(null).then((response) => {
+      api.list({}).then((response) => {
         this.table = response._embedded ? response._embedded.traineeVoes : [];
       });
 
-      this.data(null, 0, this.page.size);
+      this.data({}, 0, this.page.size);
     },
-    // 加载全部学员数据
-    loadAllData() {},
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
     handleItemChange() {
       for (var key in this.items) {

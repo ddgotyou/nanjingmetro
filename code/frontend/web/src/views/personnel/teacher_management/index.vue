@@ -290,11 +290,18 @@ export default {
     // 学员列表
     data(query, page, size) {
       this.loading = true;
-      api.list(query, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.trainerVoes : [];
-        this.page = response.page;
-        this.loading = false;
-      });
+      api
+        .list(query, page, size)
+        .then((response) => {
+          console.log(response);
+          this.list = response._embedded.trainerVoes;
+          this.page = response.page;
+          this.loading = false;
+        })
+        .catch((error) => {
+          this.list = [];
+          this.loading = false;
+        });
     },
     // 模糊搜索
     search(key, page, size) {
@@ -307,17 +314,17 @@ export default {
     },
     // 加载讲师数据
     loadData() {
-      all.dept(null).then((response) => {
+      all.dept({}).then((response) => {
         this.items.dept.options = response._embedded.dboxVoes;
       });
-      all.post(null).then((response) => {
+      all.post({}).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
       });
-      api.list(null).then((response) => {
+      api.list({}).then((response) => {
         this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
 
-      this.data(null, 0, this.page.size);
+      this.data({}, 0, this.page.size);
     },
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
     handleItemChange() {
