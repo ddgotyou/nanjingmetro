@@ -551,6 +551,7 @@ export default {
         auditors: [],
         trainers: [],
         tasks: this.tableData,
+        user: this.$user.userId
       }
       var auditors=[]
       for(var i=0;i<this.popData.approver.length;i++)
@@ -558,7 +559,7 @@ export default {
         auditors.push({
           user:this.approvers_res[this.popData.approver[i]].id,
           username:this.approvers_res[this.popData.approver[i]].name,
-          approved:this.approvers_res[this.popData.approver[i]].approved
+          approved:'未审核'
         })
       }
       data.auditors=auditors

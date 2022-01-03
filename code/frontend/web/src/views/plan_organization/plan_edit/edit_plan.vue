@@ -589,6 +589,7 @@ export default {
         auditors: [],
         trainers: [],
         tasks: this.tableData,
+        user: this.$user.userId
       }
       var auditors=[]
       for(var i=0;i<this.popData.approver.length;i++)
