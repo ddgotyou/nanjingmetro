@@ -114,7 +114,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="12">
+            <el-col :span="24">
               <el-form-item label="课时安排">
                 <el-date-picker
                   style="width:50%;"
@@ -129,7 +129,7 @@
                   style="width:25%;"
                   placeholder="起始时间"
                   format="HH:mm"
-                  value-format="HH:mm:ss"
+                  value-format="HH:mm:00"
                   :disabled="taskData.date==null"
                   v-model="taskData.period[0]"
                   :picker-options="{
@@ -141,7 +141,7 @@
                   style="width:25%;"
                   placeholder="结束时间"
                   format="HH:mm"
-                  value-format="HH:mm:ss"
+                  value-format="HH:mm:00"
                   :disabled="taskData.date==null||taskData.period[0]==null"
                   v-model="taskData.period[1]"
                   :picker-options="{
@@ -151,11 +151,11 @@
                 </el-time-picker>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <!-- <el-col :span="12">
               <el-form-item label="顺序">
                 <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
               </el-form-item>
-            </el-col>
+            </el-col> -->
           </el-row>
           <el-row>
             <el-col :span="12">
@@ -210,9 +210,13 @@
           style="width: 100"
         >
           <el-table-column
+            type="index"
+            width="50">
+          </el-table-column>
+          <!-- <el-table-column
             prop="order"
             label="任务顺序"
-          />
+          /> -->
           <el-table-column
             prop="name"
             label="任务名称"
@@ -273,6 +277,7 @@
                   filterable
                   default-first-option
                   placeholder="请选择审批人"
+                  :disabled="popData.department==''"
                 >
                   <el-option
                     v-for="item in approvers"
@@ -335,7 +340,7 @@ export default {
       taskData: {
         name: '',
         option: '',
-        order: '',
+        // order: '',
         date: null,
         period: [null,null],
         type: '',
@@ -436,7 +441,7 @@ export default {
       console.log(tab, event)
     },
     addTask() {
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.order==''||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -450,13 +455,13 @@ export default {
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
-          order: this.taskData.order,
+          // order: this.taskData.order,
           signInNumber: null,
           signOutNumber: null
         })
-        this.tableData.sort(function (a,b) {
-          return a.order-b.order;
-        })
+        // this.tableData.sort(function (a,b) {
+        //   return a.order-b.order;
+        // })
       }
     },
     deleteRow(index, tableData) {
@@ -524,19 +529,6 @@ export default {
           {
             that.departments.push({label:res._embedded.dboxVoes[i].label,value:res._embedded.dboxVoes[i].key})
           }
-        }
-      })
-      api3.getAuditor(this.$user.userId,'').then( res => {
-        that.approvers=[]
-        that.approvers_res=[]
-        if(res.hasOwnProperty('_embedded'))
-        {
-          that.approvers_res=res._embedded.auditorVoes
-          for(var i=0;i<res._embedded.auditorVoes.length;i++)
-          {
-            that.approvers.push({label:res._embedded.auditorVoes[i].name,key:res._embedded.auditorVoes[i].id,value:i})
-          }
-          console.log(that.approvers)
         }
       })
     },
@@ -764,7 +756,7 @@ export default {
     },
     changeDep(){
       var that=this
-      api3.getAuditor(this.$user.userId,this.popData.department).then( res => {
+      api3.getAuditor(this.popData.department).then( res => {
         that.approvers=[]
         that.approvers_res=res._embedded.auditorVoes
         if(res.hasOwnProperty('_embedded'))

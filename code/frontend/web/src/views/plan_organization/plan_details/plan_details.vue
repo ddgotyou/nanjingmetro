@@ -63,20 +63,16 @@
         <el-tabs v-model="tab_activeName" @tab-click="handleClick">
           <el-tab-pane style="text-align:center;" label="学员" name="students">
             <el-table
-              :data="tableData_students.filter(data => !search_value || data.username.toLowerCase().includes(search_value.toLowerCase()))"
+              :data="tableData_students.filter(data => data.id in baseData.trainees && (!search_value || data.name.toLowerCase().includes(search_value.toLowerCase())))"
               style="width: 100"
             >
               <el-table-column
-                prop="user"
+                prop="id"
                 label="用户"
               />
               <el-table-column
-                prop="username"
+                prop="name"
                 label="用户名"
-              />
-              <el-table-column
-                prop="userRole"
-                label="角色"
               />
             </el-table>
           </el-tab-pane>
@@ -190,10 +186,12 @@
   </div>
 </template>
 <script>
-import * as api from '@/api/training_plan/training_plan' 
+import * as api from '@/api/training_plan/training_plan'
+import * as api3 from '@/api/training_plan/account'
 export default {
   components: {
-    api
+    api,
+    api3
   },
   data() {
     return {
@@ -235,10 +233,9 @@ export default {
           type: res.type,
           period: res.startTime.substr(0,10)+'至'+res.endTime.substr(0,10),
           description: res.detailed,
-          people: res.people,
+          trainees: res.trainees,
           classes: []
         };
-        that.tableData_students=res.auditors;
         if(res.tasks.length==0)
         {
           that.tableData_tasks=[{}]
@@ -248,6 +245,16 @@ export default {
           that.tableData_tasks=res.tasks;
         }
       });
+      api3.getTrainee().then( res => {
+        that.tableData_students=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.hashMaps.length;i++)
+          {
+            that.tableData_students.push({name:res._embedded.hashMaps[i].name,id:res._embedded.hashMaps[i].id})
+          }
+        }
+      })
     },
     search_commit() {
       console.log(this.searchData)

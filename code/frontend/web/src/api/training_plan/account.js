@@ -16,9 +16,9 @@ function getDepts() {
         method: 'get'
     })
 }
-function getAuditor(uid,deptid) {
+function getAuditor(deptid) {
     return request({
-        url: '/tms-account/users/getAuditorList/'+uid+'/'+deptid,
+        url: '/tms-account/users/getAuditorList/'+deptid,
         method: 'get'
     })
 }
