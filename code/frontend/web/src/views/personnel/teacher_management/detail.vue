@@ -104,6 +104,7 @@
 
 <script>
 import * as api from "@/api/personnel/teacher";
+import * as sel from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -122,17 +123,17 @@ export default {
 
       // 新增、编辑和详情的表单
       form: {
-        name: undefined,
-        sex: undefined,
-        tel: undefined,
-        email: undefined,
-        idcard: undefined,
-        usergroup: undefined,
+        name: null,
+        sex: null,
+        tel: null,
+        email: null,
+        idcard: null,
+        usergroup: null,
         dept: [],
-        post: undefined,
-        edu: undefined,
-        major: undefined,
-        status: undefined,
+        post: null,
+        edu: null,
+        major: null,
+        status: null,
       },
     };
   },
@@ -140,7 +141,9 @@ export default {
   computed: {
     // 将“0/1”转换为“男/女”
     getSex() {
-      return this.form.sex === "0" ? "男" : "女";
+      if (this.form.sex === "0") return "男";
+      else if (this.form.sex === "1") return "女";
+      else return null;
     },
     // 将部门数组转换为字符串
     getDept() {
@@ -148,7 +151,9 @@ export default {
     },
     // 将“0/1”转换为“正式/临时”
     getStatus() {
-      return this.form.status === "0" ? "正式" : "临时";
+      if (this.form.status === "0") return "正式";
+      else if (this.form.status === "1") return "临时";
+      else return null;
     },
   },
   mounted: function () {
@@ -173,7 +178,23 @@ export default {
     // 加载数据
     loadData() {
       api.detail(this.id, null).then((response) => {
-        this.form = response;
+        let form = response;
+
+        // 如果用户组 id 为 0，直接赋值
+        if (form.usergroup === "0") {
+          form.usergroup = "默认用户组";
+          this.form = form;
+          return;
+        }
+
+        // 如果不是 0，需要查找其名称
+        sel.userGroupByType("teacher").then((response) => {
+          let usergroup = response._embedded.groupVoes;
+          form.usergroup = usergroup.find(
+            (item) => item.id.toString() === form.usergroup
+          ).name;
+          this.form = form;
+        });
       });
     },
     // 返回上一级菜单

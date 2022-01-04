@@ -100,6 +100,9 @@ service.interceptors.response.use(res => {
         case 404:
           message = "指定的对象不存在";
           break
+        case 400:
+          message = error.response.data;
+          break
         default:
           // ...
           break

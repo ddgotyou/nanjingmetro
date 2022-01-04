@@ -3,9 +3,23 @@ import request from '@/utils/request'
 // 查询用户组下拉框选项
 function userGroup(query) {
   return request({
-    url: '/tms-account/users/getAllUsergroup',
+    url: '/tms-account/users/getUsergroup',
     method: 'get',
     params: query
+  })
+}
+
+// 查询用户组下拉框选项
+function userGroupByType(key) {
+  switch (key) {
+    case 'admin': key = "0"; break
+    case 'teacher': key = "1"; break
+    case 'student': key = "2"; break
+    default: break
+  }
+  return request({
+    url: '/tms-account/usergroup/getUsergroupByType/' + key,
+    method: 'get',
   })
 }
 
@@ -45,4 +59,4 @@ function major(query) {
   })
 }
 
-export { userGroup, dept, post, edu, major }
+export { userGroup, userGroupByType, dept, post, edu, major }

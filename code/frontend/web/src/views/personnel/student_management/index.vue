@@ -96,17 +96,18 @@
               >导入</el-button
             >
             <!-- 导出按钮 -->
-            <el-button plain type="warning" icon="el-icon-download">
-              <download-excel
-                :data="table"
-                :fields="fields"
-                type="xls"
-                header="学员列表"
-                name="学员列表"
-                style="float: right"
-                >导出
-              </download-excel>
-            </el-button>
+            <download-excel
+              :data="table"
+              :fields="fields"
+              type="xls"
+              header="学员列表"
+              name="学员列表"
+              class="export-button"
+            >
+              <el-button plain type="warning" icon="el-icon-download"
+                >导出</el-button
+              >
+            </download-excel>
           </div>
           <div style="float: right">
             <!-- 搜索按钮 -->
@@ -407,7 +408,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .delete(this.selection[i].id)
+              .del(this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });
@@ -510,5 +511,10 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+
+.export-button {
+  float: right;
+  margin-left: 10px;
 }
 </style>
