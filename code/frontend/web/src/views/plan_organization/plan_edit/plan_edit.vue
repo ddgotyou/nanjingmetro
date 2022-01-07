@@ -247,6 +247,7 @@ export default {
               console.log('删除任务'+that.multipleSelection[i].name+'失败', err);
             })
           }
+          that.index=1
         }).catch(() => {
           this.$message({
             type: 'info',
@@ -256,39 +257,39 @@ export default {
       });
       setTimeout(() => {that.fresh();},500);
     },
-    delreq() {
-      var that=this;
-      this.$confirm('此操作将删除所有选中的计划, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        console.log(that.multipleSelection)
-        for(var i=0;i<that.multipleSelection.length;i++)
-        {
-          var temp=that.multipleSelection[i].self.split("/")
-          var id=temp[temp.length-1]
-          api.del(id).then(
-            this.$message({
-              type: 'success',
-              message: '已删除计划'+that.multipleSelection[i].name+'!'
-            })
-          ).catch( err => {
-            console.log('删除任务'+that.multipleSelection[i].name+'失败', err);
-          })
-          if(i==that.multipleSelection.length-1)
-          {
-            that.fresh()
-          }
-        }
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '取消删除操作'
-        });          
-      }); 
-      return Promise.resolve()
-    },
+    // delreq() {
+    //   var that=this;
+    //   this.$confirm('此操作将删除所有选中的计划, 是否继续?', '提示', {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning'
+    //   }).then(() => {
+    //     console.log(that.multipleSelection)
+    //     for(var i=0;i<that.multipleSelection.length;i++)
+    //     {
+    //       var temp=that.multipleSelection[i].self.split("/")
+    //       var id=temp[temp.length-1]
+    //       api.del(id).then(
+    //         this.$message({
+    //           type: 'success',
+    //           message: '已删除计划'+that.multipleSelection[i].name+'!'
+    //         })
+    //       ).catch( err => {
+    //         console.log('删除任务'+that.multipleSelection[i].name+'失败', err);
+    //       })
+    //       if(i==that.multipleSelection.length-1)
+    //       {
+    //         that.fresh()
+    //       }
+    //     }
+    //   }).catch(() => {
+    //     this.$message({
+    //       type: 'info',
+    //       message: '取消删除操作'
+    //     });          
+    //   }); 
+    //   return Promise.resolve()
+    // },
     search_commit()
     {
       this.index=1

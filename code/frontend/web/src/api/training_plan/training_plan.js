@@ -88,7 +88,27 @@ function findAvailableTime(query){
         params: query
     })
 }
+function getTempTasks(query){
+    return request({
+        url: '/training-plan/tmpTasks',
+        method: 'get',
+        params: query
+    })
+}
+function addTempTask(data){
+    return request({
+        url: '/training-plan/tmpTasks',
+        method: 'post',
+        data: data
+    })
+}
+function deleteTempTask(id){
+    return request({
+        url: '/training-plan/tmpTasks/'+id,
+        method: 'delete'
+    })
+}
 
 export{
-    plans,search,planStatuses,details,planTypes,taskTypes,chooseTasks,classrooms,add,del,update,findClassrooms,findAvailableTime
+    plans,search,planStatuses,details,planTypes,taskTypes,chooseTasks,classrooms,add,del,update,findClassrooms,findAvailableTime,getTempTasks,addTempTask,deleteTempTask
 }
