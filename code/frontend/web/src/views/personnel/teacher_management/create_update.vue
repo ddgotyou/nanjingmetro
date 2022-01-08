@@ -267,6 +267,7 @@ export default {
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该讲师的字段信息
       if (this.option === "edit") {
         api.detail(this.id, null).then((response) => {
+          console.log(response);
           this.form = response;
           this.form.usergroup = Number(this.form.usergroup);
           this.handleChange(this.form.dept);

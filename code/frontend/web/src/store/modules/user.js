@@ -76,7 +76,7 @@ const user = {
     },
 
     // 刷新token
-    RefreshToken({commit, state}) {
+    RefreshToken({ commit, state }) {
       return new Promise((resolve, reject) => {
         refreshToken(state.token).then(res => {
           setExpiresIn(res.data)
@@ -87,7 +87,7 @@ const user = {
         })
       })
     },
-    
+
     // 退出系统
     LogOut({ commit, state }) {
       return new Promise((resolve, reject) => {
