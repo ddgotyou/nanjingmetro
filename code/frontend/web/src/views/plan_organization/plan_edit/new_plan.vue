@@ -62,30 +62,37 @@
       </el-card>
       <el-card class="box-card" style="width:100%">
         <div slot="header">人员添加</div>
-        <el-tabs v-model="tab_activeName" @tab-click="handleClick">
-          <el-tab-pane style="text-align:center;" label="学员" name="students">
-            <el-transfer
-              v-model="formData.people"
-              style="text-align: left; display: inline-block"
-              filterable
-              filter-placeholder="请输入学员姓名"
-              :data="people_data"
-              :titles="['候选', '选中']"
-              :button-texts="['取消添加', '添加用户']"
-            />
-          </el-tab-pane>
-          <el-tab-pane style="text-align:center;" label="用户组" name="classes">
-            <el-transfer
-              v-model="formData.classes"
-              style="text-align: left; display: inline-block"
-              filterable
-              filter-placeholder="请输入用户组名称"
-              :data="classes_data"
-              :titles="['候选', '选中']"
-              :button-texts="['取消添加', '添加用户组']"
-            />
-          </el-tab-pane>
-        </el-tabs>
+        <el-checkbox 
+          v-for="group in group_data" 
+          :label="group.label"  
+          :key="group.value"
+          :indeterminate="group.isIndeterminate"
+          v-model="group.isCheckAll"
+          border
+          @change="handleGroupChange(group.no)">
+          {{group.label}}
+        </el-checkbox>
+        <el-table
+          ref="traineeTable"
+          :data="people_data"
+          tooltip-effect="dark"
+          style="width: 100%"
+          height="250"
+          @select="handleTraineeChange"
+          @select-all="handleTraineeAll"
+          @selection-change="handleSelectionChange">
+          <el-table-column
+            type="selection">
+          </el-table-column>
+          <el-table-column
+            prop="key"
+            label="id">
+          </el-table-column>
+          <el-table-column
+            prop="label"
+            label="姓名">
+          </el-table-column>
+        </el-table>
       </el-card>
       <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
@@ -210,10 +217,6 @@
             type="index"
             width="50">
           </el-table-column>
-          <!-- <el-table-column
-            prop="order"
-            label="任务顺序"
-          /> -->
           <el-table-column
             prop="name"
             label="任务名称"
@@ -309,20 +312,8 @@ export default {
   data() {
     return {
       people_data: [],
-      classes_data: [
-        {
-          label: '普通培训一班',
-          key: 0
-        },
-        {
-          label: '普通培训二班',
-          key: 1
-        },
-        {
-          label: '特殊培训一班',
-          key: 2
-        }
-      ],
+      trainee_id2no:{},
+      group_data: [],
       formData: {
         name: '',
         speciality: '',
@@ -330,7 +321,7 @@ export default {
         period: ['',''],
         description: '',
         people: [],
-        classes: []
+        //classes: []
       },
       taskData: {
         name: '',
@@ -347,7 +338,6 @@ export default {
         department: '',
         approver: []
       },
-      tab_activeName: 'students',
       kinds: [],
       task_chooses: [],
       task_types: [],
@@ -398,9 +388,6 @@ export default {
     submit(form) {
       console.log(this.formData)
       this.dialogFormVisible = true
-    },
-    handleClick(tab, event) {
-      console.log(tab, event)
     },
     addTask() {
       if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
@@ -479,8 +466,27 @@ export default {
         {
           for(var i=0;i<res._embedded.hashMaps.length;i++)
           {
-            that.people_data.push({label:res._embedded.hashMaps[i].name,key:res._embedded.hashMaps[i].id})
+            that.people_data.push({no:i,label:res._embedded.hashMaps[i].name,key:res._embedded.hashMaps[i].id})
+            that.trainee_id2no[res._embedded.hashMaps[i].id]=i
           }
+        }
+      })
+      api3.getTraineeGroup().then( res => {
+        that.group_data=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.hashMaps.length;i++)
+          {
+            that.group_data.push({
+              no:i,
+              label:res._embedded.hashMaps[i].name,
+              key:res._embedded.hashMaps[i].group_id,
+              users:res._embedded.hashMaps[i].users,
+              isIndeterminate:false,
+              isCheckAll:false,
+              selection:[]
+            })
+          }   
         }
       })
       api3.getDepts().then( res => {
@@ -669,7 +675,6 @@ export default {
             // if(new Date(that.taskData.period[0]).getTime() >= new Date(that.periods[i].startTime).getTime() && new Date(that.taskData.period[0]).getTime() <= new Date(that.periods[i].endTime).getTime())
             if(that.taskData.period[0] >= that.periods[i].startTime && that.taskData.period[0] <= that.periods[i].endTime)
             {
-              
               that.endTimeRange=[that.taskData.period[0]+' - '+that.periods[i].endTime]
               break
             }
@@ -729,6 +734,81 @@ export default {
           console.log(that.approvers)
         }
       })
+    },
+    handleGroupChange(gno){
+      if(this.group_data[gno].isIndeterminate)
+      {
+        this.group_data[gno].isIndeterminate=false
+      }
+      var users=this.group_data[gno].users
+      if(this.group_data[gno].isCheckAll)
+      {
+        this.group_data[gno].selection=users
+      }
+      else
+      {
+        this.group_data[gno].selection=[]
+      }
+      users.forEach(user => {
+        this.$refs.traineeTable.toggleRowSelection(this.people_data[this.trainee_id2no[user]],this.group_data[gno].isCheckAll);
+        this.traineeChange(user,this.group_data[gno].isCheckAll,gno)
+      });
+    },
+    handleSelectionChange(selection){
+      this.formData.people=[]
+      for(var i=0;i<selection.length;i++)
+      {
+        this.formData.people.push(selection[i].key)
+      }
+    },
+    handleTraineeChange(selection, row){
+      this.traineeChange(row.key,selection.indexOf(row)>=0)
+    },
+    handleTraineeAll(selection){
+      for(var i=0;i<this.people_data.length;i++)
+      {
+        this.traineeChange(this.people_data[i].key,selection.length!=0)
+      }
+    },
+    traineeChange(id,isselect,skip_gno=-1){
+      for(var i=0;i<this.group_data.length;i++)
+      {
+        if(i==skip_gno)
+        {
+          continue
+        }
+        if(this.group_data[i].users.indexOf(id)>=0)
+        {
+          if(isselect&&this.group_data[i].selection.indexOf(id)==-1)
+          {
+            this.group_data[i].selection.push(id)
+            if(this.group_data[i].selection.length==this.group_data[i].users.length)
+            {
+              this.group_data[i].isIndeterminate=false
+              this.group_data[i].isCheckAll=true
+            }
+            else
+            {
+              this.group_data[i].isIndeterminate=true
+              this.group_data[i].isCheckAll=false
+            }
+          }
+          if(!isselect&&this.group_data[i].selection.indexOf(id)>=0)
+          {
+            this.group_data[i].selection.splice(this.group_data[i].selection.indexOf(id),1)
+            if(this.group_data[i].selection.length==0)
+            {
+              this.group_data[i].isIndeterminate=false
+              this.group_data[i].isCheckAll=false
+            }
+            else
+            {
+              this.group_data[i].isIndeterminate=true
+              this.group_data[i].isCheckAll=false
+            }
+          }
+        }
+      }
     }
   }
 }
