@@ -41,11 +41,11 @@
             <el-form-item label="身份证号" prop="idcard">
               <el-input v-model="form.idcard"></el-input>
             </el-form-item>
-            <!-- 用户组 -->
-            <el-form-item label="用户组">
-              <el-select v-model="form.usergroup">
+            <!-- 学员状态 -->
+            <el-form-item label="学员状态" prop="type">
+              <el-select v-model="form.type">
                 <el-option
-                  v-for="item in selection.usergroup"
+                  v-for="item in selection.type"
                   :key="item.key"
                   :label="item.label"
                   :value="item.value"
@@ -61,6 +61,7 @@
                 filterable
                 allow-create
                 multiple
+                collapse-tags
                 @change="handleChange"
               >
                 <el-option
@@ -73,7 +74,12 @@
             </el-form-item>
             <!-- 组长 -->
             <el-form-item label="组长">
-              <el-select v-model="form.leader" multiple>
+              <el-select
+                v-model="form.leader"
+                multiple
+                collapse-tags
+                placeholder="不是组长"
+              >
                 <el-option
                   v-for="item in selection.leader"
                   :key="item.key"
@@ -116,11 +122,11 @@
                 />
               </el-select>
             </el-form-item>
-            <!-- 学员状态 -->
-            <el-form-item label="学员状态">
-              <el-select v-model="form.status">
+            <!-- 用户组 -->
+            <el-form-item label="用户组" v-if="false">
+              <el-select v-model="form.usergroup" multiple collapse-tags>
                 <el-option
-                  v-for="item in selection.status"
+                  v-for="item in selection.usergroup"
                   :key="item.key"
                   :label="item.label"
                   :value="item.value"
@@ -144,6 +150,7 @@ import * as api from "@/api/personnel/student";
 import * as sel from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
 import elementIcons from "../../components/icons/element-icons";
+import repairVue from "../../device_management/repair/repair.vue";
 
 const inputWidth = 375;
 
@@ -168,13 +175,13 @@ export default {
         tel: null,
         email: "", // 必填
         idcard: "", // 必填
-        usergroup: "", // 必填
+        usergroup: [], // 必填
         dept: [],
         leader: [],
         post: null,
         edu: null,
         major: null,
-        status: "", // 必填
+        type: "", // 必填
       },
 
       // 表单中的选择框选项
@@ -183,12 +190,12 @@ export default {
           { key: "1", label: "男", value: "0" },
           { key: "2", label: "女", value: "1" },
         ],
-        usergroup: [{ id: 0, name: "默认用户组" }],
+        usergroup: [{ key: 0, label: "默认用户组", value: 0 }],
         dept: [],
         post: [],
         edu: [],
         major: [],
-        status: [
+        type: [
           { key: "1", label: "正式", value: "0" },
           { key: "2", label: "临时", value: "1" },
         ],
@@ -231,7 +238,7 @@ export default {
             trigger: "blur",
           },
         ],
-        status: [
+        type: [
           {
             type: "string",
             required: true,
@@ -265,11 +272,15 @@ export default {
       }
     },
     // 加载数据
-    loadData() {
+    async loadData() {
       // 获取用户组、部门、岗位、学历、专业的下拉框选项
       sel.userGroupByType("student").then((response) => {
         response._embedded.groupVoes.forEach((item) => {
-          this.selection.usergroup.push({ id: item.id, name: item.name });
+          this.selection.usergroup.push({
+            key: item.id,
+            label: item.name,
+            value: item.id,
+          });
         });
       });
       sel.dept(null).then((response) => {
@@ -287,7 +298,7 @@ export default {
 
       // 如果是“编辑”，则根据 index 页面传递的 id 请求该学员的字段信息
       if (this.option === "edit") {
-        api.detail(this.id, null).then((response) => {
+        await api.detail(this.id, null).then((response) => {
           this.form = response;
           this.handleChange(this.form.dept);
         });
@@ -332,6 +343,7 @@ export default {
     },
     // 提交新增或修改的表单
     onSubmit() {
+      this.form.usergroup = "";
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.option === "add") this.optionAdd();

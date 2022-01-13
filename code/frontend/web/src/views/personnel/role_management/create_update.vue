@@ -85,52 +85,44 @@ export default {
         authTemplate: null,
         remark: "",
         authority: {
-          // 综合培训管理
-          synthTrainMgt: {
-            // 人员管理
-            staffMgt: {
-              stuMgt: "", // 学员管理
-              tchMgt: "", // 讲师管理
-              usrGrp: "", // 用户组
-              roleMgt: "", // 角色管理
-              infoStatic: "", // 信息统计
-            },
-            // 培训组织管理
-            trianOrgMgt: {
-              planEdit: "", // 计划编辑
-              planApproval: "", // 计划审批
-              planImpl: "", // 计划实现
-            },
-            // 培训过程监控
-            trainProcMonitor: {
-              attendanceMgt: "", // 出勤管理
-              planMonitor: "", // 计划监控
-              videoMonitor: "", // 视频监控
-            },
-            // 效果评估管理
-            effectEvalMgt: {
-              dataMgt: "", // 数据管理
-              staticAnaly: "", // 统计分析
-            },
+          // 人员管理
+          staffMgt: {
+            stuMgt: "", // 学员管理
+            tchMgt: "", // 讲师管理
+            usrGrpMgt: "", // 用户组
+            roleMgt: "", // 角色管理
+            infoStat: "", // 信息统计
+          },
+          // 培训组织管理
+          trainOrg: {
+            planEdit: "", // 计划编辑
+            planApproval: "", // 计划审批
+            planImpl: "", // 计划实现
+            planQuery: "", // 计划查询
+            taskAppoint: "", // 任务预约
+          },
+          // 培训过程监控
+          trainProc: {
+            planMonitor: "", // 计划监控
+            attendMgt: "", // 出勤管理
+            videoMonitor: "", // 视频监控
+          },
+          // 效果评估管理
+          effectEval: {
+            dataMgt: "", // 数据管理
+            statAnaly: "", // 统计分析
           },
           // 设备管理
           devMgt: {
             devMgt: "", // 设备管理
-            statusMonitor: "", // 状态监控
+            monitorMgt: "", // 监控管理
             maintenance: "", // 维护保养
+            devRepair: "", // 设备维修
           },
           // 综合信息展示
-          synthInfoDisp: "",
-          // 可视化显示系统
-          visualDispSys: "",
-          // 系统功能
-          sysFunc: {
-            login: "", // 登录系统
-            logout: "", // 退出系统
-            chgPsw: "", // 修改密码
+          synthInfoDisp: {
+            synthInfoDisp: "", // 综合信息展示
           },
-          // PAD 考评终端
-          padEvalTerm: "",
         },
       },
 

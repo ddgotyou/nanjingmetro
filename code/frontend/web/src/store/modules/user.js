@@ -57,6 +57,7 @@ const user = {
     GetInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
         getInfo().then(res => {
+          console.log(res);
           const user = res.user
           Vue.prototype.$user = res.user
           const avatar = user.avatar == "" ? require("@/assets/images/profile.jpg") : user.avatar;

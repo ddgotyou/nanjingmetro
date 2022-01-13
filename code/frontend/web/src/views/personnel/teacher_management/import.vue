@@ -125,11 +125,10 @@ export default {
         row.tel = sheet[i].联系电话;
         row.email = sheet[i].邮箱;
         row.idcard = sheet[i].身份证号;
-        row.usergroup = sheet[i].用户组;
         row.dept = sheet[i].部门;
         row.leader = sheet[i].组长;
         row.post = sheet[i].岗位;
-        row.status = sheet[i].讲师状态;
+        row.type = sheet[i].讲师状态;
 
         // 类型转换
         row.name = row.name ? String(row.name) : null; // 必填
@@ -140,21 +139,21 @@ export default {
         row.tel = row.tel ? String(row.tel) : null;
         row.email = row.email ? String(row.email) : null; // 必填
         row.idcard = row.idcard ? String(row.idcard) : null; // 必填
-        row.usergroup = row.usergroup ? Number(row.usergroup) : null; // ??
+        row.usergroup = [];
         row.dept = row.dept ? String(row.dept).split(",") : [];
         row.leader = row.leader ? String(row.leader).split(",") : [];
         row.post = row.post ? String(row.post) : null;
-        if (!row.status) row.sex = null;
-        else if (row.status === "正式") row.sex = "0";
-        else if (row.status === "临时") row.sex = "1";
-        else row.status = "?";
+        if (!row.type) row.sex = null;
+        else if (row.type === "正式") row.type = "0";
+        else if (row.type === "临时") row.type = "1";
+        else row.type = "?";
 
         // 检查格式
-        if (!row.name || !row.email || !row.idcard || !row.status) {
+        if (!row.name || !row.email || !row.idcard || !row.type) {
           this.right = false;
           this.$message.warning(`第${i + 2}行：请按照模板说明填写必填项。`);
           return;
-        } else if (row.sex === "?" || row.status === "?") {
+        } else if (row.sex === "?" || row.type === "?") {
           this.right = false;
           this.$message.warning(`第${i + 2}行：请通过下拉框选择值。`);
           return;
@@ -170,7 +169,6 @@ export default {
 
         this.data.push(row);
       }
-
       console.log(this.data);
     },
     // 文件删除确认

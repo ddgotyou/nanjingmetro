@@ -43,14 +43,14 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <!-- 用户组 -->
-            <el-form-item label="用户组">
-              <el-select v-model="form.usergroup">
+            <!-- 讲师状态 -->
+            <el-form-item label="讲师状态" prop="type">
+              <el-select v-model="form.type">
                 <el-option
-                  v-for="item in selection.usergroup"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
+                  v-for="item in selection.type"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
                 />
               </el-select>
             </el-form-item>
@@ -94,17 +94,6 @@
                 />
               </el-select>
             </el-form-item>
-            <!-- 讲师状态 -->
-            <el-form-item label="讲师状态" prop="status">
-              <el-select v-model="form.status">
-                <el-option
-                  v-for="item in selection.status"
-                  :key="item.key"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
           </el-col>
         </el-row>
         <!-- 提交与取消（返回）按钮 -->
@@ -139,30 +128,30 @@ export default {
       id: null,
 
       // 新增、编辑和详情的表单
-      // form: {
-      //   name: "", // 必填
-      //   sex: null,
-      //   tel: null,
-      //   email: "", // 必填
-      //   idcard: "", // 必填
-      //   usergroup: null,
-      //   dept: [],
-      //   leader: [],
-      //   post: null,
-      //   status: "", // 必填
-      // },
       form: {
         name: "", // 必填
         sex: null,
         tel: null,
-        email: "1@1.com", // 必填
-        idcard: "123456123456781234", // 必填
-        usergroup: null,
+        email: "", // 必填
+        idcard: "", // 必填
+        usergroup: [],
         dept: [],
         leader: [],
         post: null,
-        status: "1", // 必填
+        type: "", // 必填
       },
+      // form: {
+      //   name: "", // 必填
+      //   sex: null,
+      //   tel: null,
+      //   email: "1@1.com", // 必填
+      //   idcard: "123456123456781234", // 必填
+      //   usergroup: null,
+      //   dept: [],
+      //   leader: [],
+      //   post: null,
+      //   type: "1", // 必填
+      // },
 
       // 表单中的选择框选项
       selection: {
@@ -173,7 +162,7 @@ export default {
         usergroup: [{ id: 0, name: "默认用户组" }],
         dept: [],
         post: [],
-        status: [
+        type: [
           { key: "1", label: "正式", value: "0" },
           { key: "2", label: "临时", value: "1" },
         ],
@@ -216,7 +205,7 @@ export default {
             trigger: "blur",
           },
         ],
-        status: [
+        type: [
           {
             type: "string",
             required: true,
@@ -313,7 +302,7 @@ export default {
     },
     // 提交新增或修改的表单
     onSubmit() {
-      // console.log(this.form);
+      this.form.usergroup = "";
       this.$refs["form"].validate((valid) => {
         if (valid) {
           if (this.option === "add") this.optionAdd();

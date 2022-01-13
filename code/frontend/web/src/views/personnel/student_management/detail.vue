@@ -32,15 +32,19 @@
             <el-form-item label="身份证号">
               <el-input :value="form.idcard" :readonly="true"></el-input>
             </el-form-item>
-            <!-- 用户组 -->
-            <el-form-item label="用户组">
-              <el-input :value="form.usergroup" :readonly="true"></el-input>
+            <!-- 学员状态 -->
+            <el-form-item label="学员状态">
+              <el-input :value="getType" :readonly="true"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <!-- 部门 -->
             <el-form-item label="部门">
               <el-input :value="getDept" :readonly="true"></el-input>
+            </el-form-item>
+            <!-- 组长 -->
+            <el-form-item label="组长">
+              <el-input :value="getLeader" :readonly="true"></el-input>
             </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
@@ -54,14 +58,9 @@
             <el-form-item label="专业">
               <el-input :value="form.major" :readonly="true"></el-input>
             </el-form-item>
-            <!-- 学员状态 -->
-            <el-form-item label="学员状态">
-              <el-input :value="getStatus" :readonly="true"></el-input>
-            </el-form-item>
-            <!-- 电子档案 -->
-            <el-form-item>
-              <el-button>查看电子档案</el-button>
-              <el-button>导出电子档案</el-button>
+            <!-- 用户组 -->
+            <el-form-item label="用户组">
+              <el-input :value="getUserGroup" :readonly="true"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -100,8 +99,9 @@ export default {
         tel: null,
         email: null,
         idcard: null,
-        usergroup: null,
+        usergroup: [],
         dept: [],
+        leader: [],
         post: null,
         edu: null,
         major: null,
@@ -121,10 +121,18 @@ export default {
     getDept() {
       return this.form.dept.join("，");
     },
+    // 将组长数组转换为字符串
+    getLeader() {
+      return this.form.leader.join("，");
+    },
+    // 将用户组数组转换为字符串
+    getUserGroup() {
+      return this.form.usergroup.join("，");
+    },
     // 将“0/1”转换为“正式/临时”
-    getStatus() {
-      if (this.form.status === "0") return "正式";
-      else if (this.form.status === "1") return "临时";
+    getType() {
+      if (this.form.type === "0") return "正式";
+      else if (this.form.type === "1") return "临时";
       else return null;
     },
   },
@@ -150,23 +158,7 @@ export default {
     // 加载数据
     loadData() {
       api.detail(this.id, null).then((response) => {
-        let form = response;
-
-        // 如果用户组 id 为 0，直接赋值
-        if (form.usergroup === "0") {
-          form.usergroup = "默认用户组";
-          this.form = form;
-          return;
-        }
-
-        // 如果不是 0，需要查找其名称
-        sel.userGroupByType("student").then((response) => {
-          let usergroup = response._embedded.groupVoes;
-          form.usergroup = usergroup.find(
-            (item) => item.id.toString() === form.usergroup
-          ).name;
-          this.form = form;
-        });
+        this.form = response;
       });
     },
     // 返回上一级菜单
