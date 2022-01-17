@@ -20,7 +20,7 @@ function list(query) {
 }
 function search(query){
     return request({
-        url: '/training-plan/applications/search/findByConditions',
+        url: '/training-plan/applications/search/findOnAuditByConditions',
         method: 'get',
         params: query
     })

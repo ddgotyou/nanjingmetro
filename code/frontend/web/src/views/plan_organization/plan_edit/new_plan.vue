@@ -475,17 +475,21 @@ export default {
         that.group_data=[]
         if(res.hasOwnProperty('_embedded'))
         {
+          var no=0
           for(var i=0;i<res._embedded.hashMaps.length;i++)
           {
-            that.group_data.push({
-              no:i,
-              label:res._embedded.hashMaps[i].name,
-              key:res._embedded.hashMaps[i].group_id,
-              users:res._embedded.hashMaps[i].users,
-              isIndeterminate:false,
-              isCheckAll:false,
-              selection:[]
-            })
+            if(res._embedded.hashMaps[i].users.length>0){
+              that.group_data.push({
+                no:no,
+                label:res._embedded.hashMaps[i].name,
+                key:res._embedded.hashMaps[i].group_id,
+                users:res._embedded.hashMaps[i].users,
+                isIndeterminate:false,
+                isCheckAll:false,
+                selection:[]
+              })
+              no=no+1
+            }
           }   
         }
       })
@@ -743,7 +747,10 @@ export default {
       var users=this.group_data[gno].users
       if(this.group_data[gno].isCheckAll)
       {
-        this.group_data[gno].selection=users
+        this.group_data[gno].selection=[]
+        users.forEach(user => {
+          this.group_data[gno].selection.push(user)
+        });
       }
       else
       {
@@ -753,6 +760,7 @@ export default {
         this.$refs.traineeTable.toggleRowSelection(this.people_data[this.trainee_id2no[user]],this.group_data[gno].isCheckAll);
         this.traineeChange(user,this.group_data[gno].isCheckAll,gno)
       });
+      //console.log(this.group_data[gno].selection)
     },
     handleSelectionChange(selection){
       this.formData.people=[]
@@ -769,6 +777,10 @@ export default {
       {
         this.traineeChange(this.people_data[i].key,selection.length!=0)
       }
+      // for(var j=0;j<this.group_data.length;j++)
+      // {
+      //   console.log(this.group_data[j].label,this.group_data[j].selection)
+      // }
     },
     traineeChange(id,isselect,skip_gno=-1){
       for(var i=0;i<this.group_data.length;i++)
