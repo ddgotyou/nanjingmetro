@@ -183,7 +183,7 @@
                   <el-option
                     v-for="item in task_scores"
                     :key="item.value"
-                    :label="item.lable"
+                    :label="item.label"
                     :value="item.value"
                   />
                 </el-select>
@@ -263,7 +263,7 @@
           <el-row>
             <el-col :span="24">
               <el-form-item label="部门">
-                <el-select v-model="popData.departmen" style="width:100%" filterable placeholder="请选择部门" @change="changeDep">
+                <el-select v-model="popData.department" style="width:100%" filterable placeholder="请选择部门" @change="changeDep">
                   <el-option
                     v-for="item in departments"
                     :key="item.value"
@@ -310,11 +310,13 @@
 import * as api from '@/api/training_plan/training_plan'
 import * as api2 from '@/api/training_plan/application'
 import * as api3 from '@/api/training_plan/account'
+import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
     api,
     api2,
-    api3
+    api3,
+    api4
   },
   data() {
     return {
@@ -408,7 +410,8 @@ export default {
           period: [res.startTime,res.endTime],
           description: res.detailed,
           people: [],
-          classes: []
+          classes: [],
+          trainers: res.trainers
         };
         for(var i=0;i<res.trainees.length;i++)
         {
@@ -547,6 +550,16 @@ export default {
           }
         }
       })
+      api4.list_template().then( res => {
+        that.task_scores=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.templates.length;i++)
+          {
+            that.task_scores.push({label:res._embedded.templates[i].name,value:res._embedded.templates[i].id})
+          }
+        }
+      })
     },
     save() {
       this.dialogFormVisible = false;
@@ -562,7 +575,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [],
+        trainers: this.formData.trainers,
         tasks: this.tableData,
         user: this.$user.userId
       }
@@ -571,9 +584,9 @@ export default {
       }
       else{
         api.update(data,this.id).then(res => {
-            this.$message({
-              message: '保存成功！',
-              type: 'success'
+          this.$message({
+            message: '保存成功！',
+            type: 'success'
           });
           this.$router.go(-1)
           console.log("add new plan successfully!")
@@ -594,7 +607,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [],
+        trainers: this.formData.trainers,
         tasks: this.tableData,
         user: this.$user.userId
       }

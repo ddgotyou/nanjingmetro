@@ -41,5 +41,9 @@ function reject(id,data) {
 }
 
 export{
-    submit,list,search,approve,reject
+    submit,
+    list,
+    search,
+    approve,
+    reject
 }

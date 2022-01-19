@@ -113,7 +113,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="评分">
-                <el-input id="task_standard" v-model="tableData_tasks[taskIndex].taskScore" style="width:100%" readonly />
+                <el-input id="task_standard" v-model="tableData_scores[tableData_tasks[taskIndex].taskScore]" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>
@@ -162,9 +162,11 @@
 </template>
 <script>
 import * as api from '@/api/training_plan/training_plan'
+import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
-    api
+    api,
+    api4
   },
   data() {
     return {
@@ -181,6 +183,7 @@ export default {
         classes: []
       },
       tableData_classrooms: {},
+      tableData_scores:{},
       tableData_tasks: [{}],
       taskIndex: 0,
       tab_activeName: 'students',
@@ -222,6 +225,16 @@ export default {
           for(var i=0;i<res._embedded.classrooms.length;i++)
           {
             that.tableData_classrooms[res._embedded.classrooms[i].id]=res._embedded.classrooms[i].name
+          }
+        }
+      })
+      api4.list_template().then( res => {
+        that.tableData_scores={}
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.templates.length;i++)
+          {
+            that.tableData_scores[res._embedded.templates[i].id]=res._embedded.templates[i].name
           }
         }
       })

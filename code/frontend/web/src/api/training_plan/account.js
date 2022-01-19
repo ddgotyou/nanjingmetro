@@ -30,5 +30,8 @@ function getAuditor(deptid) {
 }
 
 export{
-    getTrainee,getTraineeGroup,getDepts,getAuditor
+    getTrainee,
+    getTraineeGroup,
+    getDepts,
+    getAuditor
 }

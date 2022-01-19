@@ -385,6 +385,7 @@ export default {
             for(var i = 0; i < res._embedded.plans.length; i++)
             {
               let item = {
+                id: res._embedded.plans[i].id,
                 name: res._embedded.plans[i].name,
                 startTime: res._embedded.plans[i].startTime,
                 endTime: res._embedded.plans[i].endTime,
@@ -450,7 +451,7 @@ export default {
       this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].self }})
     },
     score(index, data) {
-      this.$router.push({ path: 'pad' })
+      this.$router.push({ path: 'pad', query: { id: this.tableData[index].id, name: this.tableData[index].name }})
     },
     size_change(val){
       this.pageSize=val

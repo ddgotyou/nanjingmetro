@@ -179,7 +179,7 @@
                   <el-option
                     v-for="item in task_scores"
                     :key="item.value"
-                    :label="item.lable"
+                    :label="item.label"
                     :value="item.value"
                   />
                 </el-select>
@@ -303,11 +303,13 @@
 import * as api from '@/api/training_plan/training_plan' 
 import * as api2 from '@/api/training_plan/application'
 import * as api3 from '@/api/training_plan/account'
+import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
     api,
     api2,
-    api3
+    api3,
+    api4
   },
   data() {
     return {
@@ -341,20 +343,7 @@ export default {
       kinds: [],
       task_chooses: [],
       task_types: [],
-      task_scores: [
-        {
-          value: '评分规则1',
-          label: '评分规则1'
-        },
-        {
-          value: '评分规则2',
-          label: '评分规则2'
-        },
-        {
-          value: '评分规则3',
-          label: '评分规则3'
-        }
-      ],
+      task_scores: [],
       classrooms: [],
       tableData: [],
       departments: [],
@@ -503,6 +492,16 @@ export default {
           }
         }
       })
+      api4.list_template().then( res => {
+        that.task_scores=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.templates.length;i++)
+          {
+            that.task_scores.push({label:res._embedded.templates[i].name,value:res._embedded.templates[i].id})
+          }
+        }
+      })
     },
     save() {
       this.dialogFormVisible = false;
@@ -518,7 +517,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [],
+        trainers: [{user: this.$user.userId}],
         tasks: this.tableData,
         user: this.$user.userId
       }
@@ -551,7 +550,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [],
+        trainers: [{user: this.$user.userId}],
         tasks: this.tableData,
         user: this.$user.userId
       }

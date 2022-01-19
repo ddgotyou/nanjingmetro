@@ -110,5 +110,20 @@ function deleteTempTask(id){
 }
 
 export{
-    plans,search,planStatuses,details,planTypes,taskTypes,chooseTasks,classrooms,add,del,update,findClassrooms,findAvailableTime,getTempTasks,addTempTask,deleteTempTask
+    plans,
+    search,
+    planStatuses,
+    details,
+    planTypes,
+    taskTypes,
+    chooseTasks,
+    classrooms,
+    add,
+    del,
+    update,
+    findClassrooms,
+    findAvailableTime,
+    getTempTasks,
+    addTempTask,
+    deleteTempTask
 }
