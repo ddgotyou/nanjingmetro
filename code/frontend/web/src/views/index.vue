@@ -232,6 +232,8 @@
 <script>
 import { mapGetters } from "vuex";
 import NumberPanel from "./dashboard/NumberPanel.vue";
+import * as student from "@/api/personnel/student";
+import * as teacher from "@/api/personnel/teacher";
 
 export default {
   components: { NumberPanel },
@@ -241,8 +243,8 @@ export default {
       currentPage: 4,
       totalPage: 400,
 
-      numTeacher: 75,
-      numStudent: 163,
+      numTeacher: null,
+      numStudent: null,
       numApply: 8,
       numApplyLast: 654,
       numApplyViewed: 656,
@@ -331,7 +333,18 @@ export default {
       return { backgroundColor: "#f5f5f5" };
     },
   },
+  mounted: function () {
+    this.loadData();
+  },
   methods: {
+    loadData() {
+      student.list(null).then((response) => {
+        this.numStudent = response.page.totalElements;
+      });
+      teacher.list(null).then((response) => {
+        this.numTeacher = response.page.totalElements;
+      });
+    },
     getApplyContent(content) {
       return content.substring(0, 10) + "...";
     },

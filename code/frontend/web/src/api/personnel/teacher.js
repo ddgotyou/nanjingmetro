@@ -11,7 +11,7 @@ function add(data) {
 
 // 查询讲师列表
 function list(query, page, size) {
-  query = Object.assign(query, { page: page, size: size });
+  query = query ? Object.assign(query, { page: page, size: size }) : null;
   return request({
     url: '/tms-account/users/getTrainer',
     method: 'get',
