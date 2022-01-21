@@ -41,12 +41,33 @@ import request from '@/utils/request'
     });
   }
 
+  function find_devices(query){
+    return request({
+      url: '/device/devices/search/findByConditions',
+      method: 'get',
+      params: query
+  });
+  }
+
+  function upload_pdf(data) {
+    return request({
+      url: '/device/protocols/upload',
+      method: 'post',
+      headers:{
+        "Content-Type":"multipart/form-data; boundary=<calculated when request is sent>",
+      },
+      data: data
+    })
+  }
+
 
   export{
     listMaintenance,
     listOption,
     listRepair,
     listRepairOption,
-    changeStatus
+    changeStatus,
+    find_devices,
+    upload_pdf
   }
 
