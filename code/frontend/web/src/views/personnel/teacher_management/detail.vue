@@ -54,10 +54,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <!-- 用户组 -->
-            <el-form-item label="用户组">
+            <!-- 讲师状态 -->
+            <el-form-item label="讲师状态">
               <el-input
-                :value="form.usergroup"
+                :value="getType"
                 :readonly="true"
                 class="same-width"
               ></el-input>
@@ -70,6 +70,14 @@
                 class="same-width"
               ></el-input>
             </el-form-item>
+            <!-- 组长 -->
+            <el-form-item label="组长">
+              <el-input
+                :value="getLeader"
+                :readonly="true"
+                class="same-width"
+              ></el-input>
+            </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
               <el-input
@@ -78,18 +86,13 @@
                 class="same-width"
               ></el-input>
             </el-form-item>
-            <!-- 讲师状态 -->
-            <el-form-item label="讲师状态">
+            <!-- 用户组 -->
+            <el-form-item label="用户组">
               <el-input
-                :value="getStatus"
+                :value="getUserGroup"
                 :readonly="true"
                 class="same-width"
               ></el-input>
-            </el-form-item>
-            <!-- 电子档案 -->
-            <el-form-item>
-              <el-button>查看电子档案</el-button>
-              <el-button>导出电子档案</el-button>
             </el-form-item>
           </el-col>
         </el-row>
@@ -104,6 +107,7 @@
 
 <script>
 import * as api from "@/api/personnel/teacher";
+import * as sel from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -122,17 +126,18 @@ export default {
 
       // 新增、编辑和详情的表单
       form: {
-        name: undefined,
-        sex: undefined,
-        tel: undefined,
-        email: undefined,
-        idcard: undefined,
-        usergroup: undefined,
+        name: null,
+        sex: null,
+        tel: null,
+        email: null,
+        idcard: null,
+        usergroup: [],
         dept: [],
-        post: undefined,
-        edu: undefined,
-        major: undefined,
-        status: undefined,
+        leader: [],
+        post: null,
+        edu: null,
+        major: null,
+        status: null,
       },
     };
   },
@@ -140,15 +145,27 @@ export default {
   computed: {
     // 将“0/1”转换为“男/女”
     getSex() {
-      return this.form.sex === "0" ? "男" : "女";
+      if (this.form.sex === "0") return "男";
+      else if (this.form.sex === "1") return "女";
+      else return null;
+    },
+    // 将用户组数组转换为字符串
+    getUserGroup() {
+      return this.form.usergroup.join("，");
     },
     // 将部门数组转换为字符串
     getDept() {
       return this.form.dept.join("，");
     },
+    // 将组长数组转换为字符串
+    getLeader() {
+      return this.form.leader.join("，");
+    },
     // 将“0/1”转换为“正式/临时”
-    getStatus() {
-      return this.form.status === "0" ? "正式" : "临时";
+    getType() {
+      if (this.form.type === "0") return "正式";
+      else if (this.form.type === "1") return "临时";
+      else return null;
     },
   },
   mounted: function () {

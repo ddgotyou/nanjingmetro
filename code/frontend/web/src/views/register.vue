@@ -56,8 +56,8 @@
         </el-input>
       </el-form-item>
       <!-- 角色类别 -->
-      <el-form-item>
-        <el-select v-model="form.type" placeholder="角色类型">
+      <el-form-item prop="status">
+        <el-select v-model="form.status" placeholder="角色类型">
           <svg-icon
             slot="prefix"
             icon-class="user"
@@ -102,7 +102,7 @@
     >
       <!-- 姓名 -->
       <el-form-item>
-        <el-input v-model="form.name" placeholder="姓名"></el-input>
+        <el-input v-model="form.nickname" placeholder="姓名"></el-input>
       </el-form-item>
       <!-- 性别 -->
       <el-form-item>
@@ -198,15 +198,15 @@ export default {
       display: true,
       password2: "",
       form: {
-        username: "",
-        password: "",
-        type: "",
+        username: "", // 必填
+        password: "", // 必填
+        status: "", // 必填
         code: "",
-        name: "",
-        sex: "",
-        tel: "",
-        idcard: "",
-        email: "",
+        nickname: null,
+        sex: null,
+        tel: null,
+        idcard: "", // 必填
+        email: "", // 必填
       },
       selection: {
         sex: [
@@ -226,6 +226,9 @@ export default {
         ],
         password: [
           { required: true, trigger: "blur", message: "密码不能为空" },
+        ],
+        status: [
+          { required: true, trigger: "blur", message: "用户类型不能为空" },
         ],
         idcard: [
           { required: true, trigger: "blur", message: "请输入身份证号" },
@@ -286,17 +289,17 @@ export default {
       this.$router.push({ path: "/login" }).catch(() => {});
     },
     handleSubmit() {
+      // this.form.type = "1";
       this.$refs["nextStepForm"].validate((valid) => {
         if (valid) {
-          register(this.form).then((response) => {
-            console.log(response);
-            if (response) {
+          register(this.form)
+            .then((response) => {
               this.$message.success("注册成功！");
               this.$router.push("/login");
-            } else {
-              this.$message.error("注册失败！");
-            }
-          });
+            })
+            .catch((error) => {
+              console.log(error.response.data.error);
+            });
         } else {
           this.$message.error("请按提示填写正确内容！");
         }

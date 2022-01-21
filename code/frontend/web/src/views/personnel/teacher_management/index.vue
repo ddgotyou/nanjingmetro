@@ -96,17 +96,18 @@
               >导入</el-button
             >
             <!-- 导出按钮 -->
-            <el-button plain type="warning" icon="el-icon-download">
-              <download-excel
-                :data="table"
-                :fields="fields"
-                type="xls"
-                header="讲师列表"
-                name="讲师列表"
-                style="float: right"
-                >导出
-              </download-excel>
-            </el-button>
+            <download-excel
+              :data="table"
+              :fields="fields"
+              type="xls"
+              header="讲师列表"
+              name="讲师列表"
+              class="export-button"
+            >
+              <el-button plain type="warning" icon="el-icon-download"
+                >导出</el-button
+              >
+            </download-excel>
           </div>
           <div style="float: right">
             <!-- 搜索按钮 -->
@@ -290,11 +291,17 @@ export default {
     // 学员列表
     data(query, page, size) {
       this.loading = true;
-      api.list(query, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.trainerVoes : [];
-        this.page = response.page;
-        this.loading = false;
-      });
+      api
+        .list(query, page, size)
+        .then((response) => {
+          this.list = response._embedded.trainerVoes;
+          this.page = response.page;
+          this.loading = false;
+        })
+        .catch((error) => {
+          this.list = [];
+          this.loading = false;
+        });
     },
     // 模糊搜索
     search(key, page, size) {
@@ -307,17 +314,17 @@ export default {
     },
     // 加载讲师数据
     loadData() {
-      all.dept(null).then((response) => {
+      all.dept({}).then((response) => {
         this.items.dept.options = response._embedded.dboxVoes;
       });
-      all.post(null).then((response) => {
+      all.post({}).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
       });
-      api.list(null).then((response) => {
+      api.list({}).then((response) => {
         this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
 
-      this.data(null, 0, this.page.size);
+      this.data({}, 0, this.page.size);
     },
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
     handleItemChange() {
@@ -356,7 +363,7 @@ export default {
       });
     },
     // 删除讲师
-    async handleDelete() {
+    handleDelete() {
       let count = this.selection.length; // 选中的讲师数量
 
       // 如果没有选中任何项，则提示并返回
@@ -366,9 +373,7 @@ export default {
       }
 
       // 删除确认
-      await this.$confirm("是否确认删除选中的讲师？", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm("是否确认删除选中的讲师？", "提示", {
         type: "warning",
       }).then(() => {
         // 这是个伪并行，虽然删除任务逐个开始，
@@ -378,7 +383,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .delete(this.selection[i].id)
+              .del(this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });
@@ -458,7 +463,6 @@ export default {
       }
     },
     pageCurrentChange(number) {
-      console.log(number);
       if (!this.query.key) {
         this.data(this.query, number - 1, this.page.size);
       } else {
@@ -480,5 +484,10 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+
+.export-button {
+  float: right;
+  margin-left: 10px;
 }
 </style>
