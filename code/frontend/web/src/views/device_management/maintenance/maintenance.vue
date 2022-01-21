@@ -2,17 +2,30 @@
   
   <div class="app-container">
     <div class="filter-container">
-      <el-input placeholder="Message" style="width: 800px;" class="filter-item" v-model="temp.keyword"/>
-      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="refresh()">
+      <el-input placeholder="请输入搜索关键词" style="width: 600px;" class="filter-item" v-model="temp.keyword"/>
+      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="refresh()">
         搜索
       </el-button>
-      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
+      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
         重置
       </el-button>
-      <!-- input type="file" id="fileExport" @change="handleFileChange()" ref="inputer">
-      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="upload_test()">
+      <!--input type="file" id="fileExport" @change="handleFileChange()" ref="inputer">
+
+      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload2" @click="upload_test()">
         上传测试
       </el-button-->
+
+      <!--el-upload
+        class="filter-item"
+        style="margin-left: 10px;"
+        
+        :file-list="filelist"
+        :limit="1"
+        :show-file-list = "false"
+        >
+        <el-button type="primary" icon="el-icon-upload2" @click="upload_test">pdf上传</el-button>
+      </el-upload-->
+
       <br/>
       <el-select placeholder="实训室" clearable style="width: 150px" class="filter-item" @change="refresh()" v-model="temp.classroom">
         <el-option v-for="item in shixunshi_Options" :key="item" :label="item" :value="item" />
@@ -32,6 +45,20 @@
       </el-select>
       &nbsp;
     </div>
+
+    <el-dialog title="规程概览" :visible.sync="dialogTableVisible2" center @close='closeDialog'>
+      <!--div style="margin-bottom: 15px; text-align: right">
+          <el-button type="primary" size="small" @click.stop="previousPage">
+            上一页
+          </el-button>
+          <el-button type="primary" size="small" @click.stop="nextPage">
+          下一页
+          </el-button>
+      <span>当前第{{pdfPage}}页 / 共{{pageCount}}页</span>
+      </div-->
+
+      <a href="https://yz.tongji.edu.cn/2022geyuanxijieshoutuimianshenggongzuolianxirenjijieshoucailiaoqingdan.pdf" download>预览一个pdf</a>
+    </el-dialog>
 
     <el-dialog title="详细信息" :visible.sync="dialogTableVisible1">
       <el-form label-position="left" label-width="180px" style="margin-left: 10%;">
@@ -72,21 +99,25 @@
       style="width: 100%;"
       
     >
-      <el-table-column label="序号" type="index" sortable align="center" style="width: 5%"></el-table-column>
+      <el-table-column label="序号" align="center" width="80">
+        <template slot-scope="scope">
+          {{(currentPage - 1)*pageSize + scope.$index + 1}}
+        </template>
+      </el-table-column>
 
-      <el-table-column label="实训室名称" style="width: 20%" align="center" property="re_classroomName"></el-table-column>
+      <el-table-column label="实训室名称" align="center" property="re_classroomName"></el-table-column>
 
-      <el-table-column label="设备" style="width: 15%" align="center" property="re_deviceName"></el-table-column>
+      <el-table-column label="设备" align="center" property="re_deviceName"></el-table-column>
 
-      <el-table-column label="周期" style="width: 15%" align="center" property="re_period"></el-table-column>
+      <el-table-column label="周期" align="center" property="re_period"></el-table-column>
 
-      <el-table-column label="维护时间" style="width: 15%" property="re_time"></el-table-column>
+      <el-table-column label="维护时间" property="re_time"></el-table-column>
 
-      <el-table-column label="维保人员" align="center" style="width: 15%" property="re_peopleName"></el-table-column>
+      <el-table-column label="维保人员" align="center" property="re_peopleName"></el-table-column>
 
-      <el-table-column label="预计维修日期" align="center" style="width: 15%" property="reminderDay"></el-table-column>
+      <el-table-column label="预计维修日期" align="center" property="reminderDay"></el-table-column>
 
-      <el-table-column label="操作" align="center" style="width: 15%" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="safe" @click="show_details(scope)">
             详情
@@ -101,6 +132,18 @@
       </el-table-column>
     </el-table>
 
+    <el-row>
+      <el-pagination
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        :total="totalPage"
+        layout="prev, pager, next"
+        class="pagination"
+        @current-change="pagingCurrentChange"
+      />
+      
+    </el-row>
+
   </div>
 </template>
 
@@ -108,10 +151,17 @@
 .el-table .hidden-row {
   display:none;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
 </style>
 
 <script>
 import * as api from '@/api/device/device_2.js'
+import axios from 'axios'
 
 export default { 
   name: 'ComplexTable',
@@ -129,7 +179,8 @@ export default {
     }
   },
   components: {
-      api
+      api,
+      axios
   },
   data() {
     return {
@@ -159,18 +210,39 @@ export default {
         device:"",
         period:"",
         user:"",
-        keyword:""
+        keyword:"",
+        page:0,
+        size:15
       },
+
+      pageSize: 15,
+      totalPage: 35,
+      currentPage: 1,
+      maxPage:2,
+
+      filelist:[],
+      formData:new FormData(),
+      file:"",
       
     }
   },
   created() {
+    //console.log("大傻逼"+process.env.VUE_APP_BASE_AP);
+
     api.listMaintenance(
       this.temp
     ).then((res)=>{
       this.list=res._embedded.workSheets;
-      console.log(this.list);
+      this.pageSize = this.temp.size;
+
+      this.totalPage = res.page.totalElements;
+      this.currentPage = res.page.number + 1;
+      this.maxPage = res.page.totalPage;
+      //console.log(res);
     }).catch((error)=>{
+      console.log("1231231231");
+      console.log(error);
+      this.list = [];
       this.$message({
           message: '没有检索到维修信息',
           type: 'warning'
@@ -183,15 +255,94 @@ export default {
       this.zhouqi_Options=res.periodList;
       this.weihushijian_Options=res.timeList;
       this.weihurenyuan_Options=res.userList;
-    })
+    });
+
   },
   methods: {
+    closeDialog(){
+      this.pdfPage = 1;
+    },
+
+    downloadFile(){
+      axios({
+        method: 'get',
+        url: "http://139.224.212.195:9000/tms/2022/01/05/0b5020d5-b575-4703-a523-e4978899dfc6.jpg", // 请求地址
+        responseType: 'blob' // 表明返回服务器返回的数据类型
+      }).then(
+        response => {
+        console.log("下载响应",response)
+        //resolve(response);
+        let blob = new Blob([response.data], {
+          type: 'application/vnd.ms-excel'
+        })
+        let fileName = "test1.jpg"
+        // console.log("fileName",fileName)
+        if (window.navigator.msSaveOrOpenBlob) {
+          // console.log(2)
+          navigator.msSaveBlob(blob, fileName)
+        } else {
+          // console.log(3)
+          var link = document.createElement('a')
+          link.href = window.URL.createObjectURL(blob)
+          link.download = fileName
+          link.click()
+          //释放内存
+          window.URL.revokeObjectURL(link.href)
+        }
+      },
+      err => {
+        reject(err)
+      });
+    },
+
     onDownLoad(){
-        this.$message.error("pdf下载功能尚未实现~");
+      this.downloadFile();
+    },
+
+    pagingCurrentChange(val) {
+      this.temp.page = this.currentPage - 1;
+
+      api.listMaintenance(
+        this.temp
+      ).then((res)=>{
+        this.list=res._embedded.workSheets;
+
+        this.totalPage = res.page.totalElements;
+        this.currentPage = res.page.number + 1;
+        this.maxPage = res.page.totalPage;
+        //console.log(res);
+      }).catch((error)=>{
+        this.$message({
+            message: '没有检索到维修信息',
+            type: 'warning'
+        });
+      });
+    },
+
+    handleFileChange (e) {
+      console.log(this.filelist);
+      let inputDOM = this.filelist[0].name;
+      this.file = inputDOM.files[0];// 通过DOM取文件数据
+      //let size = Math.floor(this.file.size / 1024);//计算文件的大小　
+      this.formData=new FormData();//new一个formData事件
+      this.formData.append("file",this.file);
+    },
+
+    upload_test(){
+      this.handleFileChange();
+
+      console.log("this.filelist");
+      console.log(this.filelist);
+
+      //console.log(this.formData);
+      //console.log(this.file);
+
     },
 
     previewPDF(index){
-      this.$message.error("pdf预览功能尚未实现~");
+      //this.$message.error("pdf预览功能尚未实现~");
+      this.dialogTableVisible2 = true; 
+      this.now_num=scope.row.xuhao-1;
     },
 
     show_details(scope){
@@ -201,11 +352,18 @@ export default {
     },
 
     refresh(){
+      this.temp.page = 0;
+
       api.listMaintenance(
         this.temp
       ).then((res)=>{
-        console.log("dashabi");
-        console.log(res);
+
+        this.totalPage = res.page.totalElements;
+        this.currentPage = res.page.number + 1;
+        this.maxPage = res.page.totalPage;
+
+        //console.log("dashabi");
+        //console.log(res);
         this.list=res._embedded.workSheets;
         //console.log(this.list);
       }).catch((error)=>{
@@ -236,10 +394,16 @@ export default {
       this.temp.time="";
       this.temp.user="";
       this.temp.keyword="";
+      this.temp.page = 0;
 
       api.listMaintenance(
         this.temp
       ).then((res)=>{
+
+        this.totalPage = res.page.totalElements;
+        this.currentPage = res.page.number + 1;
+        this.maxPage = res.page.totalPage;
+
         this.list=res._embedded.workSheets;
         //console.log(this.list);
       }).catch((error)=>{
