@@ -2,11 +2,11 @@
   
   <div class="app-container">
     <div class="filter-container">
-      <el-input placeholder="Message" style="width: 800px;" class="filter-item" v-model="temp.keyword"/>
-      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="refresh()">
+      <el-input placeholder="请输入搜索关键词" style="width: 800px;" class="filter-item" v-model="temp.keyword"/>
+      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="refresh()">
         搜索
       </el-button>
-      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
+      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
         重置
       </el-button>
       <br/>
@@ -90,13 +90,17 @@
       style="width: 100%;"
       
     >
-      <el-table-column label="序号" type="index" align="center" style="width: 5%"></el-table-column>
+      <el-table-column label="序号" align="center" width="80">
+        <template slot-scope="scope">
+          {{(currentPage - 1)*pageSize + scope.$index + 1}}
+        </template>
+      </el-table-column>
 
-      <el-table-column label="实训室名称" style="width: 20%" align="center" property="deviceClassroomName"></el-table-column>
+      <el-table-column label="实训室名称" align="center" property="deviceClassroomName"></el-table-column>
 
-      <el-table-column label="设备" style="width: 15%" property="deviceName"></el-table-column>
+      <el-table-column label="设备" property="deviceName"></el-table-column>
 
-      <el-table-column label="状态" style="width: 15%" align="center"> 
+      <el-table-column label="状态" align="center"> 
         <template slot-scope="{row}">
           <span v-if="row.deviceStatusVO.name=='正常'" style="color:green">{{ row.deviceStatusVO.name}}</span>
           <span v-else-if="row.deviceStatusVO.name=='故障'" style="font-weight:bold;color:red;">{{ row.deviceStatusVO.name}}</span>
@@ -105,11 +109,11 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="负责人" style="width: 15%" property="afterSale"></el-table-column>
+      <el-table-column label="负责人" property="afterSale"></el-table-column>
 
-      <el-table-column label="负责人联系方式" align="center" style="width: 15%" property="afterSaleNumber"></el-table-column>
+      <el-table-column label="负责人联系方式" align="center" property="afterSaleNumber"></el-table-column>
 
-      <el-table-column label="操作" align="center" style="width: 15%" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="safe" @click="dialogTableVisible1 = true; now_num=scope.$index;">
             详情
@@ -126,6 +130,18 @@
       </el-table-column>
     </el-table>
 
+    <el-row>
+      <el-pagination
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        :total="totalPage"
+        layout="prev, pager, next"
+        class="pagination"
+        @current-change="pagingCurrentChange"
+      />
+      
+    </el-row>
+
   </div>
 </template>
 
@@ -133,10 +149,16 @@
 .el-table .hidden-row {
   display:none;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
 </style>
 
 <script>
-import api from '@/api/device/device_2.js'
+import * as api from '@/api/device/device_2.js'
 
 export default {
   name: 'ComplexTable',
@@ -185,8 +207,16 @@ export default {
         device:"",
         status:"",
 
-        keyword:""
+        keyword:"",
+        page:0,
+        size:20
       },
+
+      
+      pageSize: 20,
+      totalPage: 35,
+      currentPage: 1,
+      maxPage:2,
 
     }
   },
@@ -194,8 +224,13 @@ export default {
     api.listRepair(
       this.temp
     ).then((res)=>{
-      this.list = res._embedded.devices.filter(v=>v.deviceStatusVO.name!==null);
-      //console.log(this.list);
+      this.list = res._embedded.devices;
+      this.pageSize = this.temp.size;
+
+      this.totalPage = res.page.totalElements;
+      this.currentPage = res.page.number + 1;
+      this.maxPage = res.page.totalPage;
+      //console.log(res);
     }).catch((error)=>{
       this.$message({
           message: '没有检索到维修信息',
@@ -209,6 +244,27 @@ export default {
     })
   },
   methods: {
+    pagingCurrentChange(val) {
+      this.temp.page = this.currentPage - 1;
+
+      api.listRepair(
+        this.temp
+      ).then((res)=>{
+        this.list = res._embedded.devices;
+        this.pageSize = this.temp.size;
+
+        this.totalPage = res.page.totalElements;
+        this.currentPage = res.page.number + 1;
+        this.maxPage = res.page.totalPage;
+        //console.log(res);
+      }).catch((error)=>{
+        this.$message({
+            message: '没有检索到维修信息',
+            type: 'warning'
+        });
+      });
+    },
+
     refresh(){
       api.listRepair(
         this.temp
