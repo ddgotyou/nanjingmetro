@@ -1,32 +1,9 @@
 <template>
   <div class="app-container">
+    <div style="margin-top:0px;"></div>
     <el-card class="box-card" style="width:100%">
-      <div slot="header">筛选</div>
-      <el-form label-position="right" label-width="80px" :model="searchData">
-        <el-row>
-          <el-col span="24">
-            <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="请输入搜索关键词" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col span="12">
-            <div style="text-align: left">
-              <!-- 三个按钮 新增实验室是对话框，新增设备是页面 -->
-              <el-button type="primary" @click="dialogFormVisible = true">新增实验室</el-button>
-              <el-button type="primary" @click="add">新增设备</el-button>
-              <el-button @click="handleDelete">删 除</el-button>
-            </div>
-          </el-col>
-          <el-col span="12">
-            <div style="text-align: right">
-              <el-button type="primary" @click="search_commit">搜 索</el-button>
-              <el-button @click="search_reset">重 置</el-button>
-            </div>
-          </el-col>
-        </el-row>
-        <el-dialog title="新增实验室" :visible.sync="dialogFormVisible">
+
+      <el-dialog title="新增实验室" :visible.sync="dialogFormVisible">
           <el-form :model="newlabForm">
             <el-form-item label="名称" label-width="100px">
               <el-input
@@ -61,20 +38,33 @@
             >
           </div>
         </el-dialog>
-      </el-form>
-    </el-card>
-    <div style="margin: 20px"></div>
-    <el-card class="box-card" style="width:100%">
+
       <div slot="header">
         <span>设备列表</span>
         <el-button
-      type="text"
-      style="float: right; padding: 3px 0"
-      plain
-      icon="el-icon-download"
-      @click="exportExcel"
-      >导出</el-button>
+          type="text"
+          style="float: right; padding: 3px 0"
+          plain
+          icon="el-icon-download"
+          @click="exportExcel"
+          >导出</el-button>
       </div>
+
+      <el-form label-position="right" label-width="80px" :model="searchData">
+        <el-row>
+          <el-col span="24">
+            <el-form-item label="模糊搜索">
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="请输入搜索关键词" style="width: 80%"/>
+              <el-button type="primary" @click="search_commit" style="margin-left: 1.5%; width: 7%">搜 索</el-button>
+              <el-button @click="search_reset" style="margin-left: 1.5%; width: 7%">重 置</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row style="margin-bottom: 20px">
+          <el-button @click="handleDelete" style="width: 8%; background-color: #bb505d; color: white">删除设备</el-button>
+          <el-button type="primary" style="width: 8%;" @click="add">新增设备</el-button>
+        </el-row>
+      </el-form>
 
       <el-table
         v-loading="loading"
@@ -87,7 +77,11 @@
       <el-table-column type="selection" width="55" align="center"></el-table-column>
       <!-- 不显示，用来在选择到某个设备时同时获得其 ID -->
       <el-table-column v-if="false" label="ID" prop="deviceId"/>
-      <el-table-column type="index" label="序号" width="100"> </el-table-column>
+      <el-table-column label="序号" align="center" width="80">
+        <template slot-scope="scope">
+          {{(currentPage - 1)*pageSize + scope.$index + 1}}
+        </template>
+      </el-table-column>
       <el-table-column prop="deviceClassroom" label="实验室名称"> </el-table-column>
       <el-table-column prop="deviceName" label="设备"> </el-table-column>
       <el-table-column prop="deviceDescription" label="状态"></el-table-column>
@@ -101,16 +95,46 @@
     <!-- 页码 -->
     <el-row>
       <el-pagination
-        :current-page="currentPage"
-        :page-sizes="pageSizes"
+        :current-page.sync="currentPage"
         :page-size="pageSize"
         :total="totalPage"
-        layout="total, sizes, prev, pager, next, jumper"
+        layout="prev, pager, next"
         class="pagination"
-        @size-change="pagingSizeChange"
         @current-change="pagingCurrentChange"
       />
+      
     </el-row>
+    </el-card>
+    
+    <div style="margin: 20px"></div>
+    <el-card class="box-card" style="width:100%">
+      <div slot="header">
+        <span>实验室列表</span>
+        <el-button type="text" plain @click="dialogFormVisible = true" style="float: right; padding: 3px 0" icon="el-icon-circle-plus">新增实验室</el-button>
+      </div>
+
+      <el-table
+        v-loading="loading"
+        :data="classroomlist"
+        style="width: 100%"
+        highlight-current-row
+        @selection-change="handleSelectionChange"
+      >
+      <el-table-column label="序号" align="center" width="100">
+        <template slot-scope="scope">
+          {{(currentPage - 1)*pageSize + scope.$index + 1}}
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="实验室名称" align="center"> </el-table-column>
+      <el-table-column prop="id" label="实验室编号" align="center"> </el-table-column>
+      <el-table-column prop="description" label="实验室描述" width="400"> </el-table-column>
+      <el-table-column label="操作" align="center">
+        <!-- icon="el-icon-edit" -->
+        <template slot-scope="scope">
+          <el-button @click.native.prevent="delete_classroom(scope.$index)" type="text">删除实验室</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
     </el-card>
   </div>
 </template>
@@ -129,7 +153,7 @@
 <script>
 import FileSaver from "file-saver";
 import XLSX from "xlsx";
-import api from "@/api/device/device"
+import * as api from "@/api/device/device"
 
 export default {
   components: {
@@ -140,7 +164,8 @@ export default {
       searchData: {
         name: '',
         keyword: '',
-        purchaseDate:''
+        purchaseDate:'',
+        value:''
       },
       search_status: false,
       index: 1,
@@ -154,15 +179,20 @@ export default {
 
       dialogFormVisible: false,
       newlabForm: {
-        pass: "",
-        checkPass: "",
+        name: "",
+        description: "",
+        type:""
       },
       classroomid:{},
 
-      pageSizes: [100, 200, 300, 400],
-      pageSize: 100,
-      totalPage: 400,
+      //pageSizes: [100, 200, 300, 400],
+      pageSize: 8,
+      totalPage: 35,
       currentPage: 1,
+      maxPage:2,
+
+      classrooms:[],
+      classroomlist:[]
     };
   },
 
@@ -173,17 +203,23 @@ export default {
   methods: {
     //新增实验室
     addclassroom(){
-      this.dialogFormVisible = false
       var data={
         "name": this.newlabForm.name,
         "description": this.newlabForm.description,
         "type": this.newlabForm.type,
       }
       api.addClassroom(data).then(response => {
-        this.$message.success("新增实验室成功！")
-      });
+        this.$message.success("新增实验室成功！");
+        this.dialogFormVisible = false;
+      }).catch((error)=>{
+        this.$message({
+          message: '该教室名已存在',
+          type: 'warning'
+        });
+      })
       //清空
       this.newlabForm={};
+      this.getDeviceList();
     },
     //修改设备
     edit(index) {
@@ -199,12 +235,91 @@ export default {
       //this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
       //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
     },
+    //删除实验室
+    delete_classroom(index){
+      //console.log(index);
+      var params = {
+        id: this.classroomlist[index].id,
+      };
+      console.log(params);
+      api.deleteClassroom(params).then((res) => {
+        this.$message({
+          message: "您已成功删除该教室信息",
+          type: 'success'
+        });
+        this.getDeviceList();
+      }).catch((error)=>{
+        console.log(error);
+      });
+    },
     //获取设备列表
     getDeviceList() {
       this.loading = true;
-      api.listDevice().then((response) => {
+      var params = {
+        page: 0,
+        size: 8
+      };
+      api.listDevice(params).then((response) => {
+
+        console.log(response);
+
+        this.totalPage = response.page.totalElements;
+        this.currentPage = response.page.number + 1;
+        this.maxPage = response.page.totalPage;
+
         this.tableData = [];
         //this.tableData = response._embedded.devices;
+        api.classrooms().then( res => {
+          //实验室列表
+          this.classroomlist = res._embedded.classrooms;
+          this.classrooms=[]
+          for(var i=0;i<res._embedded.classrooms.length;i++)
+          {
+            var temp=res._embedded.classrooms[i]._links.self.href.split("/")
+            var classroom_id=temp[temp.length-1]
+            this.classroomid[classroom_id] = res._embedded.classrooms[i].name
+            //this.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+          }
+
+          for(var i = 0; i < response._embedded.devices.length; i++)
+          {
+            let item = {
+              deviceClassroom: this.classroomid[response._embedded.devices[i].deviceClassroom],
+              deviceName: response._embedded.devices[i].deviceName,
+              deviceDescription: response._embedded.devices[i].deviceStatusVO.name,
+              deviceId:response._embedded.devices[i].deviceId,
+            };
+            this.tableData.push(item)
+          }
+        })
+      });
+      this.loading = false;
+    },
+
+    // 前往新增设备页面
+    add() {
+      this.$router.push({ path: "new_device" });
+    },
+    search_commit()
+    {
+      this.index=1
+      this.search_list()
+    },
+    search_list() {
+      console.log(this.searchData);
+      this.currentPage = 0;
+      var params = {
+        page: 0,
+        size: 8,
+        keyword: this.searchData.value,
+      };
+      api.search(params).then((response) => {
+        this.totalPage = response.page.totalElements;
+        this.currentPage = response.page.number + 1;
+        this.maxPage = response.page.totalPage;
+        //console.log(res);
+        //this.response = res;
+        this.tableData = [];
         api.classrooms().then( res => {
           //实验室列表
           this.classrooms=[]
@@ -228,63 +343,6 @@ export default {
           }
         })
       });
-      this.loading = false;
-    },
-    // list() {
-    //   console.log(this.searchData);
-    //   var params = {
-    //     name:'',
-    //     value: '',
-    //     index: this.index-1,
-    //     //size: this.pageSize
-    //   };
-    //   let that=this;
-    //   api.search(params).then( res => {
-    //     that.response = res;
-    //     that.tableData = [];
-    //     for(var i = 0; i < res._embedded.devices.length; i++)
-    //     {
-    //       let item = {
-    //         deviceClassroom: res._embedded.devices[i].deviceClassroom,
-    //         deviceName: res._embedded.devices[i].deviceName,
-    //         deviceDescription: res._embedded.devices[i].deviceDescription,
-    //         //self: res._embedded.devices[i]._links.self.href
-    //       };
-    //       that.tableData.push(item)
-    //     }
-    //   });
-    // },
-
-    // 前往新增设备页面
-    add() {
-      this.$router.push({ path: "new_device" });
-    },
-    search_commit()
-    {
-      this.index=1
-      this.search_list()
-    },
-    search_list() {
-      console.log(this.searchData);
-      var params = {
-        name: "1",
-        keyword: this.searchData.value,
-      };
-      let that=this;
-      api.search(params).then( res => {
-        that.response = res;
-        that.tableData = [];
-        for(var i = 0; i < res._embedded.devices.length; i++)
-        {
-          let item = {
-            deviceName: res._embedded.devices[i].deviceName,
-            deviceClassroom: res._embedded.devices[i].deviceClassroom,
-            deviceDescription: res._embedded.devices[i].deviceDescription,
-
-          };
-          that.tableData.push(item)
-        }
-      });
       this.search_status = true;
     },
     search_reset() {
@@ -297,7 +355,7 @@ export default {
       };
       this.search_status = false;
       this.index=1;
-      this.list();
+      this.search_list();
     },
     handleSelectionChange(selection) {
       this.deviceSelection = selection;
@@ -341,12 +399,51 @@ export default {
       this.getDeviceList();
       this.loading= false;
     },
-    pagingSizeChange(val) {
-      console.log(`每页 ${val} 条`);
-    },
+
     pagingCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      //this.currentPage = this.currentPage - 1;
+
+      //console.log("this.currentPage");
+
+      //this.loading = true;
+      var params = {
+        page: this.currentPage - 1,
+        keyword: this.searchData.value,
+        size: 8
+      };
+      api.search(params).then((response) => {
+        this.totalPage = response.page.totalElements;
+        this.currentPage = response.page.number + 1;
+
+
+        this.tableData = [];
+        //this.tableData = response._embedded.devices;
+        api.classrooms().then( res => {
+          //实验室列表
+          this.classrooms=[]
+          for(var i=0;i<res._embedded.classrooms.length;i++)
+          {
+            var temp=res._embedded.classrooms[i]._links.self.href.split("/")
+            var classroom_id=temp[temp.length-1]
+            this.classroomid[classroom_id] = res._embedded.classrooms[i].name
+            //this.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+          }
+          //console.log(this.classrooms)
+          for(var i = 0; i < response._embedded.devices.length; i++)
+          {
+            let item = {
+              deviceClassroom: this.classroomid[response._embedded.devices[i].deviceClassroom],
+              deviceName: response._embedded.devices[i].deviceName,
+              deviceDescription: response._embedded.devices[i].deviceStatusVO.name,
+              deviceId:response._embedded.devices[i].deviceId,
+            };
+            this.tableData.push(item)
+          }
+        })
+      });
+      //this.loading = false;
     },
+
     exportExcel() {
       /* 从表生成工作簿对象 */
       var wb = XLSX.utils.table_to_book(

@@ -115,7 +115,7 @@
 </style>
 
 <script>
-import api from "@/api/device/device"
+import * as api from "@/api/device/device"
 
 export default {
   components: {
@@ -191,7 +191,7 @@ export default {
           type: 'success'
         });
         this.$router.go(-1)
-        console.log("add new device successfully!")
+        console.log("新增设备成功")
       })
     },
   },
