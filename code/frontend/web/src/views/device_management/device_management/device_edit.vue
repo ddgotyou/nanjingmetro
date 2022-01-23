@@ -95,7 +95,8 @@
         <el-row>
           <el-col span="12">
             <el-form-item label="周期">
-              <el-input v-model="repairData.re_period"></el-input>
+              <el-input v-model="repairData.re_period" placeholder="正整数表示周期天数"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col span="12">
@@ -154,7 +155,8 @@
         style="width: 100"
         highlight-current-row
       >
-        <el-table-column prop="re_period" label="周期"/>
+        <el-table-column type="index" label="序号" align="center"/>
+        <el-table-column prop="re_period" label="周期" align="center"/>
         <el-table-column prop="re_time" label="维保时间"/>
         <el-table-column prop="re_people" label="维护人员"/>
         <el-table-column prop="re_rule" label="规程"/>
@@ -200,6 +202,7 @@
 .clearfix:after {
   clear: both;
 }
+
 </style>
 
 <script>
@@ -292,6 +295,11 @@ export default {
     addWorksheet(){
       if(this.repairData.re_rule == "" || this.repairData.re_time == "" || this.repairData.re_people == "" || this.repairData.re_period == ""){
         this.$message.error("您输入的维保信息不完善，请确认后再添加");
+        return;
+      }
+      let regx = /^\d+$/;
+      if(!regx.test(this.repairData.re_period)){
+        this.$message.error("维保周期应当为一正整数");
         return;
       }
       var data={
