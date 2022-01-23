@@ -438,8 +438,7 @@ export default {
     },
     search_reset() {
       this.searchData = {
-        name: '',
-        period: '',
+        period: ['',''],
         teacher: '',
         value: ''
       }

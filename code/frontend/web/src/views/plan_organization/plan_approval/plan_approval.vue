@@ -179,6 +179,7 @@ export default {
           for(var i=0;i<res._embedded.applications.length;i++)
           {
             let item={
+              id:res._embedded.applications[i].id,
               planName: res._embedded.applications[i].planName,
               planId:res._embedded.applications[i].plan,
               startTime: res._embedded.applications[i].planStartTime,
@@ -213,6 +214,7 @@ export default {
           for(var i = 0; i < res._embedded.applications.length; i++)
           {
             let item={
+              id:res._embedded.applications[i].id,
               planName: res._embedded.applications[i].planName,
               planId:res._embedded.applications[i].plan,
               startTime: res._embedded.applications[i].planStartTime,
@@ -248,8 +250,7 @@ export default {
     },
     approve(index, data) {
       var that=this;
-      var temp=that.tableData[index].self.split("/")
-      var id=temp[temp.length-1]
+      var id=that.tableData[index].id
       this.$confirm('此操作将通过计划'+that.tableData[index].planName+', 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -270,8 +271,7 @@ export default {
     },
     reject(index, data) {
       var that=this;
-      var temp=that.tableData[index].self.split("/")
-      var id=temp[temp.length-1]
+      var id=that.tableData[index].id
       this.$prompt('请输入驳回原因', '驳回', {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
