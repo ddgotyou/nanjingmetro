@@ -152,7 +152,7 @@
 
     <!-- 培训计划框 -->
     <el-card class="card-box" style="width: 100%">
-      <div slot="header">XX培训计划任务表</div>
+      <div slot="header">{{training_info.plan}} 培训计划任务表</div>
 
       <el-collapse v-model="actived" accordion>
         <el-collapse-item
@@ -256,7 +256,7 @@ export default {
     this.training_info.plan=this.$route.query.name
 
     api.list_students({
-      planId: 89
+      planId: this.$route.query.id
     }).then((res)=>{
       //console.log(res);
       this.trainingTaskList = res._embedded.scores;

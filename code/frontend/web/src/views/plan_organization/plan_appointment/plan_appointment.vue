@@ -90,7 +90,7 @@
                   <el-option
                     v-for="item in task_scores"
                     :key="item.value"
-                    :label="item.lable"
+                    :label="item.label"
                     :value="item.value"
                   />
                 </el-select>
@@ -188,9 +188,11 @@
 
 <script>
 import * as api from '@/api/training_plan/training_plan' 
+import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
-    api
+    api,
+    api4
   },
   data() {
     return {
@@ -217,20 +219,8 @@ export default {
       kinds: [],
       task_chooses: [],
       task_types: [],
-      task_scores: [
-        {
-          value: '评分规则1',
-          label: '评分规则1'
-        },
-        {
-          value: '评分规则2',
-          label: '评分规则2'
-        },
-        {
-          value: '评分规则3',
-          label: '评分规则3'
-        }
-      ],
+      task_scores: [],
+      task_scores_map: {},
       classrooms: [],
       tableData: [],
 
@@ -257,6 +247,7 @@ export default {
   },
   methods:{
     listpage1(){
+      this.index=0
       api.getTempTasks({
         page: 0,
         size: this.pageSize
@@ -266,12 +257,26 @@ export default {
       })
     },
     list() {
+      var that=this
       api.getTempTasks({
-        page: this.index-1,
-        size: this.pageSize
+        page: that.index-1,
+        size: that.pageSize
       }).then( res => {
-        this.response=res
-        this.tableData=res._embedded.tmpTasks
+        that.response=res
+        that.tableData=[]
+        for(var i=0;i<res._embedded.tmpTasks.length;i++)
+        {
+          that.tableData.push({
+            name:res._embedded.tmpTasks[i].name,
+            chooseTask:res._embedded.tmpTasks[i].chooseTask,
+            startTime:res._embedded.tmpTasks[i].startTime,
+            endTime:res._embedded.tmpTasks[i].endTime,
+            type:res._embedded.tmpTasks[i].type,
+            taskScore:that.task_scores_map[res._embedded.tmpTasks[i].taskScore],
+            classroom:res._embedded.tmpTasks[i].classroom,
+            description:res._embedded.tmpTasks[i].description
+          })
+        }
       })
     },
     addTask() {
@@ -294,6 +299,10 @@ export default {
           signOutNumber: null
         }).then( res => {
           this.list()
+          this.$message({
+            message: '预约临时任务成功！',
+            type: 'success'
+          });
         })
       }
       
@@ -335,6 +344,17 @@ export default {
             var temp=res._embedded.classrooms[i]._links.self.href.split("/")
             var classroom_id=temp[temp.length-1]
             that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+          }
+        }
+      })
+      api4.list_template().then( res => {
+        that.task_scores=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.templates.length;i++)
+          {
+            that.task_scores.push({label:res._embedded.templates[i].name,value:res._embedded.templates[i].id})
+            that.task_scores_map[res._embedded.templates[i].id]=res._embedded.templates[i].name
           }
         }
       })
