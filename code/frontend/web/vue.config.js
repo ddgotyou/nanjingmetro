@@ -40,6 +40,12 @@ module.exports = {
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
+      },
+      '/ip': {
+        target: 'http://139.224.212.195:8081',
+        changeOrigin: true,
+        secure: false,
+        pathRewrite: {}
       }
     },
     disableHostCheck: true
