@@ -74,12 +74,10 @@ export default {
   },
   data: function () {
     return {
-      // 操作类型，“提交”或“编辑”
-      option: "",
-      // 要“编辑”的角色 ID
-      id: undefined,
+      // 角色 ID
+      id: null,
 
-      // 角色表单
+      // 编辑表单
       form: {
         name: "",
         authTemplate: null,
@@ -126,17 +124,16 @@ export default {
         },
       },
 
-      // 选择框内容
+      // 表单中的选择值
       selection: {
         roles: [],
       },
     };
   },
   mounted: function () {
-    // 接受 index 页面传递的参数，并保存
-    this.option = this.$route.query.option;
+    // 保存上一级菜单传递的角色 ID
     this.id = this.$route.query.id;
-    // 获取所有角色，填入穿梭框
+    // 加载数据
     this.loadData();
   },
   methods: {
@@ -150,17 +147,14 @@ export default {
           }
         );
       });
-
-      // 如果是“编辑”，还需要填入角色信息
-      if (this.option === "edit") {
-        api.detail(this.id).then((response) => {
-          this.form = response;
-        });
-      }
+      // 获取角色详情
+      api.detail(this.id).then((response) => {
+        this.form = response;
+      });
     },
     // 权限模板发生改变
     handleChange(value) {
-      // 返回对应 id 的角色的详细信息
+      // 返回对应 ID 的角色的详细信息
       api.detail(this.form.authTemplate).then((response) => {
         // 将权限模板填充到对应表单
         this.form.authority = response.authority;
@@ -168,36 +162,20 @@ export default {
         this.template = response.authority;
       });
     },
-    // 提交新增用户组的表单
-    optionAdd() {
-      api.add(this.form).then((response) => {
-        if (response.code === 200) {
-          this.$message.success("添加成功！");
-          this.onCancel();
-        } else {
-          this.$message.error(response.msg);
-        }
-      });
-    },
-    // 提交修改用户组的表单
-    optionEdit() {
-      api.edit(this.id, this.form).then((response) => {
-        if (response.code === 200) {
-          this.$message.success("修改成功！");
-          this.onCancel();
-        } else {
-          this.$message.error(response.msg);
-        }
-      });
-    },
-    // 提交新增或修改的表单
+    // 提交编辑表单
     onSubmit() {
       this.form.authTemplate = null;
 
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.option === "add") this.optionAdd();
-          else if (this.option === "edit") this.optionEdit();
+          api.edit(this.id, this.form).then((response) => {
+            if (response.code === 200) {
+              this.$message.success("编辑成功！");
+              this.onCancel();
+            } else {
+              this.$message.error(response.msg);
+            }
+          });
         } else {
           this.$message.error("请按提示填写正确内容！");
         }

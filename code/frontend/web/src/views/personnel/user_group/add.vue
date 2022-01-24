@@ -1,0 +1,350 @@
+<template>
+  <div class="app-container">
+    <el-card class="card-box" style="width: 100%">
+      <el-form ref="form" :model="form" label-width="auto">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <!-- 基本信息卡片 -->
+            <el-card>
+              <div slot="header">
+                <span>基本信息</span>
+              </div>
+              <el-col :span="22">
+                <!-- 名称 -->
+                <el-form-item label="名称">
+                  <el-input v-model="form.name"></el-input>
+                </el-form-item>
+                <!-- 用户组类型 -->
+                <el-form-item label="用户组类型">
+                  <el-select v-model="form.roleType" placeholder="请选择">
+                    <el-option
+                      v-for="type in selection.types"
+                      :key="type.key"
+                      :label="type.label"
+                      :value="type.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <!-- 权限模板 -->
+                <el-form-item label="权限模板">
+                  <el-select
+                    v-model="form.authTemplate"
+                    placeholder="请选择"
+                    @change="handleChangeRole"
+                  >
+                    <el-option
+                      v-for="role in selection.roles"
+                      :key="role.key"
+                      :label="role.label"
+                      :value="role.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <!-- 描述 -->
+                <el-form-item label="描述">
+                  <el-input
+                    v-model="form.remark"
+                    type="textarea"
+                    rows="5"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-card>
+          </el-col>
+
+          <el-col :span="12">
+            <!-- 权限设置卡片 -->
+            <el-card>
+              <div slot="header">
+                <span>权限设置</span>
+              </div>
+              <auth-card :value="form.authority" />
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <!-- 人员添加卡片 -->
+          <el-card>
+            <div slot="header">
+              <span>人员添加</span>
+            </div>
+
+            <!-- 模糊搜索框 -->
+            <el-row>
+              <span>
+                <el-input
+                  v-model="query.key"
+                  placeholder="模糊搜索框"
+                  style="width: 900px"
+                  class="header-input"
+                  @keyup.enter.native="handleSearch"
+                />
+              </span>
+
+              <div style="float: right">
+                <!-- 搜索按钮 -->
+                <el-button
+                  type="primary"
+                  icon="el-icon-search"
+                  @click="handleSearch"
+                  >搜索</el-button
+                >
+                <!-- 重置按钮 -->
+                <el-button icon="el-icon-refresh" @click="handleReset"
+                  >重置</el-button
+                >
+              </div>
+            </el-row>
+
+            <!-- 穿梭框 -->
+            <el-row style="margin-top: 20px">
+              <el-transfer
+                v-model="usersAdded"
+                :data="usersOptional"
+                :render-content="renderContent"
+                :titles="['可添加用户', '已添加用户']"
+                :button-texts="['取消添加', '添加用户']"
+                class="transfer"
+                @change="handleChangeUser"
+              ></el-transfer>
+            </el-row>
+          </el-card>
+        </el-row>
+
+        <el-row>
+          <div align="center">
+            <el-button type="primary" @click="onSubmit">提交</el-button>
+            <el-button @click="onCancel">取消</el-button>
+          </div>
+        </el-row>
+      </el-form>
+    </el-card>
+  </div>
+</template>
+
+<script>
+import * as api from "@/api/personnel/user_group";
+import * as user from "@/api/personnel/user";
+import * as role from "@/api/personnel/role";
+import AuthCard from "@/views/components/AuthCard.vue";
+
+export default {
+  components: {
+    AuthCard,
+  },
+  data: function () {
+    return {
+      // 新增表单
+      form: {
+        name: "",
+        roleType: "",
+        authTemplate: null,
+        remark: "",
+        authority: {
+          // 人员管理
+          staffMgt: {
+            stuMgt: "", // 学员管理
+            tchMgt: "", // 讲师管理
+            usrGrpMgt: "", // 用户组
+            roleMgt: "", // 角色管理
+            infoStat: "", // 信息统计
+          },
+          // 培训组织管理
+          trainOrg: {
+            planEdit: "", // 计划编辑
+            planApproval: "", // 计划审批
+            planImpl: "", // 计划实现
+            planQuery: "", // 计划查询
+            taskAppoint: "", // 任务预约
+          },
+          // 培训过程监控
+          trainProc: {
+            planMonitor: "", // 计划监控
+            attendMgt: "", // 出勤管理
+            videoMonitor: "", // 视频监控
+          },
+          // 效果评估管理
+          effectEval: {
+            dataMgt: "", // 数据管理
+            statAnaly: "", // 统计分析
+          },
+          // 设备管理
+          devMgt: {
+            devMgt: "", // 设备管理
+            monitorMgt: "", // 监控管理
+            maintenance: "", // 维护保养
+            devRepair: "", // 设备维修
+          },
+          // 综合信息展示
+          synthInfoDisp: {
+            synthInfoDisp: "", // 综合信息展示
+          },
+        },
+        // 用户组的用户
+        users: [],
+      },
+
+      // 模板的权限表
+      template: {},
+
+      // 表单中的选项值
+      selection: {
+        roles: [],
+        types: [
+          { key: "1", value: "管理员", label: "管理员" },
+          { key: "2", value: "讲师", label: "讲师" },
+          { key: "3", value: "学员", label: "学员" },
+        ],
+      },
+
+      // 查询集
+      query: {
+        key: "",
+      },
+
+      // 可添加用户
+      usersOptional: [],
+      // 已添加用户
+      usersAdded: [],
+      // 穿梭框内容样式
+      renderContent(h, option) {
+        return (
+          <span>
+            {option.key} : {option.label}
+          </span>
+        );
+      },
+    };
+  },
+  mounted: function () {
+    // 加载数据
+    this.loadData();
+  },
+  methods: {
+    // 加载数据
+    loadData() {
+      // 获取所有角色模板
+      role.list(null).then((response) => {
+        this.selection.roles = response._embedded.groupVoes.map(
+          (element, index) => {
+            return { key: index, value: element.id, label: element.name };
+          }
+        );
+      });
+      // 获取所有用户
+      user.list(null).then((response) => {
+        this.usersOptional = response._embedded.dboxVoes;
+      });
+    },
+    // 权限模板发生改变
+    handleChangeRole(value) {
+      // 返回对应 ID 的角色的详细信息
+      role.detail(this.form.authTemplate).then((response) => {
+        // 将权限模板填充到对应表单
+        this.form.authority = response.authority;
+        // 保存原模板
+        this.template = response.authority;
+      });
+    },
+    // 用户组的用户发生改变
+    handleChangeUser(value, direction, movedKeys) {
+      if (direction === "left") {
+        // 删除
+        for (let i in movedKeys) {
+          // 找到 key 对应的用户
+          let user = this.usersOptional.find(
+            (element) => element.key === movedKeys[i]
+          );
+          // 获取用户在表单的 users 数组中的索引
+          let index = this.form.users.findIndex(
+            (element) => element === user.value
+          );
+          // 在表单的 users 数组中删除该用户
+          this.form.users.splice(index, 1);
+        }
+      } else if (direction === "right") {
+        // 添加
+        for (let i in movedKeys) {
+          // 找到 key 对应的用户
+          let user = this.usersOptional.find(
+            (element) => element.key === movedKeys[i]
+          );
+          // 将用户名添加到表单的 users 数组中
+          this.form.users.push(user.value);
+        }
+      }
+    },
+    // 模糊搜索用户
+    handleSearch() {
+      user.search(this.query.key).then((response) => {
+        this.usersOptional = response._embedded.dboxVoes;
+      });
+    },
+    // 重置用户列表
+    handleReset() {
+      this.query.key = "";
+      this.usersOptional = []; // 不是冗余，为了视觉上先清空再出现列表
+      this.usersAdded = [];
+      this.loadData();
+    },
+    // 提交新增表单
+    onSubmit() {
+      // 处理权限模板是否做出了修改
+      if (this.form.authority === this.template) {
+        this.form.authTemplate = null;
+      }
+      // 处理用户
+      if (!this.form.users) this.form.users = [];
+      console.log(this.form);
+
+      this.$refs["form"].validate((valid) => {
+        if (valid) {
+          api.add(this.form).then((response) => {
+            if (response.code === 200) {
+              this.$message.success("新增成功！");
+              this.onCancel();
+            } else {
+              this.$message.error(response.msg);
+            }
+          });
+        } else {
+          this.$message.error("请按提示填写正确内容！");
+        }
+      });
+    },
+    // 取消，返回上一级菜单
+    onCancel() {
+      this.$router.push("/personnel/user-group");
+    },
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.card-box {
+  max-width: 100%;
+  margin: 20px auto;
+}
+
+.el-row {
+  margin-top: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.header-input {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.transfer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

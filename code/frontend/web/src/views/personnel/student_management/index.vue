@@ -229,7 +229,7 @@ export default {
       },
       table: [],
 
-      // 按条件筛选
+      // 查询集
       query: {
         key: "",
         name: "",
@@ -241,6 +241,7 @@ export default {
         major: "",
         status: "",
       },
+      // 查询类型
       queryType: "list",
 
       // 选中筛选维度的列表

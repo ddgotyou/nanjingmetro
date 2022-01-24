@@ -190,10 +190,7 @@ export default {
     },
     // 新增角色
     handleAdd() {
-      this.$router.push({
-        path: "/personnel/add-role",
-        query: { option: "add" },
-      });
+      this.$router.push({ path: "/personnel/add-role" });
     },
     // 批量导出角色
     handleExport() {},
@@ -259,11 +256,9 @@ export default {
     },
     // 编辑选中角色
     handleEdit(index) {
-      let id = this.list[index].id;
-      console.log(id);
       this.$router.push({
         path: "/personnel/edit-role",
-        query: { option: "edit", id: id },
+        query: { id: this.list[index].id },
       });
     },
     // 当选中角色更改时，更新选中角色的列表

@@ -131,7 +131,7 @@ export default {
       },
       table: [],
 
-      // 查询字典
+      // 查询集
       query: {
         key: "",
       },
@@ -182,7 +182,7 @@ export default {
         this.loading = false;
       });
     },
-    // 加载用户组数据
+    // 加载数据
     loadData() {
       api.list(0, 10000).then((response) => {
         this.table = response._embedded ? response._embedded.groupVoes : [];
@@ -195,10 +195,7 @@ export default {
     },
     // 新增用户组
     handleAdd() {
-      this.$router.push({
-        path: "/personnel/add-usergroup",
-        query: { option: "add" },
-      });
+      this.$router.push({ path: "/personnel/add-usergroup" });
     },
     // 删除某个用户组
     handleDelete() {
@@ -264,10 +261,9 @@ export default {
     },
     // 编辑某个用户组
     handleEdit(index) {
-      let id = this.list[index].id;
       this.$router.push({
         path: "/personnel/edit-usergroup",
-        query: { option: "edit", id: id },
+        query: { id: this.list[index].id },
       });
     },
     pageSizeChange(size) {
