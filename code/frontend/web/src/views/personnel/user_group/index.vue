@@ -34,13 +34,18 @@
               >删除</el-button
             >
             <!-- 导出按钮 -->
-            <el-button
-              plain
-              type="warning"
-              icon="el-icon-download"
-              @click="handleExport"
-              >导出</el-button
+            <download-excel
+              :data="getTable"
+              :fields="fields"
+              type="xls"
+              header="用户组列表"
+              name="用户组列表"
+              class="export-button"
             >
+              <el-button plain type="warning" icon="el-icon-download"
+                >导出</el-button
+              >
+            </download-excel>
           </div>
 
           <div style="float: right">
@@ -99,7 +104,7 @@
       <el-row>
         <el-pagination
           :current-page="page.number + 1"
-          :page-sizes="[4, 5]"
+          :page-sizes="[10, 20, 50, 100]"
           :page-size="page.size"
           :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
@@ -118,9 +123,17 @@ import * as api from "@/api/personnel/user_group";
 export default {
   data: function () {
     return {
+      // 导出Excel表格的表头设置
+      fields: {
+        名称: "name",
+        备注: "remark",
+        更新时间: "updateTime",
+      },
+      table: [],
+
       // 查询字典
       query: {
-        key: null,
+        key: "",
       },
 
       //遮罩层
@@ -132,21 +145,29 @@ export default {
 
       // 页码
       page: {
-        size: 4,
+        size: 10,
         totalElements: 0,
         totalPages: 0,
         number: 0,
       },
     };
   },
+  computed: {
+    getTable() {
+      // 有模糊查询，则返回查询结果
+      if (this.query.key) return this.list;
+      // 没有，则返回所有学员
+      else return this.table;
+    },
+  },
   mounted: function () {
     this.loadData();
   },
   methods: {
     // 用户组列表
-    data(query, page, size) {
+    data(page, size) {
       this.loading = true;
-      api.list(query, page, size).then((response) => {
+      api.list(page, size).then((response) => {
         this.list = response._embedded ? response._embedded.groupVoes : [];
         this.page = response.page;
         this.loading = false;
@@ -161,9 +182,12 @@ export default {
         this.loading = false;
       });
     },
-    // 加载一页用户组数据
+    // 加载用户组数据
     loadData() {
-      this.data(null, 0, this.page.size);
+      api.list(0, 10000).then((response) => {
+        this.table = response._embedded ? response._embedded.groupVoes : [];
+      });
+      this.data(0, this.page.size);
     },
     // 当选中用户组更改时，更新选中用户组的列表
     handleSelectionChange(selection) {
@@ -199,7 +223,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .delete(this.selection[i].id)
+              .del(this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });
@@ -248,15 +272,14 @@ export default {
     },
     pageSizeChange(size) {
       if (!this.query.key) {
-        this.data(this.query, 0, size);
+        this.data(0, size);
       } else {
         this.search(this.query.key, 0, size);
       }
     },
     pageCurrentChange(number) {
-      console.log(number);
       if (!this.query.key) {
-        this.data(this.query, number - 1, this.page.size);
+        this.data(number - 1, this.page.size);
       } else {
         this.search(this.query.key, number - 1, this.page.size);
       }
@@ -276,5 +299,10 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+
+.export-button {
+  float: right;
+  margin-left: 10px;
 }
 </style>

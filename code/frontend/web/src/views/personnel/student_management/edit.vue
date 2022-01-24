@@ -122,20 +122,9 @@
                 />
               </el-select>
             </el-form-item>
-            <!-- 用户组 -->
-            <el-form-item label="用户组" v-if="false">
-              <el-select v-model="form.usergroup" multiple collapse-tags>
-                <el-option
-                  v-for="item in selection.usergroup"
-                  :key="item.key"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
           </el-col>
         </el-row>
-        <!-- 提交与取消（返回）按钮 -->
+        <!-- 提交与取消按钮 -->
         <div align="center">
           <el-button type="primary" @click="onSubmit">提交</el-button>
           <el-button @click="onCancel">取消</el-button>
@@ -149,10 +138,7 @@
 import * as api from "@/api/personnel/student";
 import * as sel from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
-import elementIcons from "../../components/icons/element-icons";
-import repairVue from "../../device_management/repair/repair.vue";
-
-const inputWidth = 375;
+import inputWidth from "../global";
 
 export default {
   directives: {
@@ -163,19 +149,16 @@ export default {
       // label 宽度，自适应
       labelWidth: "auto",
 
-      // 操作类型，“提交”或“编辑”
-      option: "",
-      // 要“编辑”的用户组 ID
+      // 学员 ID
       id: null,
 
-      // 新增、编辑和详情的表单
+      // 编辑表单
       form: {
         name: "", // 必填
         sex: null,
         tel: null,
         email: "", // 必填
         idcard: "", // 必填
-        usergroup: [], // 必填
         dept: [],
         leader: [],
         post: null,
@@ -184,13 +167,12 @@ export default {
         type: "", // 必填
       },
 
-      // 表单中的选择框选项
+      // 表单中的选项值
       selection: {
         sex: [
           { key: "1", label: "男", value: "0" },
           { key: "2", label: "女", value: "1" },
         ],
-        usergroup: [{ key: 0, label: "默认用户组", value: 0 }],
         dept: [],
         post: [],
         edu: [],
@@ -202,6 +184,7 @@ export default {
         leader: [],
       },
 
+      // 填写规则
       rules: {
         name: [
           {
@@ -249,15 +232,13 @@ export default {
       },
     };
   },
-
   computed: {},
   mounted: function () {
     // 设置 label 宽度
     this.setLabelWidth();
-    // 接受 index 页面传递的参数，并保存
-    this.option = this.$route.query.option;
+    // 保存上一级菜单传递的学员 ID
     this.id = this.$route.query.id;
-    // 加载包括下拉框值的数据
+    // 加载数据
     this.loadData();
   },
   methods: {
@@ -272,17 +253,8 @@ export default {
       }
     },
     // 加载数据
-    async loadData() {
-      // 获取用户组、部门、岗位、学历、专业的下拉框选项
-      sel.userGroupByType("student").then((response) => {
-        response._embedded.groupVoes.forEach((item) => {
-          this.selection.usergroup.push({
-            key: item.id,
-            label: item.name,
-            value: item.id,
-          });
-        });
-      });
+    loadData() {
+      // 获取部门、岗位、学历、专业的选项值
       sel.dept(null).then((response) => {
         this.selection.dept = response._embedded.dboxVoes;
       });
@@ -295,14 +267,12 @@ export default {
       sel.major(null).then((response) => {
         this.selection.major = response._embedded.dboxVoes;
       });
-
-      // 如果是“编辑”，则根据 index 页面传递的 id 请求该学员的字段信息
-      if (this.option === "edit") {
-        await api.detail(this.id, null).then((response) => {
-          this.form = response;
-          this.handleChange(this.form.dept);
-        });
-      }
+      // 获取学员详情
+      api.detail(this.id, null).then((response) => {
+        this.form = response;
+        this.handleChange(this.form.dept);
+        delete this.form.usergroup;
+      });
     },
     // 部门值改变
     handleChange(value) {
@@ -317,39 +287,23 @@ export default {
         });
       });
     },
-    // 提交新增学员的表单
-    optionAdd() {
-      api
-        .add(this.form)
-        .then((response) => {
-          this.$message.success(response.msg);
-          this.onCancel();
-        })
-        .catch((error) => {
-          // this.$message.error(error.response.data);
-        });
-    },
-    // 提交修改学员的表单
-    optionEdit() {
-      api
-        .edit(this.id, this.form)
-        .then((response) => {
-          this.$message.success(response.msg);
-          this.onCancel();
-        })
-        .catch((error) => {
-          // this.$message.error(error.response.data);
-        });
-    },
-    // 提交新增或修改的表单
+    // 提交编辑表单
     onSubmit() {
-      this.form.usergroup = "";
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.option === "add") this.optionAdd();
-          else if (this.option === "edit") this.optionEdit();
+          // 数据格式正确
+          api
+            .edit(this.id, this.form)
+            .then((response) => {
+              this.$message.success("编辑成功");
+              this.onCancel();
+            })
+            .catch((error) => {
+              // this.$message.error(error.response.data);
+            });
         } else {
-          this.$message.error("请按提示填写正确内容！");
+          // 数据格式不正确
+          this.$message.warning("请按照提示填写正确内容！");
         }
       });
     },

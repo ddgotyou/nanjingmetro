@@ -11,13 +11,21 @@
           <el-col :span="3">
             <el-form-item>
               <!-- 姓名筛选框 -->
-              <el-input v-model="query.name" placeholder="姓名" />
+              <el-input
+                v-model="query.name"
+                placeholder="姓名"
+                @keyup.enter.native="handleSearch"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="4">
             <el-form-item>
               <!-- 身份证号筛选框 -->
-              <el-input v-model="query.idcard" placeholder="身份证号" />
+              <el-input
+                v-model="query.idcard"
+                placeholder="身份证号"
+                @keyup.enter.native="handleSearch"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="17">
@@ -97,7 +105,7 @@
             >
             <!-- 导出按钮 -->
             <download-excel
-              :data="table"
+              :data="getTable"
               :fields="fields"
               type="xls"
               header="讲师列表"
@@ -179,7 +187,7 @@
       <el-row>
         <el-pagination
           :current-page="page.number + 1"
-          :page-sizes="[4, 5]"
+          :page-sizes="[10, 20, 50, 100]"
           :page-size="page.size"
           :total="page.totalElements"
           layout="total, sizes, prev, pager, next, jumper"
@@ -216,16 +224,17 @@ export default {
 
       // 按条件筛选
       query: {
-        name: undefined,
-        idcard: undefined,
-        key: undefined,
-        sex: undefined,
-        dept: undefined,
-        post: undefined,
-        edu: undefined,
-        major: undefined,
-        status: undefined,
+        name: "",
+        idcard: "",
+        key: "",
+        sex: "",
+        dept: "",
+        post: "",
+        edu: "",
+        major: "",
+        status: "",
       },
+      queryType: "list",
 
       // 选中筛选维度的列表
       dimensions: [],
@@ -235,7 +244,7 @@ export default {
           key: "1",
           label: "性别",
           visible: false,
-          value: undefined,
+          value: "",
           options: [
             { key: "1", label: "男", value: "0" },
             { key: "2", label: "女", value: "1" },
@@ -245,21 +254,21 @@ export default {
           key: "2",
           label: "部门",
           visible: false,
-          value: undefined,
+          value: "",
           options: [],
         },
         post: {
           key: "3",
           label: "岗位",
           visible: false,
-          value: undefined,
+          value: "",
           options: [],
         },
         status: {
           key: "4",
           label: "讲师状态",
           visible: false,
-          value: undefined,
+          value: "",
           options: [
             { key: "1", label: "正式", value: "0" },
             { key: "2", label: "临时", value: "1" },
@@ -276,14 +285,21 @@ export default {
 
       // 页码
       page: {
-        size: 4,
+        size: 1,
         totalElements: 0,
         totalPages: 0,
         number: 0,
       },
     };
   },
-  computed: {},
+  computed: {
+    getTable() {
+      // 有模糊/严格查询，则返回查询结果
+      if (this.queryType !== "list") return this.list;
+      // 没有，则返回所有学员
+      else return this.table;
+    },
+  },
   mounted: function () {
     this.loadData();
   },
@@ -320,10 +336,9 @@ export default {
       all.post({}).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
       });
-      api.list({}).then((response) => {
+      api.list({}, 0, 10000).then((response) => {
         this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
-
       this.data({}, 0, this.page.size);
     },
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
@@ -331,6 +346,9 @@ export default {
       for (let key in this.items) {
         let selected = this.dimensions.indexOf(key) !== -1;
         this.items[key].visible = selected ? true : false;
+
+        // 所有未选中的字段置 ""
+        if (!selected) this.query[key] = this.items[key].value = "";
       }
     },
     // 当某个选择框更改时，将其值绑定到查询字典 query 中的对应字段
@@ -350,6 +368,19 @@ export default {
     // 将“0/1”转换为“正式/临时”
     getStatus(status) {
       return status === "0" ? "正式" : "临时";
+    },
+    // 判断查询字典是否为空
+    isQueryEmpty() {
+      // 模糊查询
+      if (this.query.key !== "") return "search";
+
+      for (let attr in this.query) {
+        // 严格查询
+        if (this.query[attr] !== "") return "query";
+      }
+
+      // 无查询
+      return "list";
     },
     // 当选中讲师更改时，更新选中讲师列表
     handleSelectionChange(selection) {
@@ -417,21 +448,25 @@ export default {
     },
     // 根据输入框、选择框和搜索框的条件筛选讲师
     handleSearch() {
-      // 如果关键词为空，则说明不是模糊搜索
-      if (!this.query.key) {
-        this.data(this.query, 0, this.page.size);
-      } // 否则，说明是模糊搜索
-      else {
+      this.queryType = this.isQueryEmpty();
+      if (this.queryType === "search") {
+        // 模糊查询
         this.search(this.query.key, 0, this.page.size);
+      } else if (this.queryType === "query") {
+        // 严格查询
+        this.data(this.query, 0, this.page.size);
+      } else {
+        // 无查询
+        this.data({}, 0, this.page.size);
       }
     },
     // 重置讲师列表
     handleReset() {
       // 清空查询字典
-      for (let key in this.query) this.query[key] = undefined;
+      for (let key in this.query) this.query[key] = "";
       // 清空选择框值并隐藏
       for (let key in this.items) {
-        this.items[key].value = undefined;
+        this.items[key].value = "";
         this.items[key].visible = false;
       }
       // 清空筛选维度选择框

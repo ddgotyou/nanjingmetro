@@ -2,7 +2,7 @@
   <div class="app-container">
     <!-- 主体 -->
     <el-card class="card-box" style="width: 100%">
-      <!-- 讲师信息表单 -->
+      <!-- 学员信息表单 -->
       <el-form
         ref="form"
         v-resize="setLabelWidth"
@@ -41,10 +41,8 @@
             <el-form-item label="身份证号" prop="idcard">
               <el-input v-model="form.idcard"></el-input>
             </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <!-- 讲师状态 -->
-            <el-form-item label="讲师状态" prop="type">
+            <!-- 学员状态 -->
+            <el-form-item label="学员状态" prop="type">
               <el-select v-model="form.type">
                 <el-option
                   v-for="item in selection.type"
@@ -54,13 +52,16 @@
                 />
               </el-select>
             </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <!-- 部门 -->
             <el-form-item label="部门">
               <el-select
                 v-model="form.dept"
-                multiple
                 filterable
                 allow-create
+                multiple
+                collapse-tags
                 @change="handleChange"
               >
                 <el-option
@@ -73,7 +74,12 @@
             </el-form-item>
             <!-- 组长 -->
             <el-form-item label="组长">
-              <el-select v-model="form.leader" multiple>
+              <el-select
+                v-model="form.leader"
+                multiple
+                collapse-tags
+                placeholder="不是组长"
+              >
                 <el-option
                   v-for="item in selection.leader"
                   :key="item.key"
@@ -94,9 +100,42 @@
                 />
               </el-select>
             </el-form-item>
+            <!-- 学历 -->
+            <el-form-item label="学历">
+              <el-select v-model="form.edu" filterable allow-create>
+                <el-option
+                  v-for="item in selection.edu"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <!-- 专业 -->
+            <el-form-item label="专业">
+              <el-select v-model="form.major" filterable allow-create>
+                <el-option
+                  v-for="item in selection.major"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <!-- 用户组 -->
+            <el-form-item label="用户组">
+              <el-select v-model="form.usergroup" multiple collapse-tags>
+                <el-option
+                  v-for="item in selection.usergroup"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
           </el-col>
         </el-row>
-        <!-- 提交与取消（返回）按钮 -->
+        <!-- 提交与取消按钮 -->
         <div align="center">
           <el-button type="primary" @click="onSubmit">提交</el-button>
           <el-button @click="onCancel">取消</el-button>
@@ -107,11 +146,10 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/teacher";
+import * as api from "@/api/personnel/student";
 import * as sel from "@/api/personnel/selection";
 import { resize } from "@/utils/resize";
-
-const inputWidth = 375;
+import inputWidth from "../global";
 
 export default {
   directives: {
@@ -122,46 +160,47 @@ export default {
       // label 宽度，自适应
       labelWidth: "auto",
 
-      // 操作类型，“提交”、“编辑”或“详情”
-      option: "",
-      // 要“编辑”或者查看“详情”的讲师的 id
-      id: null,
-
-      // 新增、编辑和详情的表单
-      form: {
-        name: "", // 必填
-        sex: null,
-        tel: null,
-        email: "", // 必填
-        idcard: "", // 必填
-        usergroup: [],
-        dept: [],
-        leader: [],
-        post: null,
-        type: "", // 必填
-      },
+      // 新增表单
       // form: {
       //   name: "", // 必填
       //   sex: null,
       //   tel: null,
-      //   email: "1@1.com", // 必填
-      //   idcard: "123456123456781234", // 必填
-      //   usergroup: null,
+      //   email: "", // 必填
+      //   idcard: "", // 必填
+      //   usergroup: [], // 必填
       //   dept: [],
       //   leader: [],
       //   post: null,
-      //   type: "1", // 必填
+      //   edu: null,
+      //   major: null,
+      //   type: "", // 必填
       // },
+      form: {
+        name: "测试学员", // 必填
+        sex: "0",
+        tel: null,
+        email: "test@163.com", // 必填
+        idcard: "123000199901010001", // 必填
+        usergroup: [999], // 必填
+        dept: [],
+        leader: [],
+        post: "普通员工",
+        edu: "本科",
+        major: null,
+        type: "0", // 必填
+      },
 
-      // 表单中的选择框选项
+      // 表单中的选项值
       selection: {
         sex: [
           { key: "1", label: "男", value: "0" },
           { key: "2", label: "女", value: "1" },
         ],
-        usergroup: [{ id: 0, name: "默认用户组" }],
+        usergroup: [],
         dept: [],
         post: [],
+        edu: [],
+        major: [],
         type: [
           { key: "1", label: "正式", value: "0" },
           { key: "2", label: "临时", value: "1" },
@@ -169,6 +208,7 @@ export default {
         leader: [],
       },
 
+      // 填写规则
       rules: {
         name: [
           {
@@ -209,22 +249,18 @@ export default {
           {
             type: "string",
             required: true,
-            message: "请选择讲师类型",
+            message: "请选择学员类型",
             trigger: "blur",
           },
         ],
       },
     };
   },
-
   computed: {},
   mounted: function () {
     // 设置 label 宽度
     this.setLabelWidth();
-    // 接受 index 页面传递的参数，并保存
-    this.option = this.$route.query.option;
-    this.id = this.$route.query.id;
-    // 加载包括下拉框值的数据
+    // 加载数据
     this.loadData();
   },
   methods: {
@@ -238,13 +274,17 @@ export default {
         this.labelWidth = "100px";
       }
     },
+    // 加载数据
     loadData() {
-      // 获取用户组、部门的选择下拉框选项，获取岗位、学历、专业的建议下拉框选项
-      sel.userGroupByType("teacher").then((response) => {
+      // 获取用户组、部门、岗位、学历、专业的选项值
+      sel.userGroupByType("student").then((response) => {
         response._embedded.groupVoes.forEach((item) => {
-          this.selection.usergroup.push({ id: item.id, name: item.name });
+          this.selection.usergroup.push({
+            key: item.id,
+            label: item.name,
+            value: item.id,
+          });
         });
-        // this.selection.usergroup = usergroup;
       });
       sel.dept(null).then((response) => {
         this.selection.dept = response._embedded.dboxVoes;
@@ -252,16 +292,12 @@ export default {
       sel.post(null).then((response) => {
         this.selection.post = response._embedded.dboxVoes;
       });
-
-      // 如果是“编辑”，则根据 index 页面传递的 id 请求该讲师的字段信息
-      if (this.option === "edit") {
-        api.detail(this.id, null).then((response) => {
-          console.log(response);
-          this.form = response;
-          this.form.usergroup = Number(this.form.usergroup);
-          this.handleChange(this.form.dept);
-        });
-      }
+      sel.edu(null).then((response) => {
+        this.selection.edu = response._embedded.dboxVoes;
+      });
+      sel.major(null).then((response) => {
+        this.selection.major = response._embedded.dboxVoes;
+      });
     },
     // 部门值改变
     handleChange(value) {
@@ -276,45 +312,34 @@ export default {
         });
       });
     },
-    // 提交新增讲师的表单
-    optionAdd() {
-      api
-        .add(this.form)
-        .then((response) => {
-          this.$message.success(response.msg);
-          this.onCancel();
-        })
-        .catch((error) => {
-          // this.$message.error(error.response.data);
-        });
-    },
-    // 提交修改讲师的表单
-    optionEdit() {
-      api
-        .edit(this.id, this.form)
-        .then((response) => {
-          this.$message.success(response.msg);
-          this.onCancel();
-        })
-        .catch((error) => {
-          // this.$message.error(error.response.data);
-        });
-    },
-    // 提交新增或修改的表单
+    // 提交新增表单
     onSubmit() {
-      this.form.usergroup = "";
+      // 如果用户未选择用户组，则添加到默认学员组
+      if (this.form.usergroup === [])
+        this.form.usergroup = [defaultStudentUserGroupId];
+
+      // 验证数据格式
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.option === "add") this.optionAdd();
-          else if (this.option === "edit") this.optionEdit();
+          // 数据格式正确
+          api
+            .add(this.form)
+            .then((response) => {
+              this.$message.success("新增成功");
+              this.onCancel();
+            })
+            .catch((error) => {
+              this.$message.error(error.response.data);
+            });
         } else {
+          // 数据格式不正确
           this.$message.error("请按提示填写正确内容！");
         }
       });
     },
     // 取消，返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/teacher-management");
+      this.$router.push("/personnel/student-management");
     },
   },
 };
