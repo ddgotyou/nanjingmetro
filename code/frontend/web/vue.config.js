@@ -46,7 +46,15 @@ module.exports = {
         changeOrigin: true,
         secure: false,
         pathRewrite: {}
-      }
+      },
+      "/cam": {
+        target: `http://139.224.212.195:8081`,
+        changeOrigin: true
+      },
+      "/rtsp": {
+        target: `http://139.224.212.195:8081`,
+        changeOrigin: true
+      },
     },
     disableHostCheck: true
   },
