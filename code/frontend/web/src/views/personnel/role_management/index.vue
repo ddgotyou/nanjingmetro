@@ -34,13 +34,18 @@
               >删除</el-button
             >
             <!-- 导出按钮 -->
-            <el-button
-              plain
-              type="warning"
-              icon="el-icon-download"
-              @click="handleExport"
-              >导出</el-button
+            <download-excel
+              :data="getTable"
+              :fields="fields"
+              type="xls"
+              header="角色列表"
+              name="角色列表"
+              class="export-button"
             >
+              <el-button plain type="warning" icon="el-icon-download"
+                >导出</el-button
+              >
+            </download-excel>
           </div>
 
           <div style="float: right">
@@ -100,7 +105,7 @@
         <el-row>
           <el-pagination
             :current-page="page.number + 1"
-            :page-sizes="[4, 5]"
+            :page-sizes="[10, 20, 50, 100]"
             :page-size="page.size"
             :total="page.totalElements"
             layout="total, sizes, prev, pager, next, jumper"
@@ -120,12 +125,20 @@ import * as api from "@/api/personnel/role";
 export default {
   data: function () {
     return {
+      // 导出Excel表格的表头设置
+      fields: {
+        名称: "name",
+        备注: "remark",
+        更新时间: "updateTime",
+      },
+      table: [],
+
       query: {
         key: "",
       },
 
       page: {
-        size: 4,
+        size: 10,
         totalElements: 0,
         totalPages: 0,
         number: 0,
@@ -139,14 +152,22 @@ export default {
       selection: [],
     };
   },
+  computed: {
+    getTable() {
+      // 有模糊查询，则返回查询结果
+      if (this.query.key) return this.list;
+      // 没有，则返回所有学员
+      else return this.table;
+    },
+  },
   mounted: function () {
     this.loadData();
   },
   methods: {
     // 用户组列表
-    data(query, page, size) {
+    data(page, size) {
       this.loading = true;
-      api.list(query, page, size).then((response) => {
+      api.list(page, size).then((response) => {
         this.list = response._embedded ? response._embedded.groupVoes : [];
         this.page = response.page;
         this.loading = false;
@@ -162,14 +183,14 @@ export default {
       });
     },
     loadData() {
-      this.data(null, 0, this.page.size);
+      api.list(0, 10000).then((response) => {
+        this.table = response._embedded ? response._embedded.groupVoes : [];
+      });
+      this.data(0, this.page.size);
     },
     // 新增角色
     handleAdd() {
-      this.$router.push({
-        path: "/personnel/add-role",
-        query: { option: "add" },
-      });
+      this.$router.push({ path: "/personnel/add-role" });
     },
     // 批量导出角色
     handleExport() {},
@@ -209,7 +230,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .delete(this.selection[i].id)
+              .del(this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });
@@ -235,11 +256,9 @@ export default {
     },
     // 编辑选中角色
     handleEdit(index) {
-      let id = this.list[index].id;
-      console.log(id);
       this.$router.push({
         path: "/personnel/edit-role",
-        query: { option: "edit", id: id },
+        query: { id: this.list[index].id },
       });
     },
     // 当选中角色更改时，更新选中角色的列表
@@ -248,14 +267,14 @@ export default {
     },
     pageSizeChange(size) {
       if (!this.query.key) {
-        this.data(this.query, 0, size);
+        this.data(0, size);
       } else {
         this.search(this.query.key, 0, size);
       }
     },
     pageCurrentChange(number) {
       if (!this.query.key) {
-        this.data(null, number - 1, this.page.size);
+        this.data(number - 1, this.page.size);
       } else {
         this.search(this.query.key, number - 1, this.page.size);
       }
@@ -275,5 +294,10 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+
+.export-button {
+  float: right;
+  margin-left: 10px;
 }
 </style>

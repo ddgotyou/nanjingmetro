@@ -61,6 +61,7 @@
 <script>
 import XLSX from "xlsx";
 import * as api from "@/api/personnel/teacher";
+import defaultStudentUserGroupId from "../global";
 
 const pattEmail = /^[\w\.-]+@[\w\.]+\.[A-z]+$/;
 const pattIdcard = /^\d{18}$/;
@@ -141,7 +142,7 @@ export default {
         row.tel = row.tel ? String(row.tel) : null;
         row.email = row.email ? String(row.email) : null; // 必填
         row.idcard = row.idcard ? String(row.idcard) : null; // 必填
-        row.usergroup = [];
+        row.usergroup = [defaultStudentUserGroupId];
         row.dept = row.dept ? String(row.dept).split(",") : [];
         row.leader = row.leader ? String(row.leader).split(",") : [];
         row.post = row.post ? String(row.post) : null;
