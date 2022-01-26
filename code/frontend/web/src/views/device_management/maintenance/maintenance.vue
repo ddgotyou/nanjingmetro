@@ -266,7 +266,7 @@ export default {
     downloadFile(){
       axios({
         method: 'get',
-        url: "http://139.224.212.195:9000/tms/2022/01/05/0b5020d5-b575-4703-a523-e4978899dfc6.jpg", // 请求地址
+        url: "http://10.8.0.1:9000/tms/2022/01/05/0b5020d5-b575-4703-a523-e4978899dfc6.jpg", // 请求地址
         responseType: 'blob' // 表明返回服务器返回的数据类型
       }).then(
         response => {

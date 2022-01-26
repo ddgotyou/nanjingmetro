@@ -41,7 +41,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入"/>
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" @change="search_commit"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -76,16 +76,16 @@
           label="结束时间"
         />
         <el-table-column
-          prop="userName"
-          label="申请人"
-        />
-        <el-table-column
           prop="teacher"
-          label="讲师"
+          label="第一讲师"
         />
         <el-table-column
           prop="approver"
           label="第一审批人"
+        />
+        <el-table-column
+          prop="status"
+          label="审批状态"
         />
         <el-table-column
           label="操作"
@@ -185,7 +185,7 @@ export default {
               startTime: res._embedded.applications[i].planStartTime,
               endTime: res._embedded.applications[i].planEndTime,
               status: res._embedded.applications[i].status,
-              userName: res._embedded.applications[i].user,
+              //userName: res._embedded.applications[i].user,
               teacher: res._embedded.applications[i].planFirstTrainer,
               approver: res._embedded.applications[i].planFirstAuditor,
               self: res._embedded.applications[i]._links.self.href

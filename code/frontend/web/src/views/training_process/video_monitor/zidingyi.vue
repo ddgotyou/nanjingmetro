@@ -95,7 +95,7 @@ export default {
       groupId: 0,
       groupPicked: "",
       cameraIpResult: [],
-      wsurl: "ws://139.224.212.195:8081/",
+      wsurl: "ws://10.8.0.1:8081/",
       player_1: null,
       player_2: null,
       player_3: null,

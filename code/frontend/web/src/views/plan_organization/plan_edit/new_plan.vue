@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <el-button style="float:right;margin:10px;" icon="el-icon-arrow-left" circle @click="$router.go(-1)"></el-button>
     <el-form label-position="right" label-width="80px" :model="formData">
       <el-card class="box-card" style="width:100%">
         <div slot="header">基本信息</div>
@@ -29,6 +30,27 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="讲师">
+              <el-select
+                v-model="formData.teachers"
+                style="width:100%"
+                placeholder="请选择"
+                clearable
+                multiple
+                filterable
+              >
+                <el-option
+                  v-for="item in teacher_data"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -41,9 +63,6 @@
                 :picker-options="taskPeriodOptions">
               </el-date-picker>
             </el-form-item>
-            <!-- <el-form-item label="计划周期">
-              <el-input id="period" v-model="formData.period" name="period" />
-            </el-form-item> -->
           </el-col>
         </el-row>
         <el-row>
@@ -314,6 +333,7 @@ export default {
   data() {
     return {
       people_data: [],
+      teacher_data: [],
       trainee_id2no:{},
       group_data: [],
       formData: {
@@ -323,7 +343,7 @@ export default {
         period: ['',''],
         description: '',
         people: [],
-        //classes: []
+        teachers: []
       },
       taskData: {
         name: '',
@@ -460,6 +480,13 @@ export default {
           }
         }
       })
+      api3.getTrainer().then( res => {
+        that.teacher_data=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          that.teacher_data.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+        }
+      })
       api3.getTraineeGroup().then( res => {
         that.group_data=[]
         if(res.hasOwnProperty('_embedded'))
@@ -517,7 +544,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [{user: this.$user.userId}],
+        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
@@ -550,18 +577,14 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [{user: this.$user.userId}],
+        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
       var auditors=[]
       for(var i=0;i<this.popData.approver.length;i++)
       {
-        auditors.push({
-          user:this.approvers_res[this.popData.approver[i]].id,
-          username:this.approvers_res[this.popData.approver[i]].name,
-          approved:'未审核'
-        })
+        auditors.push(this.approvers_res[this.popData.approver[i]].id)
       }
       data.auditors=auditors
       if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){

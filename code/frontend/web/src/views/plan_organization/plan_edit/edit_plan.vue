@@ -4,6 +4,7 @@
 -->
 <template>
   <div class="app-container">
+    <el-button style="float:right;margin:10px;" icon="el-icon-arrow-left" circle @click="$router.go(-1)"></el-button>
     <el-form label-position="right" label-width="80px" :model="formData">
       <el-card class="box-card" style="width:100%">
         <div slot="header">基本信息</div>
@@ -33,6 +34,27 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="讲师">
+              <el-select
+                v-model="formData.teachers"
+                style="width:100%"
+                placeholder="请选择"
+                clearable
+                multiple
+                filterable
+              >
+                <el-option
+                  v-for="item in teacher_data"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -323,6 +345,7 @@ export default {
       id: '',
       response: {},
       people_data: [],
+      teacher_data: [],
       trainee_id2no:{},
       group_data: [],
       formData: {
@@ -332,6 +355,7 @@ export default {
         period: ['',''],
         description: '',
         people: [],
+        teachers: []
         //classes: []
       },
       taskData: {
@@ -410,14 +434,18 @@ export default {
           period: [res.startTime,res.endTime],
           description: res.detailed,
           people: [],
-          classes: [],
-          trainers: res.trainers
+          teachers: [],
+          classes: []
         };
         for(var i=0;i<res.trainees.length;i++)
         {
           that.formData.people.push(res.trainees[i].user)
           that.$refs.traineeTable.toggleRowSelection(that.people_data[that.trainee_id2no[res.trainees[i].user]],true);
           that.traineeChange(res.trainees[i].user,true)
+        }
+        for(var i=0;i<res.trainers.length;i++)
+        {
+          that.formData.teachers.push(res.trainers[i].user)
         }
         if(res.tasks.length==0)
         {
@@ -518,6 +546,13 @@ export default {
           }
         }
       })
+      api3.getTrainer().then( res => {
+        that.teacher_data=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          that.teacher_data.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+        }
+      })
       api3.getTraineeGroup().then( res => {
         that.group_data=[]
         if(res.hasOwnProperty('_embedded'))
@@ -577,7 +612,7 @@ export default {
         auditors: [],
         trainers: this.formData.trainers,
         tasks: this.tableData,
-        user: this.$user.userId
+        //user: this.$user.userId
       }
       if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||!data.hasOwnProperty('trainees')||data.trainees.length==0){
         this.$message.error('表单内存在空值！');
@@ -609,16 +644,12 @@ export default {
         auditors: [],
         trainers: this.formData.trainers,
         tasks: this.tableData,
-        user: this.$user.userId
+        //user: this.$user.userId
       }
       var auditors=[]
       for(var i=0;i<this.popData.approver.length;i++)
       {
-        auditors.push({
-          user:this.approvers_res[this.popData.approver[i]].id,
-          username:this.approvers_res[this.popData.approver[i]].name,
-          approved:'未审核'
-        })
+        auditors.push(this.approvers_res[this.popData.approver[i]].id)
       }
       data.auditors=auditors
       if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){

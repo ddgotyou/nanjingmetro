@@ -246,16 +246,6 @@ export default {
     }
   },
   methods:{
-    listpage1(){
-      this.index=0
-      api.getTempTasks({
-        page: 0,
-        size: this.pageSize
-      }).then( res => {
-        this.response=res
-        this.tableData=res._embedded.tmpTasks
-      })
-    },
     list() {
       var that=this
       api.getTempTasks({
@@ -267,6 +257,7 @@ export default {
         for(var i=0;i<res._embedded.tmpTasks.length;i++)
         {
           that.tableData.push({
+            id:res._embedded.tmpTasks[i].id,
             name:res._embedded.tmpTasks[i].name,
             chooseTask:res._embedded.tmpTasks[i].chooseTask,
             startTime:res._embedded.tmpTasks[i].startTime,
@@ -308,9 +299,9 @@ export default {
       
     },
     deleteRow(index, tableData) {
-      console.log(this.tableData[index].id)
       api.deleteTempTask(this.tableData[index].id).then( res => {
-        this.listpage1()
+        this.index=0
+        this.list()
       })
     },
     getSelection() {

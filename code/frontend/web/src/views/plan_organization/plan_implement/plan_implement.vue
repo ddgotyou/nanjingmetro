@@ -25,9 +25,12 @@
           <el-col :span="12">
             <el-form-item label="讲师">
               <el-select
-              style="width:100%"
-              v-model="searchData.teacher"
-              placeholder="请选择">
+                style="width:100%"
+                v-model="searchData.teacher"
+                placeholder="请选择"
+                clearable
+                filterable
+              >
               <el-option
                   v-for="item in teachers"
                   :key="item.value"
@@ -41,7 +44,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入"/>
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" @change="search_commit"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -278,10 +281,12 @@
 </template>
 
 <script>
-import * as api from '@/api/training_plan/training_plan' 
+import * as api from '@/api/training_plan/training_plan'
+import * as api3 from '@/api/training_plan/account' 
 export default {
   components: {
-    api
+    api,
+    api3
   },
   data() {
     return {
@@ -391,8 +396,12 @@ export default {
                 endTime: res._embedded.plans[i].endTime,
                 teacher: '',
                 self: res._embedded.plans[i]._links.self.href,
-                teacher: res._embedded.plans[i].trainers[0]
+                teacher: ''
               };
+              for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+              {
+                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
+              }
               that.tableData.push(item)
             }
           }
@@ -405,7 +414,7 @@ export default {
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: '进行中',
-        trainer: this.searchData.teacher,
+        trainers: this.searchData.teacher,
         keyword: this.searchData.value,
         page: this.index-1,
         size: this.pageSize
@@ -424,8 +433,12 @@ export default {
               endTime: res._embedded.plans[i].endTime,
               teacher: '',
               self: res._embedded.plans[i]._links.self.href,
-              teacher: res._embedded.plans[i].trainers[0]
+              teacher: ''
             };
+            for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+            {
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
+            }
             that.tableData.push(item)
           }
         }
@@ -541,6 +554,13 @@ export default {
           var temp=res._embedded.classrooms[i]._links.self.href.split("/")
           var classroom_id=temp[temp.length-1]
           that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+        }
+      })
+      api3.getTrainer().then( res => {
+        this.teachers=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          this.teachers.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
         }
       })
     },
