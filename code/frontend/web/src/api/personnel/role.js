@@ -10,11 +10,10 @@ function add(data) {
 }
 
 // 查询角色列表
-function list(query, page, size) {
+function list(page, size) {
   return request({
     url: '/tms-account/role/getAllRole' + '?page=' + page + '&size=' + size,
     method: 'get',
-    params: query
   })
 }
 

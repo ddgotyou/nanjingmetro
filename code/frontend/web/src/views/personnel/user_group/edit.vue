@@ -137,12 +137,10 @@ export default {
   },
   data: function () {
     return {
-      // 操作类型，“提交”或“编辑”
-      option: "",
-      // 要“编辑”的用户组 ID
-      id: undefined,
+      // 用户组 ID
+      id: null,
 
-      // 用户组表单
+      // 编辑表单
       form: {
         name: "",
         roleType: "",
@@ -195,7 +193,7 @@ export default {
       // 模板的权限表
       template: {},
 
-      // 选择框内容
+      // 表单中的选项值
       selection: {
         roles: [],
         types: [
@@ -205,15 +203,16 @@ export default {
         ],
       },
 
-      // 查询字典
+      // 查询集
       query: {
-        key: undefined,
+        key: "",
       },
 
-      // 可选的用户
+      // 可添加用户
       usersOptional: [],
-      // 缓存的用户
+      // 已添加用户
       usersAdded: [],
+      // 穿梭框内容样式
       renderContent(h, option) {
         return (
           <span>
@@ -224,14 +223,13 @@ export default {
     };
   },
   mounted: function () {
-    // 接受 index 页面传递的参数，并保存
-    this.option = this.$route.query.option;
+    // 保存上一级菜单传递的用户组 ID
     this.id = this.$route.query.id;
-    // 获取所有用户，填入穿梭框
+    // 加载数据
     this.loadData();
   },
   methods: {
-    // 加载某个用户组数据
+    // 加载数据
     async loadData() {
       // 获取所有角色模板
       role.list(null).then((response) => {
@@ -241,28 +239,24 @@ export default {
           }
         );
       });
-
       // 获取所有用户
       user.list(null).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
-
-      // 如果是“编辑”，还需要填入用户组信息
-      if (this.option === "edit") {
-        await api.detail(this.id).then((response) => {
-          this.form = response;
-          for (let i in this.form.users) {
-            let user = this.usersOptional.find(
-              (element) => element.value === this.form.users[i]
-            );
-            this.usersAdded.push(user.key);
-          }
-        });
-      }
+      // 获取用户组详情
+      await api.detail(this.id).then((response) => {
+        this.form = response;
+        for (let i in this.form.users) {
+          let user = this.usersOptional.find(
+            (element) => element.value === this.form.users[i]
+          );
+          this.usersAdded.push(user.key);
+        }
+      });
     },
     // 权限模板发生改变
     handleChangeRole(value) {
-      // 返回对应 id 的角色的详细信息
+      // 返回对应 ID 的角色的详细信息
       role.detail(this.form.authTemplate).then((response) => {
         // 将权限模板填充到对应表单
         this.form.authority = response.authority;
@@ -311,29 +305,7 @@ export default {
       this.usersAdded = [];
       this.loadData();
     },
-    // 提交新增用户组的表单
-    optionAdd() {
-      api.add(this.form).then((response) => {
-        if (response.code === 200) {
-          this.$message.success("添加成功！");
-          this.onCancel();
-        } else {
-          this.$message.error(response.msg);
-        }
-      });
-    },
-    // 提交修改用户组的表单
-    optionEdit() {
-      api.edit(this.id, this.form).then((response) => {
-        if (response.code === 200) {
-          this.$message.success("修改成功！");
-          this.onCancel();
-        } else {
-          this.$message.error(response.msg);
-        }
-      });
-    },
-    // 提交新增或修改的表单
+    // 提交编辑表单
     onSubmit() {
       // 处理权限模板是否做出了修改
       if (this.form.authority === this.template) {
@@ -345,8 +317,14 @@ export default {
 
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          if (this.option === "add") this.optionAdd();
-          else if (this.option === "edit") this.optionEdit();
+          api.edit(this.id, this.form).then((response) => {
+            if (response.code === 200) {
+              this.$message.success("编辑成功！");
+              this.onCancel();
+            } else {
+              this.$message.error(response.msg);
+            }
+          });
         } else {
           this.$message.error("请按提示填写正确内容！");
         }

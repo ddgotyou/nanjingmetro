@@ -11,11 +11,18 @@ function add(data) {
 
 // 查询学员列表
 function list(query, page, size) {
-  query = query ? Object.assign(query, { page: page, size: size }) : null;
+  let params = {};
+  if (page) params["page"] = page;
+  if (size) params["size"] = size;
+  for (let attr in query) {
+    if (query[attr] !== "")
+      params[attr] = query[attr];
+  }
+
   return request({
     url: '/tms-account/users/getTrainee',
     method: 'get',
-    params: query
+    params: params
   })
 }
 
