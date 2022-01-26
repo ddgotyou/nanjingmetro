@@ -117,14 +117,14 @@
             >
               详情
             </el-button>
-            <el-button
+            <!-- <el-button
               v-if="$user.userId==1"
               type="text"
               size="small"
               @click.native.prevent="delete_plan(scope.$index, tableData)"
             >
               删除
-            </el-button>
+            </el-button> -->
           </template>
         </el-table-column>
       </el-table>

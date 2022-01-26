@@ -4,7 +4,7 @@
     <el-card class="card-box" style="width: 100%">
       <div slot="header">筛选框</div>
       <el-form label-width="auto" label-position="right">
-        <el-col :span="4">
+        <!-- <el-col :span="4">
           <el-form-item label="培训任务">
             <el-select v-model="query.trainingPlan" class="filter-item mr10">
               <el-option
@@ -15,8 +15,8 @@
               />
             </el-select>
           </el-form-item>
-        </el-col>
-        <el-col :span="4">
+        </el-col> -->
+        <el-col :span="6">
           <el-form-item label="状态">
             <el-select v-model="query.status" class="filter-item mr10">
               <el-option label="已评" value="0" />
@@ -24,7 +24,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="5">
+        <el-col :span="6">
           <el-form-item label="学号">
             <el-input
               v-model="query.no"
@@ -33,7 +33,7 @@
             />
           </el-form-item>
         </el-col>
-        <el-col :span="5">
+        <el-col :span="6">
           <el-form-item label="学员">
             <el-input
               v-model="query.name"

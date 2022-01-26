@@ -245,7 +245,7 @@ export default {
       this.multipleSelection = val;
     },
     addItem() {
-      if(this.itemData.name==''||this.itemData.description==''){
+      if(this.itemData.content==''||this.itemData.point==''){
         this.$message.error('表单内存在空值！');
       }
       else{

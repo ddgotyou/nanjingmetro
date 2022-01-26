@@ -98,12 +98,14 @@
               详情
             </el-button>
             <el-button
+              :disabled="tableData[scope.$index].status!='审核中'"
               @click.native.prevent="approve(scope.$index, tableData)"
               type="text"
               size="small">
               通过
             </el-button>
             <el-button
+              :disabled="tableData[scope.$index].status!='审核中'"
               @click.native.prevent="reject(scope.$index, tableData)"
               type="text"
               size="small">
@@ -256,12 +258,14 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        api.approve(id, { auditor:this.$user.userId }).then(
-          this.$message({
+        api.approve(id, { auditor:this.$user.userId }).then( () => {
+          that.index=1;
+          that.fresh()
+          that.$message({
           type: 'success',
           message: '审批通过成功!'
           })
-        )
+        })
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -276,12 +280,14 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
-        api.reject(id,{ auditor: this.$user.userId, reason: value}).then(
-          this.$message({
+        api.reject(id,{ auditor: this.$user.userId, reason: value}).then( () => {
+          that.index=1;
+          that.fresh()
+          that.$message({
             type: 'success',
             message: '审批驳回成功！'
           })
-        )
+        })
       }).catch(() => {
         this.$message({
           type: 'info',
