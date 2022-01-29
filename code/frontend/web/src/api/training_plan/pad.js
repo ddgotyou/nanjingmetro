@@ -113,6 +113,38 @@ function upload_score(query) {
     })
 }
 
+function fromTemplate_batch(data) {
+    return request({
+        url: '/training-plan/scoringItems/fromTemplate/batch',
+        method: 'post',
+        data: data
+    })
+}
+
+function findScoringItems(params) {
+    return request({
+        url: '/training-plan/scoringItems/search/findByPlanAndTaskOrder',
+        method: 'get',
+        params: params
+    })
+}
+function addScoringItems(data) {
+    return request({
+        url: '/training-plan/scoringItems',
+        method: 'post',
+        headers:{
+            "Content-Type":"application/json",
+        },
+        data: data
+    })
+}
+function delScoringItems(id) {
+    return request({
+        url: '/training-plan/scoringItems/'+id,
+        method: 'delete'
+    })
+}
+
 export{
     list_students,
     search_list,
@@ -123,4 +155,8 @@ export{
     list_template,
     get_details,
     upload_score,
+    fromTemplate_batch,
+    findScoringItems,
+    addScoringItems,
+    delScoringItems
 }

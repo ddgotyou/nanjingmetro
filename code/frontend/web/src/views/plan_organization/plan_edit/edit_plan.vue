@@ -474,7 +474,7 @@ export default {
           name: this.taskData.name,
           chooseTask: this.taskData.option,
           type: this.taskData.type,
-          taskScore: this.taskData.score,
+          scoringFormTemplate: this.taskData.score,
           inPlanTask: null,
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],

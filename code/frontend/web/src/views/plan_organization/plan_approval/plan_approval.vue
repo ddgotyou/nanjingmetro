@@ -128,10 +128,14 @@
 </template>
 
 <script>
-import * as api from '@/api/training_plan/application'
+import * as api from '@/api/training_plan/training_plan'
+import * as api2 from '@/api/training_plan/application'
+import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
-    api
+    api,
+    api2,
+    api4
   },
   data() {
     return {
@@ -173,7 +177,7 @@ export default {
         size: this.pageSize
       };
       var that=this;
-      api.list(params).then(res=>{
+      api2.list(params).then(res=>{
         that.response=res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
@@ -208,7 +212,7 @@ export default {
         size: this.pageSize
       };
       let that=this;
-      api.search(params).then( res => {
+      api2.search(params).then( res => {
         that.response = res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
@@ -258,13 +262,28 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        api.approve(id, { auditor:this.$user.userId }).then( () => {
+        api2.approve(id, { auditor:this.$user.userId }).then( () => {
           that.index=1;
           that.fresh()
           that.$message({
           type: 'success',
           message: '审批通过成功!'
           })
+          api.details(id)
+          .then( res => {
+            var task_template_data=[]
+            for(var i=0;i<res.tasks.length;i++)
+            {
+              task_template_data.push({
+                plan:id,
+                taskOrder:res.tasks[i].order,
+                scoringFormTemplate:res.tasks[i].scoringFormTemplate
+              })
+            }
+            api4.fromTemplate_batch(task_template_data).then( () => {
+              console.log("submit task_template batch successfully!")
+            })
+          });
         })
       }).catch(() => {
         this.$message({
@@ -280,7 +299,7 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
-        api.reject(id,{ auditor: this.$user.userId, reason: value}).then( () => {
+        api2.reject(id,{ auditor: this.$user.userId, reason: value}).then( () => {
           that.index=1;
           that.fresh()
           that.$message({

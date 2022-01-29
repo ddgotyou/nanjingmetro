@@ -80,7 +80,7 @@
         </el-row>
         <el-divider />
           <el-table
-            :data="baseData.trainees.filter(data => (!search_value || data.username.toLowerCase().includes(search_value.toLowerCase())))"
+            :data="baseData.trainees.filter(data => (!search_value || data.user.toString().toLowerCase().includes(search_value.toLowerCase()) || data.username.toLowerCase().includes(search_value.toLowerCase())))"
             style="width: 100"
             height="250"
             :default-sort = "{prop: 'user', order: 'ascending'}"
@@ -135,7 +135,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="评分">
-                <el-input id="task_standard" v-model="tableData_scores[tableData_tasks[taskIndex].taskScore]" style="width:100%" readonly />
+                <el-input id="task_standard" v-model="tableData_scores[tableData_tasks[taskIndex].scoringFormTemplate]" style="width:100%" readonly />
               </el-form-item>
             </el-col>
           </el-row>

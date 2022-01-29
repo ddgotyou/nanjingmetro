@@ -147,7 +147,69 @@
     ---------------------------------------------------------------------------------------
     -------------------------------------------------------------------------------------->
 
-
+    <el-dialog title="调整任务打分表" :visible.sync="dialogFormVisible" @closed="closed">
+      <el-form label-position="right" label-width="80px">
+        <div slot="header">打分表信息</div>
+        <el-form label-position="right" label-width="80px" :model="itemData">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="考核内容">
+                <el-input v-model="itemData.content" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="单项分值">
+                <el-input-number style="width:100%;" v-model="itemData.totalScore" :min="0" :max="100" :step="5"></el-input-number>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="考核要点">
+                <el-input v-model="itemData.point" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <div style="text-align:right"><el-button type="primary" @click="addItem">确认新增</el-button></div>
+        </el-form>
+        <el-divider />
+        <el-table
+          :data="tableData"
+          style="width: 100"
+        >
+          <el-table-column
+            type="index"
+            width="50">
+          </el-table-column>
+          <el-table-column
+            prop="content"
+            label="考核内容"
+          />
+          <el-table-column
+            prop="point"
+            label="考核要点"
+          />
+          <el-table-column
+            prop="totalScore"
+            label="单项分值"
+          />
+          <el-table-column
+            label="操作"
+            width="120"
+          >
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                size="small"
+                @click.native.prevent="deleteRow(scope.$index, tableData)"
+              >
+                移除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-form>
+    </el-dialog>
 
 
     <!-- 培训计划框 -->
@@ -161,6 +223,9 @@
           :title="plan.taskName"
           :name="plan.taskName"
         >
+          <div style="text-align:right">
+            <el-button type="primary" @click="adjust_score_table(plan)">调整评分表</el-button>
+          </div>
           <el-table
             :data="trainingTaskList[plankey].trainees"
             :default-sort="{ prop: 'id', order: 'descending' }"
@@ -243,7 +308,17 @@ export default {
       now_click:{
         now_task:-1,      //任务key
         now_student:-1,   //学员在数组中的序号
-      }
+      },
+
+      //klb
+      chooseTaskOrder: 0,
+      itemData: {
+        content:'',
+        totalScore: 0,
+        point:''
+      },
+      tableData:[],
+      dialogFormVisible:false
     };
   },
   computed: {},
@@ -470,6 +545,63 @@ export default {
 
       }
     },
+    closed(){
+      this.chooseTaskOrder=0
+      this.itemData={
+        content:'',
+        totalScore: 0,
+        point:''
+      }
+      this.tableData=[]
+    },
+    adjust_score_table(task) {
+      this.dialogFormVisible=true
+      this.chooseTaskOrder=1
+      this.listScoringItems()
+    },
+    listScoringItems(){
+      var that=this
+      that.tableData=[]
+      api.findScoringItems({
+        plan:that.training_info.planId,
+        taskOrde:that.chooseTaskOrder
+      }).then( res => {
+        for(var i=0;i<res._embedded.items.length;i++)
+        {
+          var temp=res._embedded.items[i]._links.self.href.split("/")
+          var item_id=temp[temp.length-1]
+          that.tableData.push({
+            id:item_id,
+            content:res._embedded.items[i].content,
+            point:res._embedded.items[i].point,
+            totalScore:res._embedded.items[i].totalScore
+          })
+        }
+      })
+    },
+    addItem() {
+      if(this.itemData.content==''||this.itemData.point==''){
+        this.$message.error('表单内存在空值！');
+      }
+      else{
+        api.addScoringItems({
+          plan:this.training_info.planId,
+          taskOrder:this.chooseTaskOrder,
+          content:this.itemData.content,
+          totalScore:this.itemData.totalScore,
+          point:this.itemData.point
+        }).then( () => {
+          this.listScoringItems()
+        })  
+      }
+    },
+    deleteRow(index, tableData) {
+      console.log(tableData[index].id)
+      api.delScoringItems(tableData[index].id).then( res => {
+        this.listScoringItems()
+      })
+    },
+    
   },
 };
 </script>
