@@ -13,8 +13,8 @@ function userGroup(query) {
 function userGroupByType(key) {
   switch (key) {
     case 'admin': key = "0"; break
-    case 'teacher': key = "1"; break
-    case 'student': key = "2"; break
+    case 'trainer': key = "1"; break
+    case 'trainee': key = "2"; break
     default: break
   }
   return request({

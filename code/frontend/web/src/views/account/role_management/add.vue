@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/role";
+import * as api from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 
 export default {
@@ -74,10 +74,7 @@ export default {
   },
   data: function () {
     return {
-      // 角色 ID
-      id: null,
-
-      // 编辑表单
+      // 新增表单
       form: {
         name: "",
         authTemplate: null,
@@ -124,16 +121,13 @@ export default {
         },
       },
 
-      // 表单中的选择值
+      // 表单中的选项值
       selection: {
         roles: [],
       },
     };
   },
   mounted: function () {
-    // 保存上一级菜单传递的角色 ID
-    this.id = this.$route.query.id;
-    // 加载数据
     this.loadData();
   },
   methods: {
@@ -147,10 +141,6 @@ export default {
           }
         );
       });
-      // 获取角色详情
-      api.detail(this.id).then((response) => {
-        this.form = response;
-      });
     },
     // 权限模板发生改变
     handleChange(value) {
@@ -162,15 +152,15 @@ export default {
         this.template = response.authority;
       });
     },
-    // 提交编辑表单
+    // 提交新增表单
     onSubmit() {
       this.form.authTemplate = null;
 
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          api.edit(this.id, this.form).then((response) => {
+          api.add(this.form).then((response) => {
             if (response.code === 200) {
-              this.$message.success("编辑成功！");
+              this.$message.success("新增成功！");
               this.onCancel();
             } else {
               this.$message.error(response.msg);
@@ -183,7 +173,7 @@ export default {
     },
     // 取消，返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/role-management");
+      this.$router.push("/account/role-management");
     },
   },
 };

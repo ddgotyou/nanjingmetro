@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/role";
+import * as api from "@/api/account/role";
 
 export default {
   data: function () {
@@ -190,7 +190,7 @@ export default {
     },
     // 新增角色
     handleAdd() {
-      this.$router.push({ path: "/personnel/add-role" });
+      this.$router.push({ path: "/account/add-role" });
     },
     // 批量导出角色
     handleExport() {},
@@ -257,7 +257,7 @@ export default {
     // 编辑选中角色
     handleEdit(index) {
       this.$router.push({
-        path: "/personnel/edit-role",
+        path: "/account/edit-role",
         query: { id: this.list[index].id },
       });
     },

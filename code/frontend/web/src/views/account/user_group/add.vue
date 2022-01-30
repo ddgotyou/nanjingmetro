@@ -126,9 +126,9 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/user_group";
-import * as user from "@/api/personnel/user";
-import * as role from "@/api/personnel/role";
+import * as api from "@/api/account/user_group";
+import * as user from "@/api/account/user";
+import * as role from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 
 export default {
@@ -137,10 +137,7 @@ export default {
   },
   data: function () {
     return {
-      // 用户组 ID
-      id: null,
-
-      // 编辑表单
+      // 新增表单
       form: {
         name: "",
         roleType: "",
@@ -223,14 +220,12 @@ export default {
     };
   },
   mounted: function () {
-    // 保存上一级菜单传递的用户组 ID
-    this.id = this.$route.query.id;
     // 加载数据
     this.loadData();
   },
   methods: {
     // 加载数据
-    async loadData() {
+    loadData() {
       // 获取所有角色模板
       role.list(null).then((response) => {
         this.selection.roles = response._embedded.groupVoes.map(
@@ -242,16 +237,6 @@ export default {
       // 获取所有用户
       user.list(null).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
-      });
-      // 获取用户组详情
-      await api.detail(this.id).then((response) => {
-        this.form = response;
-        for (let i in this.form.users) {
-          let user = this.usersOptional.find(
-            (element) => element.value === this.form.users[i]
-          );
-          this.usersAdded.push(user.key);
-        }
       });
     },
     // 权限模板发生改变
@@ -305,7 +290,7 @@ export default {
       this.usersAdded = [];
       this.loadData();
     },
-    // 提交编辑表单
+    // 提交新增表单
     onSubmit() {
       // 处理权限模板是否做出了修改
       if (this.form.authority === this.template) {
@@ -317,9 +302,9 @@ export default {
 
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          api.edit(this.id, this.form).then((response) => {
+          api.add(this.form).then((response) => {
             if (response.code === 200) {
-              this.$message.success("编辑成功！");
+              this.$message.success("新增成功！");
               this.onCancel();
             } else {
               this.$message.error(response.msg);
@@ -332,7 +317,7 @@ export default {
     },
     // 取消，返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/user-group");
+      this.$router.push("/account/user-group");
     },
   },
 };

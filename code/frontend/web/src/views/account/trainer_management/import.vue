@@ -8,13 +8,13 @@
               <p>
                 请按照模板样式填写
                 <br />
-                为确保您的学员数据导入正常，建议下载新的模板导入
+                为确保您的讲师数据导入正常，建议下载新的模板导入
               </p>
             </template>
             <template slot="title">
               <el-row>
                 <el-col :span="12">
-                  <p>下载模板，填写学员信息</p>
+                  <p>下载模板，填写讲师信息</p>
                 </el-col>
                 <el-col :span="12">
                   <el-button @click="handleDownload">下载模板</el-button>
@@ -60,8 +60,8 @@
 
 <script>
 import XLSX from "xlsx";
-import * as api from "@/api/personnel/teacher";
-import defaultStudentUserGroupId from "../global";
+import * as api from "@/api/account/trainer";
+import defaultTeacherUserGroupId from "../global";
 
 const pattEmail = /^[\w\.-]+@[\w\.]+\.[A-z]+$/;
 const pattIdcard = /^\d{18}$/;
@@ -80,7 +80,7 @@ export default {
   methods: {
     handleDownload() {
       this.active = 1;
-      window.location.href = "/template/template-student.xlsx";
+      window.location.href = "/template/template-trainer.xlsx";
     },
     handlePreview() {},
     handleRemove() {},
@@ -129,9 +129,7 @@ export default {
         row.dept = sheet[i].部门;
         row.leader = sheet[i].组长;
         row.post = sheet[i].岗位;
-        row.edu = sheet[i].学历;
-        row.major = sheet[i].专业;
-        row.type = sheet[i].学员状态;
+        row.type = sheet[i].讲师状态;
 
         // 类型转换
         row.name = row.name ? String(row.name) : null; // 必填
@@ -142,12 +140,10 @@ export default {
         row.tel = row.tel ? String(row.tel) : null;
         row.email = row.email ? String(row.email) : null; // 必填
         row.idcard = row.idcard ? String(row.idcard) : null; // 必填
-        row.usergroup = [defaultStudentUserGroupId];
+        row.usergroup = [defaultTeacherUserGroupId];
         row.dept = row.dept ? String(row.dept).split(",") : [];
         row.leader = row.leader ? String(row.leader).split(",") : [];
         row.post = row.post ? String(row.post) : null;
-        row.edu = row.edu ? String(row.edu) : null;
-        row.major = row.major ? String(row.major) : null;
         if (!row.type) row.sex = null;
         else if (row.type === "正式") row.type = "0";
         else if (row.type === "临时") row.type = "1";
@@ -206,7 +202,7 @@ export default {
       Promise.all(promises).then(
         // resolve
         (values) => {
-          this.$message.success(`成功添加${values.length}位学员。`);
+          this.$message.success(`成功添加${values.length}位讲师。`);
           this.onCancel(); // 返回上一级
         },
         // reject
@@ -217,7 +213,7 @@ export default {
     },
     // 取消，返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/student-management");
+      this.$router.push("/account/trainer-management");
     },
   },
 };

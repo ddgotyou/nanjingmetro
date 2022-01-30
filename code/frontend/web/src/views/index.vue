@@ -13,14 +13,14 @@
               <el-col :span="12">
                 <number-panel
                   title="讲师人数"
-                  :number="numTeacher"
+                  :number="numTrainer"
                   background-color="#cceeff"
                 ></number-panel>
               </el-col>
               <el-col :span="12">
                 <number-panel
                   title="学员人数"
-                  :number="numStudent"
+                  :number="numTrainee"
                   background-color="#bbffee"
                 ></number-panel>
               </el-col>
@@ -33,43 +33,48 @@
             <div slot="header">
               <el-button icon="el-icon-s-claim" type="text"></el-button>
               <el-button class="title-text" type="text">我的待办</el-button>
-              <el-button style="float: right" type="text">详情>></el-button>
             </div>
             <el-row>
               <el-card shadow="hover" class="todo-card">
                 <div slot="header">
                   <!-- <div class="point bgcolor-red"></div> -->
                   <span>待审核申请</span>
-                  <el-badge :value="numApply" />
+                  <el-badge :value="numAppUnAudited" />
                 </div>
                 <el-col :span="6" align="center">
-                  <el-tag type="info">往期审核</el-tag>
+                  <el-tag type="info">审核中</el-tag>
                 </el-col>
                 <el-col :span="6" align="center">
-                  <el-tag type="success">{{ numApplyLast }}</el-tag>
+                  <el-tag type="success">{{ numAppAuditing }}</el-tag>
                 </el-col>
                 <el-col :span="6" align="center">
-                  <el-tag type="info">已看审核</el-tag>
+                  <el-tag type="info">已通过</el-tag>
                 </el-col>
                 <el-col :span="6" align="center">
-                  <el-tag type="warning">{{ numApplyViewed }}</el-tag>
+                  <el-tag type="warning">{{ numAppAudited }}</el-tag>
                 </el-col>
 
                 <el-table
-                  :data="applyList"
+                  :data="appList"
                   :default-sort="{ prop: 'date', order: 'descending' }"
                   :row-style="getRowClass"
                   :show-header="false"
                   style="width: 100%"
                 >
-                  <el-table-column prop="content" min-width="70%">
+                  <el-table-column min-width="70%">
                     <template slot-scope="scope">
-                      {{ getApplyContent(scope.row.content) }}
+                      {{
+                        getAppContent(
+                          scope.row.applicationDetails.planFirstTrainer
+                        )
+                      }}
                     </template>
                   </el-table-column>
-                  <el-table-column prop="date" min-width="30%" align="right">
+                  <el-table-column min-width="30%" align="right">
                     <template slot-scope="scope">
-                      <span class="table-date">{{ scope.row.date }}</span>
+                      <span class="table-date">{{
+                        getAppTime(scope.row.applicationDetails.planEndTime)
+                      }}</span>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -90,19 +95,14 @@
                   style="width: 100%"
                 >
                   <el-table-column
-                    prop="name"
+                    prop="taskDetails.name"
                     label="名称"
                     min-width="40%"
                     align="center"
                   />
-                  <el-table-column
-                    prop="content"
-                    label="任务"
-                    min-width="60%"
-                    align="center"
-                  >
+                  <el-table-column label="任务" min-width="60%" align="center">
                     <template slot-scope="scope">
-                      {{ getTaskContent(scope.row.content) }}
+                      {{ getTaskContent(scope.row.taskDetails.description) }}
                     </template>
                   </el-table-column>
                 </el-table>
@@ -118,24 +118,30 @@
             <div slot="header">
               <el-button icon="el-icon-s-order" type="text"></el-button>
               <el-button class="title-text" type="text">培训计划</el-button>
-              <el-button
-                plain
-                type="primary"
-                size="small"
-                icon="el-icon-download"
+              <download-excel
+                :data="planAllList"
+                :fields="fields"
+                type="xls"
+                header="个人培训计划列表"
+                name="个人培训计划列表"
                 style="float: right"
-                @click="handleExport"
-                >导出</el-button
               >
+                <el-button
+                  plain
+                  type="primary"
+                  size="small"
+                  icon="el-icon-download"
+                  >导出</el-button
+                >
+              </download-excel>
             </div>
             <!-- 表格 -->
             <el-table
               border
-              :data="trainingPlanList"
+              :data="planList"
               style="width: 100%"
               :default-sort="{ prop: 'date', order: 'descending' }"
             >
-              <el-table-column type="selection" />
               <el-table-column
                 type="index"
                 label="序号"
@@ -143,41 +149,32 @@
                 align="center"
               />
               <el-table-column
-                prop="name"
+                prop="planDetails.name"
                 label="名称"
                 width=""
                 align="center"
               />
-              <el-table-column
-                prop="teacher"
-                label="讲师"
-                width=""
-                align="center"
-              />
-              <el-table-column
-                prop="date"
-                label="时间段"
-                width="200px"
-                align="center"
-              />
+              <el-table-column label="讲师" width="" align="center">
+                <template slot-scope="scope">
+                  {{ getTrainer(scope.row.planDetails.trainers) }}
+                </template>
+              </el-table-column>
+              <el-table-column label="时间段" width="200px" align="center">
+                <template slot-scope="scope">
+                  <div>{{ scope.row.planDetails.startTime }} ~</div>
+                  <div>{{ scope.row.planDetails.endTime }}</div>
+                </template>
+              </el-table-column>
               <el-table-column prop="enabled" label="详情" align="center">
                 <template slot-scope="scope">
-                  <el-button type="text" @click="handleDetail(scope.$index)"
+                  <el-button
+                    type="text"
+                    @click="handleDetail(scope.row.planDetails.id)"
                     >详情</el-button
                   >
                 </template>
               </el-table-column>
             </el-table>
-            <!-- 页码 -->
-            <el-pagination
-              :current-page="currentPage"
-              :page-size="100"
-              :total="totalPage"
-              layout="prev, pager, next"
-              class="pagination"
-              @size-change="pagingSizeChange"
-              @current-change="pagingCurrentChange"
-            />
           </el-card>
         </el-row>
         <el-row :gutter="20">
@@ -232,64 +229,33 @@
 <script>
 import { mapGetters } from "vuex";
 import NumberPanel from "./dashboard/NumberPanel.vue";
-import * as student from "@/api/personnel/student";
-import * as teacher from "@/api/personnel/teacher";
+import * as trainee from "@/api/account/trainee";
+import * as trainer from "@/api/account/trainer";
+import * as api from "@/api/index";
+import repairVue from "./device_management/repair/repair.vue";
 
 export default {
   components: { NumberPanel },
   name: "DashboardEditor",
   data() {
     return {
-      currentPage: 4,
-      totalPage: 400,
+      numTrainer: null,
+      numTrainee: null,
+      numAppUnAudited: 0,
+      numAppAudited: 0,
+      numAppAuditing: 0,
 
-      numTeacher: null,
-      numStudent: null,
-      numApply: 8,
-      numApplyLast: 654,
-      numApplyViewed: 656,
+      fields: {
+        姓名: "name",
+        讲师: "trainers",
+        开始时间: "startTime",
+        结束时间: "endTime",
+      },
 
-      trainingPlanList: [
-        {
-          name: "劳动关系学培训",
-          teacher: "张三丰",
-          date: "2021-08-01 14:00-16:00",
-        },
-        {
-          name: "人力资源培训",
-          teacher: "胡歌",
-          date: "2021-08-02 14:00-16:00",
-        },
-        {
-          name: "薪酬管理培训",
-          teacher: "毛不易",
-          date: "2021-08-03 14:00-16:00",
-        },
-        {
-          name: "劳动关系学培训",
-          teacher: "张三丰",
-          date: "2021-08-04 14:00-16:00",
-        },
-        {
-          name: "人力资源培训",
-          teacher: "胡歌",
-          date: "2021-08-05 14:00-16:00",
-        },
-      ],
-      taskList: [
-        {
-          name: "劳动关系学培训",
-          content: "此处是详情此处是详情",
-        },
-        {
-          name: "劳动关系学培训",
-          content: "此处是详情此处是详情",
-        },
-        {
-          name: "劳动关系学培训",
-          content: "此处是详情此处是详情",
-        },
-      ],
+      planAllList: [],
+      planList: [],
+      appList: [],
+      taskList: [],
       noticeList: [
         {
           msg: "十月一日国庆节，为响应国家号召...",
@@ -312,20 +278,6 @@ export default {
           date: "2021-08-05",
         },
       ],
-      applyList: [
-        {
-          content: "教师张三提交了培训计划，待你审核",
-          date: "2021-08-01",
-        },
-        {
-          content: "教师李四提交了培训计划，待你审核",
-          date: "2021-08-02",
-        },
-        {
-          content: "教师王五提交了培训计划，待你审核",
-          date: "2021-08-03",
-        },
-      ],
     };
   },
   computed: {
@@ -338,15 +290,46 @@ export default {
   },
   methods: {
     loadData() {
-      student.list(null).then((response) => {
-        this.numStudent = response.page.totalElements;
+      trainee.list(null).then((response) => {
+        this.numTrainee = response.page.totalElements;
       });
-      teacher.list(null).then((response) => {
-        this.numTeacher = response.page.totalElements;
+      trainer.list(null).then((response) => {
+        this.numTrainer = response.page.totalElements;
+      });
+      api.plan(this.$user.userId).then((response) => {
+        this.planList = response._embedded.plans.slice(0, 4);
+        this.planAllList = response._embedded.plans.map((item) => {
+          return {
+            name: item.planDetails.name,
+            trainers: item.planDetails.trainers
+              .map((item) => item.username)
+              .join("，"),
+            startTime: item.planDetails.startTime,
+            endTime: item.planDetails.endTime,
+          };
+        });
+      });
+      api.apply(this.$user.userId).then((response) => {
+        let applications = response._embedded.applications;
+        this.appList = applications
+          .filter((item) => item.applicationDetails.status === "未审核")
+          .slice(0, 2);
+        applications.forEach((element) => {
+          let status = element.applicationDetails.status;
+          if (status === "未审核") this.numAppUnAudited += 1;
+          else if (status === "审核中") this.numAppAuditing += 1;
+          else this.numAppAudited += 1;
+        });
+      });
+      api.task(this.$user.userId).then((response) => {
+        this.taskList = response._embedded.tasks.slice(0, 3);
       });
     },
-    getApplyContent(content) {
-      return content.substring(0, 10) + "...";
+    getAppContent(trainer) {
+      return trainer + "向你提交了培训计划";
+    },
+    getAppTime(time) {
+      return time.split(" ")[0];
     },
     getTaskContent(content) {
       return content.substring(0, 10) + "...";
@@ -354,12 +337,17 @@ export default {
     getNoticeMsg(msg) {
       return msg.substring(0, 13) + "...";
     },
-    handleExport() {},
-    pagingSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    getTrainer(trainers) {
+      return trainers.map((item) => item.username).join("，");
     },
-    pagingCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+    getTimeRange(plan) {
+      return plan.startTime + " ~\n" + plan.endTime;
+    },
+    handleDetail(id) {
+      this.$router.push({
+        path: "/training_organization/plan_details",
+        query: { self: id },
+      });
     },
   },
 };

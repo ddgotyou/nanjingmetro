@@ -10,7 +10,7 @@
         :rules="rules"
         :label-width="labelWidth"
         label-position="right"
-        class="student-form"
+        class="trainee-form"
       >
         <el-row>
           <el-col :span="12">
@@ -135,8 +135,8 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/student";
-import * as sel from "@/api/personnel/selection";
+import * as api from "@/api/account/trainee";
+import * as sel from "@/api/account/selection";
 import { resize } from "@/utils/resize";
 import inputWidth from "../global";
 
@@ -309,7 +309,7 @@ export default {
     },
     // 取消，返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/student-management");
+      this.$router.push("/account/trainee-management");
     },
   },
 };
@@ -321,7 +321,7 @@ export default {
   margin: 20px auto;
 }
 
-.student-form {
+.trainee-form {
   .el-input {
     width: 375px;
   }

@@ -118,7 +118,7 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/user_group";
+import * as api from "@/api/account/user_group";
 
 export default {
   data: function () {
@@ -195,7 +195,7 @@ export default {
     },
     // 新增用户组
     handleAdd() {
-      this.$router.push({ path: "/personnel/add-usergroup" });
+      this.$router.push({ path: "/account/add-usergroup" });
     },
     // 删除某个用户组
     handleDelete() {
@@ -262,7 +262,7 @@ export default {
     // 编辑某个用户组
     handleEdit(index) {
       this.$router.push({
-        path: "/personnel/edit-usergroup",
+        path: "/account/edit-usergroup",
         query: { id: this.list[index].id },
       });
     },

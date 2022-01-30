@@ -36,7 +36,7 @@
                 multiple
                 collapse-tags
                 placeholder="请选择筛选项（多选）"
-                style="width: 180px"
+                style="width: 200px"
                 class="mr10"
                 @change="handleItemChange"
               >
@@ -54,7 +54,7 @@
                   v-if="item.visible"
                   :key="item.key"
                   :placeholder="item.label"
-                  style="width: 100px"
+                  style="width: 150px"
                   class="mr10"
                   @change="handleOptionChange"
                 >
@@ -105,18 +105,14 @@
             >
             <!-- 导出按钮 -->
             <download-excel
-              :data="table"
+              :data="getTable"
               :fields="fields"
               type="xls"
-              header="学员列表"
-              name="学员列表"
+              header="讲师列表"
+              name="讲师列表"
               class="export-button"
             >
-              <el-button
-                plain
-                type="warning"
-                icon="el-icon-download"
-                @click="handleExport"
+              <el-button plain type="warning" icon="el-icon-download"
                 >导出</el-button
               >
             </download-excel>
@@ -141,9 +137,9 @@
     <!-- 主体 -->
     <el-card class="card-box">
       <!-- 标题栏 -->
-      <div slot="header">学员列表</div>
+      <div slot="header">讲师列表</div>
 
-      <!-- 学员列表 -->
+      <!-- 讲师列表 -->
       <el-table
         v-loading="loading"
         :data="list"
@@ -153,24 +149,22 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" />
-        <!-- 不显示，用来在选择到某个学员时同时获得其 ID -->
+        <!-- 不显示，用来在选择到某个讲师时同时获得其 ID -->
         <el-table-column v-if="false" prop="id" />
         <el-table-column prop="name" label="姓名" width="" align="center" />
-        <el-table-column prop="sex" label="性别" width="" align="center">
+        <el-table-column label="性别" width="" align="center">
           <template slot-scope="scope">
             {{ getSex(scope.row.sex) }}
           </template>
         </el-table-column>
         <el-table-column prop="tel" label="联系电话" width="" align="center" />
-        <el-table-column prop="dept" label="部门" width="" align="center">
+        <el-table-column label="部门" width="" align="center">
           <template slot-scope="scope">
             {{ getDept(scope.row.dept) }}
           </template>
         </el-table-column>
         <el-table-column prop="post" label="岗位" width="" align="center" />
-        <el-table-column prop="edu" label="学历" width="" align="center" />
-        <el-table-column prop="major" label="专业" width="" align="center" />
-        <el-table-column prop="status" label="学员状态" width="" align="center">
+        <el-table-column label="讲师状态" width="" align="center">
           <template slot-scope="scope">
             {{ getStatus(scope.row.status) }}
           </template>
@@ -207,8 +201,8 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/student";
-import * as all from "@/api/personnel/selection";
+import * as api from "@/api/account/trainer";
+import * as sel from "@/api/account/selection";
 import JsonExcel from "vue-json-excel";
 
 export default {
@@ -223,17 +217,16 @@ export default {
         性别: "sex",
         联系电话: "tel",
         部门: "dept",
-        学历: "edu",
-        专业: "major",
-        学员状态: "status",
+        岗位: "post",
+        讲师状态: "usertype",
       },
       table: [],
 
       // 查询集
       query: {
-        key: "",
         name: "",
         idcard: "",
+        key: "",
         sex: "",
         dept: "",
         post: "",
@@ -249,7 +242,7 @@ export default {
       // 所有筛选维度的列表
       items: {
         sex: {
-          key: "0",
+          key: "1",
           label: "性别",
           visible: false,
           value: "",
@@ -259,36 +252,22 @@ export default {
           ],
         },
         dept: {
-          key: "1",
+          key: "2",
           label: "部门",
           visible: false,
           value: "",
           options: [],
         },
         post: {
-          key: "2",
+          key: "3",
           label: "岗位",
           visible: false,
           value: "",
           options: [],
         },
-        edu: {
-          key: "3",
-          label: "学历",
-          visible: false,
-          value: "",
-          options: [],
-        },
-        major: {
-          key: "4",
-          label: "专业",
-          visible: false,
-          value: "",
-          options: [],
-        },
         status: {
-          key: "5",
-          label: "学员状态",
+          key: "4",
+          label: "讲师状态",
           visible: false,
           value: "",
           options: [
@@ -300,9 +279,9 @@ export default {
 
       // 遮罩层
       loading: true,
-      // 当前页面的学员的列表
+      // 当前页面的讲师的列表
       list: [],
-      // 选中学员的列表
+      // 选中讲师的列表
       selection: [],
 
       // 页码
@@ -312,8 +291,6 @@ export default {
         totalPages: 0,
         number: 0,
       },
-      // 总数量
-      totalElements: 0,
     };
   },
   computed: {
@@ -334,12 +311,11 @@ export default {
       api
         .list(query, page, size)
         .then((response) => {
-          this.list = response._embedded.traineeVoes;
+          this.list = response._embedded.trainerVoes;
           this.page = response.page;
           this.loading = false;
         })
         .catch((error) => {
-          // console.log(JSON.stringify(error));
           this.list = [];
           this.loading = false;
         });
@@ -348,27 +324,21 @@ export default {
     search(key, page, size) {
       this.loading = true;
       api.search(key, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.traineeVoes : [];
+        this.list = response._embedded ? response._embedded.trainerVoes : [];
         this.page = response.page;
         this.loading = false;
       });
     },
-    // 加载学员数据
+    // 加载讲师数据
     loadData() {
-      all.dept({}).then((response) => {
+      sel.dept({}).then((response) => {
         this.items.dept.options = response._embedded.dboxVoes;
       });
-      all.post({}).then((response) => {
+      sel.post({}).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
       });
-      all.edu({}).then((response) => {
-        this.items.edu.options = response._embedded.dboxVoes;
-      });
-      all.major({}).then((response) => {
-        this.items.major.options = response._embedded.dboxVoes;
-      });
       api.list({}, 0, 10000).then((response) => {
-        this.table = response._embedded ? response._embedded.traineeVoes : [];
+        this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
       this.data({}, 0, this.page.size);
     },
@@ -401,7 +371,7 @@ export default {
       return status === "0" ? "正式" : "临时";
     },
     // 判断查询字典是否为空
-    getQueryType() {
+    isQueryEmpty() {
       // 模糊查询
       if (this.query.key !== "") return "search";
 
@@ -413,28 +383,26 @@ export default {
       // 无查询
       return "list";
     },
-    // 当选中学员更改时，更新选中学员列表
+    // 当选中讲师更改时，更新选中讲师列表
     handleSelectionChange(selection) {
       this.selection = selection;
     },
-    // 新增学员
+    // 新增讲师
     handleAdd() {
-      this.$router.push({ path: "/personnel/add-student" });
+      this.$router.push({ path: "/account/add-trainer" });
     },
-    // 删除学员
+    // 删除讲师
     handleDelete() {
-      let count = this.selection.length; // 选中的学员数量
+      let count = this.selection.length; // 选中的讲师数量
 
       // 如果没有选中任何项，则提示并返回
       if (count === 0) {
-        this.$message.warning("未选中任何学员！");
+        this.$message.warning("未选中任何讲师！");
         return;
       }
 
       // 删除确认
-      this.$confirm("是否确认删除选中的学员？", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      this.$confirm("是否确认删除选中的讲师？", "提示", {
         type: "warning",
       }).then(() => {
         // 这是个伪并行，虽然删除任务逐个开始，
@@ -458,7 +426,7 @@ export default {
             (values) => {
               let count = values.filter((value) => value.code === 200).length;
               if (count !== 0)
-                this.$message.success(`成功删除${count}位学员。`);
+                this.$message.success(`成功删除${count}位讲师。`);
             },
             // reject
             (errors) => {
@@ -468,15 +436,17 @@ export default {
           .finally(() => this.handleReset());
       });
     },
-    // 批量导入学员
+    // 批量导入讲师
     handleImport() {
-      this.$router.push("/personnel/import-student");
+      this.$router.push("/account/import-trainer");
     },
-    // 批量导出学员
-    handleExport() {},
-    // 根据输入框、选择框和搜索框的条件筛选学员
+    // 批量导出讲师
+    handleExport() {
+      return;
+    },
+    // 根据输入框、选择框和搜索框的条件筛选讲师
     handleSearch() {
-      this.queryType = this.getQueryType();
+      this.queryType = this.isQueryEmpty();
       if (this.queryType === "search") {
         // 模糊查询
         this.search(this.query.key, 0, this.page.size);
@@ -488,12 +458,12 @@ export default {
         this.data({}, 0, this.page.size);
       }
     },
-    // 重置学员列表
+    // 重置讲师列表
     handleReset() {
       // 清空查询字典
-      for (var key in this.query) this.query[key] = "";
+      for (let key in this.query) this.query[key] = "";
       // 清空选择框值并隐藏
-      for (var key in this.items) {
+      for (let key in this.items) {
         this.items[key].value = "";
         this.items[key].visible = false;
       }
@@ -502,18 +472,19 @@ export default {
       // 重新加载数据
       this.loadData();
     },
-    // 编辑某个学员
+    // 编辑某个讲师
     handleEdit(index) {
+      let id = this.list[index].id;
       this.$router.push({
-        path: "/personnel/edit-student",
-        query: { id: this.list[index].id },
+        path: "/account/edit-trainer",
+        query: { id: id },
       });
     },
-    // 查看某个学员详情
+    // 查看某个讲师详情
     handleDetail(index) {
       let id = this.list[index].id;
       this.$router.push({
-        path: "/personnel/student-detail",
+        path: "/account/trainer-detail",
         query: { id: id },
       });
     },
@@ -539,10 +510,6 @@ export default {
 .card-box {
   max-width: 100%;
   margin: 20px auto;
-}
-
-.mr10 {
-  margin-right: 10px;
 }
 
 .pagination {

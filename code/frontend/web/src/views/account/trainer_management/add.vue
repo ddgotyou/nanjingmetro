@@ -10,7 +10,7 @@
         :rules="rules"
         :label-width="labelWidth"
         label-position="right"
-        class="student-form"
+        class="trainer-form"
       >
         <el-row>
           <el-col :span="12">
@@ -94,6 +94,17 @@
                 />
               </el-select>
             </el-form-item>
+            <!-- 用户组 -->
+            <el-form-item label="用户组">
+              <el-select v-model="form.usergroup" multiple collapse-tags>
+                <el-option
+                  v-for="item in selection.usergroup"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
           </el-col>
         </el-row>
         <!-- 提交与取消按钮 -->
@@ -107,9 +118,10 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/teacher";
-import * as sel from "@/api/personnel/selection";
+import * as api from "@/api/account/trainer";
+import * as sel from "@/api/account/selection";
 import { resize } from "@/utils/resize";
+import defaultTeacherUserGroupId from "../global";
 import inputWidth from "../global";
 
 export default {
@@ -121,21 +133,30 @@ export default {
       // label 宽度，自适应
       labelWidth: "auto",
 
-      // 讲师 ID
-      id: null,
-
-      // 编辑表单
+      // 新增表单
+      // form: {
+      //   name: "", // 必填
+      //   sex: null,
+      //   tel: null,
+      //   email: "", // 必填
+      //   idcard: "", // 必填
+      //   usergroup: [],
+      //   dept: [],
+      //   leader: [],
+      //   post: null,
+      //   type: "", // 必填
+      // },
       form: {
-        name: "", // 必填
-        sex: null,
+        name: "测试讲师", // 必填
+        sex: "1",
         tel: null,
-        email: "", // 必填
-        idcard: "", // 必填
-        usergroup: [],
+        email: "test@163.com", // 必填
+        idcard: "123456123456781234", // 必填
+        usergroup: [102],
         dept: [],
         leader: [],
-        post: null,
-        type: "", // 必填
+        post: "普通员工",
+        type: "0", // 必填
       },
 
       // 表单中的选项值
@@ -206,8 +227,6 @@ export default {
   mounted: function () {
     // 设置 label 宽度
     this.setLabelWidth();
-    // 保存上一级菜单传递的讲师 ID
-    this.id = this.$route.query.id;
     // 加载数据
     this.loadData();
   },
@@ -224,18 +243,21 @@ export default {
     },
     // 加载数据
     loadData() {
-      // 获取部门、岗位的选项值
+      // 获取用户组、部门、岗位的选项值
+      sel.userGroupByType("trainer").then((response) => {
+        response._embedded.groupVoes.forEach((item) => {
+          this.selection.usergroup.push({
+            key: item.id,
+            label: item.name,
+            value: item.id,
+          });
+        });
+      });
       sel.dept(null).then((response) => {
         this.selection.dept = response._embedded.dboxVoes;
       });
       sel.post(null).then((response) => {
         this.selection.post = response._embedded.dboxVoes;
-      });
-      // 获取讲师详情
-      api.detail(this.id, null).then((response) => {
-        this.form = response;
-        this.form.usergroup = Number(this.form.usergroup);
-        this.handleChange(this.form.dept);
       });
     },
     // 部门值改变
@@ -251,15 +273,20 @@ export default {
         });
       });
     },
-    // 提交编辑表单
+    // 提交新增表单
     onSubmit() {
+      // 如果用户未选择用户组，则添加到默认讲师组
+      if (this.form.usergroup === [])
+        this.form.usergroup = [defaultTeacherUserGroupId];
+
+      // 验证数据格式
       this.$refs["form"].validate((valid) => {
         if (valid) {
           // 数据格式正确
           api
-            .edit(this.id, this.form)
+            .add(this.form)
             .then((response) => {
-              this.$message.success("编辑成功");
+              this.$message.success("新增成功");
               this.onCancel();
             })
             .catch((error) => {
@@ -273,7 +300,7 @@ export default {
     },
     // 取消，返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/teacher-management");
+      this.$router.push("/account/trainer-management");
     },
   },
 };
@@ -285,7 +312,7 @@ export default {
   margin: 20px auto;
 }
 
-.student-form {
+.trainer-form {
   .el-input {
     width: 375px;
   }

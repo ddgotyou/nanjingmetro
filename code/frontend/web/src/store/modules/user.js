@@ -1,6 +1,7 @@
 import { login, logout, getInfo, refreshToken } from '@/api/login'
 import { getToken, setToken, setExpiresIn, removeToken } from '@/utils/auth'
 import Vue from 'vue'
+import Cookies from "js-cookie";
 
 const user = {
   state: {
@@ -57,8 +58,8 @@ const user = {
     GetInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
         getInfo().then(res => {
-          console.log(res);
           const user = res.user
+          // Cookies.set("uid", user.userId, { expires: 30 });
           Vue.prototype.$user = res.user
           const avatar = user.avatar == "" ? require("@/assets/images/profile.jpg") : user.avatar;
           if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
