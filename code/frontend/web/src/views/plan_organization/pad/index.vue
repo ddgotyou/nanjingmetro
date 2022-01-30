@@ -249,7 +249,7 @@
           </div>
           <el-table
             :data="trainingTaskList[plankey].trainees"
-            :default-sort="{ prop: 'id', order: 'descending' }"
+            :default-sort="{ prop: 'id', order: 'ascending' }"
             stripe
           >
             <el-table-column v-if="false" prop="id" />
@@ -404,8 +404,10 @@ export default {
     handleDetail(Order, scope) {
       var taskOrder=this.trainingTaskList[Order].taskOrder
       let planId = this.training_info.planId;
+      let userId = this.trainingTaskList[Order].trainees[scope.$index].id
+      // console.log(scope)
       api.get_details({
-        userId: scope.row.id,
+        userId: userId,
         planId: planId,
         taskOrder: taskOrder
       }).then((res)=>{
@@ -426,7 +428,7 @@ export default {
           //console.log("第三方"+sp2+"得到"+this.training_info.now_max_num);
 
           this.score_details.student_info.name=scope.row.name;
-          this.score_details.student_info.num=scope.row.id;
+          this.score_details.student_info.num=userId;
           //this.score_details.student_info.station="XXX岗位";
           let temp = parseInt(0);
           for(let x of this.score_details.score_list){
@@ -480,9 +482,9 @@ export default {
       for(let i in this.score_details.score_list){
         let x = this.score_details.score_list[i];
         api.upload_score({
-          trainee: this.trainingTaskList[sp].trainees[sp2].id,
-          scoringItem: x.id,
-          score: parseInt(x.score)
+          userId: this.trainingTaskList[sp].trainees[sp2].id,
+          scoringItemId: x.id,
+          score: x.score
         }).then((res)=>{
           console.log(res);
 
@@ -497,14 +499,16 @@ export default {
           console.log(err);
           return;
         });
-
-
-                    let ans=parseInt(0);
-            for(let x of this.score_details.score_list){
-              ans = parseInt(ans)+parseInt(x.score);
-            }
-            this.score_details.student_info.score=ans;
+        let ans=parseInt(0);
+        for(let x of this.score_details.score_list){
+          ans = parseInt(ans)+parseInt(x.score);
+        }
+        this.score_details.student_info.score=ans;
       }
+      this.$message({
+        message: '上传成绩成功！',
+        type: 'success'
+      });
     },
 
     //上传成绩
