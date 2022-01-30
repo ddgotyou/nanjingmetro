@@ -102,20 +102,28 @@ function get_details(query) {
 
 //上传学员成绩
 //userId, scoringItemId, score
-function upload_score(query) {
+function upload_score(data) {
     return request({
         url: '/training-plan/scores',
         method: 'post',
         headers:{
             "Content-Type":"application/json",
         },
-        params: query
+        data: data
     })
 }
 
 function fromTemplate_batch(data) {
     return request({
         url: '/training-plan/scoringItems/fromTemplate/batch',
+        method: 'post',
+        data: data
+    })
+}
+
+function fromTemplate(data) {
+    return request({
+        url: '/training-plan/scoringItems/fromTemplate',
         method: 'post',
         data: data
     })
@@ -156,6 +164,7 @@ export{
     get_details,
     upload_score,
     fromTemplate_batch,
+    fromTemplate,
     findScoringItems,
     addScoringItems,
     delScoringItems

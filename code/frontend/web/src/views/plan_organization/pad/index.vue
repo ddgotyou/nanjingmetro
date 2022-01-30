@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <el-button style="float:right;margin:10px;" icon="el-icon-arrow-left" circle @click="$router.go(-1)"></el-button>
     <!-- 筛选框 -->
     <el-card class="card-box" style="width: 100%">
       <div slot="header">筛选框</div>
@@ -67,9 +68,9 @@
     -------------------------------------------------------------------------------------->
     <!-- 学员评分弹出页 -->
     <el-dialog :title="details_title" :visible.sync="details_is_show" width="75%">
-      <div style="text-align:right;">
+      <!-- <div style="text-align:right;">
         当前用户：{{now_user.name}}
-      </div>
+      </div> -->
 
       <el-row style="display:flex;">
         <el-col style="width:15%;align-self:center;"><div>
@@ -131,7 +132,7 @@
           </el-table-column-->
           <el-table-column label="得分">
             <template slot-scope="{row}">
-              <el-input v-model="row.score" type="number"></el-input>
+              <el-input-number v-model="row.score" :min="0" :max="row.totalScore"></el-input-number>
             </template>
           </el-table-column>
       </el-table>
@@ -147,9 +148,29 @@
     ---------------------------------------------------------------------------------------
     -------------------------------------------------------------------------------------->
 
-    <el-dialog title="调整任务打分表" :visible.sync="dialogFormVisible" @closed="closed">
+    <el-dialog title="调整任务评分表" :visible.sync="dialogFormVisible" @closed="closed">
       <el-form label-position="right" label-width="80px">
         <div slot="header">打分表信息</div>
+        <el-form label-position="right" label-width="80px">
+          <el-row>
+            <el-col :span="20">
+              <el-form-item label="打分模板">
+                <el-select id="task_type" v-model="templateId" style="width:100%" placeholder="请选择" clearable>
+                  <el-option
+                    v-for="item in templates"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-button type="primary" @click="addTemplate">导入模板</el-button>
+            </el-col>
+          </el-row>
+        </el-form>
+        <el-divider />
         <el-form label-position="right" label-width="80px" :model="itemData">
           <el-row>
             <el-col :span="12">
@@ -277,10 +298,10 @@ export default {
 
       /////////////////////////////////////////////lzl
       //  当前用户
-      now_user:{
-        id: 114514,     //老师的id
-        name:"XXX老师"
-      },
+      // now_user:{
+      //   id: 114514,     //老师的id
+      //   name:"XXX老师"
+      // },
       //  当前任务信息
       training_info:{
           planId:89,                        /////////////！！！！！！页面传值修改的是这里的内容               页面传参！！！！！！！！！！！！！
@@ -311,7 +332,9 @@ export default {
       },
 
       //klb
-      chooseTaskOrder: 0,
+      chooseTaskOrder: null,
+      templates: [],
+      templateId: '',
       itemData: {
         content:'',
         totalScore: 0,
@@ -336,6 +359,16 @@ export default {
       //console.log(res);
       this.trainingTaskList = res._embedded.scores;
     });
+    api.list_template().then( res => {
+      this.templates=[]
+      if(res.hasOwnProperty('_embedded'))
+      {
+        for(var i=0;i<res._embedded.templates.length;i++)
+        {
+          this.templates.push({label:res._embedded.templates[i].name,value:res._embedded.templates[i].id})
+        }
+      }
+    })
   },
 
   methods: {
@@ -368,7 +401,8 @@ export default {
 
     /////////////////////////////////////////////lzl
     // 查看某个学员打分 参数顺序：plankey,scope
-    handleDetail(taskOrder, scope) {
+    handleDetail(Order, scope) {
+      var taskOrder=this.trainingTaskList[Order].taskOrder
       let planId = this.training_info.planId;
       api.get_details({
         userId: scope.row.id,
@@ -377,12 +411,12 @@ export default {
       }).then((res)=>{
         //console.log(res);
         if(res._embedded){
-          let sp = taskOrder;
+          let sp = Order;
           let sp2 = scope.$index;
 
           this.score_details.score_list = res._embedded.scores;
 
-          this.now_click.now_task = taskOrder;
+          this.now_click.now_task = Order;
           this.now_click.now_student = sp2;
 
           this.training_info.now_max_num = this.trainingTaskList[sp].trainees.length;
@@ -442,17 +476,13 @@ export default {
 
       let sp = this.now_click.now_task;
       let sp2=this.now_click.now_student;
-
+      console.log(this.score_details.score_list)
       for(let i in this.score_details.score_list){
         let x = this.score_details.score_list[i];
-        let para = {
-          userId: this.trainingTaskList[sp].trainees[sp2].id,
-          scoringItemId: parseInt(i) + parseInt(2),
-          score: parseInt(x.score)
-        };
-        console.log(para);
         api.upload_score({
-          para
+          trainee: this.trainingTaskList[sp].trainees[sp2].id,
+          scoringItem: x.id,
+          score: parseInt(x.score)
         }).then((res)=>{
           console.log(res);
 
@@ -495,7 +525,7 @@ export default {
         api.get_details({
           userId: this.trainingTaskList[sp].trainees[sp2].id,
           planId: this.training_info.planId,
-          taskOrder: sp
+          taskOrder: this.trainingTaskList[sp].taskOrder
         }).then((res)=>{
           this.score_details.score_list = res._embedded.scores;
 
@@ -527,7 +557,7 @@ export default {
         api.get_details({
           userId: this.trainingTaskList[sp].trainees[sp2].id,
           planId: this.training_info.planId,
-          taskOrder: sp
+          taskOrder: this.trainingTaskList[sp].taskOrder
         }).then((res)=>{
           this.score_details.score_list = res._embedded.scores;
 
@@ -546,7 +576,8 @@ export default {
       }
     },
     closed(){
-      this.chooseTaskOrder=0
+      this.chooseTaskOrder=null
+      this.templateId==''
       this.itemData={
         content:'',
         totalScore: 0,
@@ -556,7 +587,7 @@ export default {
     },
     adjust_score_table(task) {
       this.dialogFormVisible=true
-      this.chooseTaskOrder=1
+      this.chooseTaskOrder=task.taskOrder
       this.listScoringItems()
     },
     listScoringItems(){
@@ -564,7 +595,7 @@ export default {
       that.tableData=[]
       api.findScoringItems({
         plan:that.training_info.planId,
-        taskOrde:that.chooseTaskOrder
+        taskOrder:that.chooseTaskOrder
       }).then( res => {
         for(var i=0;i<res._embedded.items.length;i++)
         {
@@ -593,6 +624,22 @@ export default {
         }).then( () => {
           this.listScoringItems()
         })  
+      }
+    },
+    addTemplate() {
+      if(this.templateId==''){
+        this.$message.error('未选择模板！');
+      }
+      else
+      {
+        api.fromTemplate({
+          plan:this.training_info.planId,
+          taskOrder:this.chooseTaskOrder,
+          scoringFormTemplate:this.templateId
+        }).then( () => {
+          this.listScoringItems()
+          console.log("submit task_template batch successfully!")
+        })
       }
     },
     deleteRow(index, tableData) {

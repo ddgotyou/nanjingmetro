@@ -130,12 +130,10 @@
 <script>
 import * as api from '@/api/training_plan/training_plan'
 import * as api2 from '@/api/training_plan/application'
-import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
     api,
-    api2,
-    api4
+    api2
   },
   data() {
     return {
@@ -269,21 +267,6 @@ export default {
           type: 'success',
           message: '审批通过成功!'
           })
-          api.details(id)
-          .then( res => {
-            var task_template_data=[]
-            for(var i=0;i<res.tasks.length;i++)
-            {
-              task_template_data.push({
-                plan:id,
-                taskOrder:res.tasks[i].order,
-                scoringFormTemplate:res.tasks[i].scoringFormTemplate
-              })
-            }
-            api4.fromTemplate_batch(task_template_data).then( () => {
-              console.log("submit task_template batch successfully!")
-            })
-          });
         })
       }).catch(() => {
         this.$message({

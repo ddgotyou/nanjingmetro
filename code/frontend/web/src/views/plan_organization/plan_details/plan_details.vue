@@ -134,18 +134,13 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="评分">
-                <el-input id="task_standard" v-model="tableData_scores[tableData_tasks[taskIndex].scoringFormTemplate]" style="width:100%" readonly />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
               <el-form-item label="教室">
                 <el-input v-model="tableData_classrooms[tableData_tasks[taskIndex].classroom]" style="width:100%" readonly />
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+          </el-row>
+          <el-row>
+            <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="tableData_tasks[taskIndex].description" style="width:100%" readonly />
               </el-form-item>
@@ -159,12 +154,7 @@
           highlight-current-row
           :cell-class-name="tableCellClassName"
           @cell-click="cellClick"
-          :default-sort = "{prop: 'order', order: 'ascending'}"
         >
-          <el-table-column
-            prop="order"
-            width="50"
-          />
           <el-table-column
             prop="name"
             label="任务名称"
@@ -205,11 +195,9 @@
 </template>
 <script>
 import * as api from '@/api/training_plan/training_plan'
-import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
-    api,
-    api4
+    api
   },
   data() {
     return {
@@ -226,7 +214,6 @@ export default {
         classes: []
       },
       tableData_classrooms: {},
-      tableData_scores:{},
       tableData_tasks: [{}],
       taskIndex: 0,
       tab_activeName: 'students',
@@ -270,16 +257,6 @@ export default {
           for(var i=0;i<res._embedded.classrooms.length;i++)
           {
             that.tableData_classrooms[res._embedded.classrooms[i].id]=res._embedded.classrooms[i].name
-          }
-        }
-      })
-      api4.list_template().then( res => {
-        that.tableData_scores={}
-        if(res.hasOwnProperty('_embedded'))
-        {
-          for(var i=0;i<res._embedded.templates.length;i++)
-          {
-            that.tableData_scores[res._embedded.templates[i].id]=res._embedded.templates[i].name
           }
         }
       })
