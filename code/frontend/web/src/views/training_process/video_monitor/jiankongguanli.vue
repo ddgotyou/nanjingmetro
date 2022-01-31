@@ -32,7 +32,7 @@
             <el-button @click="remoteShutdown">终止服务器推流</el-button>
           </div>
           <div style="margin-left:20px;margin-top:20px">
-            <el-button type="primary" @click="connectAll">开启推流</el-button>
+            <el-button type="primary" @click="connectAllCamera">开启推流</el-button>
             <span style="margin-left:10px;display:inline-block"
               >websocket:</span
             >
@@ -123,16 +123,20 @@
 </template>
 
 <script>
-import api from "@/api/cameraip/cameraip";
+import {
+  addCam,
+  delCam,
+  kill,
+  turnoff,
+  connectAll,
+  getAll
+} from "@/api/cameraip/cameraip";
 
 export default {
-  components: {
-    api
-  },
   data() {
     return {
       canvas: null,
-      wsurl: "ws://10.8.0.1:8081/",
+      wsurl: "ws://139.224.212.195:8081/",
       player_1: null,
       cameraIpSelected: "",
       cameraIpResult: [
@@ -167,7 +171,7 @@ export default {
   },
 
   mounted() {
-    this.getAll();
+    this.getAllCamera();
   },
 
   beforeDestroy() {
@@ -178,28 +182,27 @@ export default {
   methods: {
     delCam() {
       let data = { id: this.cameraToDel.id };
-      api.delCam(data).then(res => {
+      delCam(data).then(res => {
         this.$message({
           message: res
         });
         //  console.log(res);
-        this.getAll();
+        this.getAllCamera();
       });
     },
 
     addCam() {
       let data = this.cameraToAdd;
-      api.addCam(data).then(res => {
+      addCam(data).then(res => {
         this.$message({
           message: res
         });
-        this.getAll();
+        this.getAllCamera();
       });
     },
 
-    getAll() {
-      api
-        .getAll()
+    getAllCamera() {
+      getAll()
         .then(res => {
           this.cameraIpResult = res;
           this.processGroup();
@@ -211,9 +214,8 @@ export default {
           //  });
         });
     },
-    connectAll() {
-      api
-        .connectAll()
+    connectAllCamera() {
+      connectAll()
         .then(res => {
           if (res[0].id === -10) {
             this.$message({ message: res[0].admin });
@@ -273,7 +275,7 @@ export default {
     },
 
     remoteShutdown() {
-      api.turnoff().then(api.kill());
+      turnoff().then(kill());
     },
 
     edit() {

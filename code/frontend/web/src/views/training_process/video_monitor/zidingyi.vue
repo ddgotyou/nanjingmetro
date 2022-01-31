@@ -15,7 +15,9 @@
           <el-button type="primary" @click="show">打开</el-button>
           <el-button @click="terminate">关闭</el-button>
           <el-button @click="pause">暂停</el-button>
-          <el-button type="primary" @click="connectAll">开启推流</el-button>
+          <el-button type="primary" @click="connectAllCamera"
+            >开启推流</el-button
+          >
           <el-button type="primary" @click="remoteShutdown">终止推流</el-button>
           <span style="margin-left:20px;display:inline-block">服务器接口:</span>
           <span style="margin-left:5px;display:inline-block">{{ wsurl }}</span>
@@ -86,7 +88,12 @@
 </template>
 
 <script>
-import api from "@/api/cameraip/cameraip";
+import {
+  kill,
+  turnoff,
+  connectAll,
+  getAll
+} from "@/api/cameraip/cameraip";
 
 export default {
   data: function() {
@@ -95,7 +102,7 @@ export default {
       groupId: 0,
       groupPicked: "",
       cameraIpResult: [],
-      wsurl: "ws://10.8.0.1:8081/",
+      wsurl: "ws://139.224.212.195:8081/",
       player_1: null,
       player_2: null,
       player_3: null,
@@ -106,7 +113,7 @@ export default {
   },
 
   mounted() {
-    this.getAll();
+    this.getAllCamera();
   },
 
   beforeDestroy() {
@@ -115,9 +122,8 @@ export default {
   },
 
   methods: {
-    getAll() {
-      api
-        .getAll()
+    getAllCamera() {
+      getAll()
         .then(res => {
           this.cameraIpResult = res;
           this.processGroup();
@@ -127,9 +133,8 @@ export default {
         });
     },
 
-    connectAll() {
-      api
-        .connectAll()
+    connectAllCamera() {
+      connectAll()
         .then(res => {
           if (res[0].id === -10) {
             this.$message.error({ message: res[0].admin });
@@ -163,7 +168,7 @@ export default {
     },
 
     remoteShutdown() {
-      api.turnoff().then(api.kill());
+      turnoff().then(kill());
     },
 
     show: function() {
