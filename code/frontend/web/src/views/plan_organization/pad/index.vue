@@ -19,9 +19,9 @@
         </el-col> -->
         <el-col :span="6">
           <el-form-item label="状态">
-            <el-select v-model="query.status" class="filter-item mr10">
-              <el-option label="已评" value="0" />
-              <el-option label="未评" value="1" />
+            <el-select v-model="query.status" class="filter-item mr10" clearable>
+              <el-option label="已评分" value="已评分" />
+              <el-option label="未评分" value="未评分" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -31,6 +31,7 @@
               v-model="query.no"
               placeholder="通过学号搜索"
               class="filter-item mr10"
+              clearable
             />
           </el-form-item>
         </el-col>
@@ -40,6 +41,7 @@
               v-model="query.name"
               placeholder="通过姓名搜索"
               class="filter-item mr10"
+              clearable
             />
           </el-form-item>
         </el-col>
@@ -345,20 +347,16 @@ export default {
     };
   },
   computed: {},
-  mounted: function () {
-    this.loadData();
-  },
+  // mounted: function () {
+  //   this.loadData();
+  // },
 
   created(){
     this.training_info.planId=this.$route.query.id
     this.training_info.plan=this.$route.query.name
 
-    api.list_students({
-      planId: this.$route.query.id
-    }).then((res)=>{
-      //console.log(res);
-      this.trainingTaskList = res._embedded.scores;
-    });
+    this.loadData()
+
     api.list_template().then( res => {
       this.templates=[]
       if(res.hasOwnProperty('_embedded'))
@@ -374,18 +372,28 @@ export default {
   methods: {
     // 加载学员数据
     loadData() {
-      api.listTrainingPlan(task).then((response) => {
-        this.trainingTaskList = response._embedded.dboxVoes;
+      api.list_students({
+        planId: this.$route.query.id
+      }).then((res)=>{
+        //console.log(res);
+        this.trainingTaskList = res._embedded.scores;
       });
     },
 
     // 根据输入框、选择框和搜索框的条件筛选学员
     handleSearch() {
       this.loading = true;
-      listStudent(this.query).then((response) => {
-        this.studentList = response._embedded
-          ? response._embedded.traineeVoes
-          : [];
+      var query={
+        userId:this.query.no,
+        planId:this.training_info.planId,
+        scoringStatus:this.query.status,
+        username:this.query.name
+      }
+      Object.keys(query).forEach(item=>{
+        if(query[item]=='')  delete query[item];
+      })
+      api.search_list(query).then((response) => {
+        this.trainingTaskList = response._embedded.scores;
         this.loading = false;
       });
     },
