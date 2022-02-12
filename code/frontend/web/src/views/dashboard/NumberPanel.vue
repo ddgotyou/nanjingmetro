@@ -18,7 +18,7 @@ export default {
 
 <style lang="scss">
 .number-card-box {
-  border-radius: 10%;
+  border-radius: 0%;
 }
 
 .number-text {

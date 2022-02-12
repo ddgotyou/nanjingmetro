@@ -4,7 +4,7 @@
       <el-col :span="8">
         <el-row align="center">
           <!-- 人员分析板块 -->
-          <el-card>
+          <el-card style="height: 210px">
             <div slot="header">
               <el-button icon="el-icon-user-solid" type="text"></el-button>
               <el-button class="title-text" type="text">人员分析</el-button>
@@ -35,7 +35,7 @@
               <el-button class="title-text" type="text">我的待办</el-button>
             </div>
             <el-row>
-              <el-card shadow="hover" class="todo-card">
+              <el-card shadow="hover" class="todo-card" style="height: 200px">
                 <div slot="header">
                   <!-- <div class="point bgcolor-red"></div> -->
                   <span>待审核申请</span>
@@ -59,7 +59,8 @@
                   :default-sort="{ prop: 'date', order: 'descending' }"
                   :row-style="getRowClass"
                   :show-header="false"
-                  style="width: 100%"
+                  style="width: 100; background: #f5f5f5"
+                  empty-text="暂无待审核申请"
                 >
                   <el-table-column min-width="70%">
                     <template slot-scope="scope">
@@ -78,17 +79,19 @@
             </el-row>
             <el-row>
               <!-- 本周任务 -->
-              <el-card shadow="hover" class="todo-card">
+              <el-card shadow="hover" class="todo-card" style="height: 165px">
                 <div slot="header">
                   <span>本周任务</span>
                 </div>
+
                 <el-table
                   :data="taskList"
                   :default-sort="{ prop: 'name', order: 'descending' }"
                   :row-style="getRowClass"
                   :header-cell-style="getRowClass"
                   :show-header="false"
-                  style="width: 100%"
+                  style="width: 100%; background: #f5f5f5"
+                  empty-text="暂无本周任务"
                 >
                   <el-table-column
                     prop="taskDetails.name"
@@ -110,7 +113,7 @@
       <el-col :span="16">
         <el-row>
           <!-- 培训计划板块 -->
-          <el-card>
+          <el-card style="height: 370px">
             <div slot="header">
               <el-button icon="el-icon-s-order" type="text"></el-button>
               <el-button class="title-text" type="text">培训计划</el-button>
@@ -135,8 +138,9 @@
             <el-table
               border
               :data="planList"
-              style="width: 100%"
               :default-sort="{ prop: 'date', order: 'descending' }"
+              style="width: 100%"
+              empty-text="暂无培训计划"
             >
               <el-table-column
                 type="index"
@@ -185,17 +189,16 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <!-- 常用功能板块 -->
-            <el-card>
+            <el-card style="height: 320px">
               <div slot="header">
                 <el-button icon="el-icon-menu" type="text"></el-button>
                 <el-button class="title-text" type="text">常用功能</el-button>
               </div>
-              <div style="height: 220px"></div>
             </el-card>
           </el-col>
           <el-col :span="12">
             <!-- 消息通知板块 -->
-            <el-card>
+            <el-card style="height: 320px">
               <div slot="header">
                 <el-button icon="el-icon-message-solid" type="text"></el-button>
                 <el-button class="title-text" type="text">消息通知</el-button>
@@ -327,7 +330,7 @@ export default {
       api.task(this.$user.userId).then((response) => {
         console.log(response);
         this.taskList = response._embedded
-          ? response._embedded.tasks.slice(0, 3)
+          ? response._embedded.tasks.slice(0, 2)
           : [];
       });
     },
