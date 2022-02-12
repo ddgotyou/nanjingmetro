@@ -63,17 +63,13 @@
                 >
                   <el-table-column min-width="70%">
                     <template slot-scope="scope">
-                      {{
-                        getAppContent(
-                          scope.row.applicationDetails.planFirstTrainer
-                        )
-                      }}
+                      {{ getAppContent(scope.row.detail.planFirstTrainer) }}
                     </template>
                   </el-table-column>
                   <el-table-column min-width="30%" align="right">
                     <template slot-scope="scope">
                       <span class="table-date">{{
-                        getAppTime(scope.row.applicationDetails.planEndTime)
+                        getAppTime(scope.row.detail.planStartTime)
                       }}</span>
                     </template>
                   </el-table-column>
@@ -159,13 +155,22 @@
                   {{ getTrainer(scope.row.planDetails.trainers) }}
                 </template>
               </el-table-column>
-              <el-table-column label="时间段" width="200px" align="center">
+              <el-table-column label="开始时间" width="" align="center">
                 <template slot-scope="scope">
-                  <div>{{ scope.row.planDetails.startTime }} ~</div>
-                  <div>{{ scope.row.planDetails.endTime }}</div>
+                  {{ scope.row.planDetails.startTime.split(" ")[0] }}
                 </template>
               </el-table-column>
-              <el-table-column prop="enabled" label="详情" align="center">
+              <el-table-column label="结束时间" width="" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.planDetails.endTime.split(" ")[0] }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="enabled"
+                label="详情"
+                width="100px"
+                align="center"
+              >
                 <template slot-scope="scope">
                   <el-button
                     type="text"
@@ -309,20 +314,21 @@ export default {
           };
         });
       });
-      api.apply(this.$user.userId).then((response) => {
-        let applications = response._embedded.applications;
-        this.appList = applications
-          .filter((item) => item.applicationDetails.status === "未审核")
-          .slice(0, 2);
-        applications.forEach((element) => {
-          let status = element.applicationDetails.status;
-          if (status === "未审核") this.numAppUnAudited += 1;
-          else if (status === "审核中") this.numAppAuditing += 1;
-          else this.numAppAudited += 1;
-        });
+      api.apply(this.$user.userId, "未审核").then((response) => {
+        this.numAppUnAudited = response.page.totalElements;
+        this.appList = response._embedded.applications.slice(0, 2);
+      });
+      api.apply(this.$user.userId, "审核中").then((response) => {
+        this.numAppAuditing = response.page.totalElements;
+      });
+      api.apply(this.$user.userId, "已通过").then((response) => {
+        this.numAppAudited = response.page.totalElements;
       });
       api.task(this.$user.userId).then((response) => {
-        this.taskList = response._embedded.tasks.slice(0, 3);
+        console.log(response);
+        this.taskList = response._embedded
+          ? response._embedded.tasks.slice(0, 3)
+          : [];
       });
     },
     getAppContent(trainer) {
@@ -356,7 +362,7 @@ export default {
 <style lang="scss" scoped>
 .dashboard-editor-container {
   background-color: #e3e3e3;
-  min-height: 120vh;
+  min-height: 105vh;
   padding: 40px 50px 0px;
   .pan-info-roles {
     font-size: 12px;
@@ -392,13 +398,6 @@ export default {
 
 .todo-card {
   background: #f5f5f5;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
 }
 
 .table-date {
