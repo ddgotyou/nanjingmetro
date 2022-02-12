@@ -197,20 +197,6 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="评分">
-                <el-select id="task_type" v-model="taskData.score" style="width:100%" placeholder="请选择">
-                  <el-option
-                    v-for="item in task_scores"
-                    :key="item.value"
-                    :label="item.lable"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
               <el-form-item label="教室">
                 <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择" clearable @change="changeClassroom()">
                   <el-option
@@ -222,7 +208,9 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+          </el-row>
+          <el-row>
+            <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="taskData.description" />
               </el-form-item>
@@ -309,20 +297,6 @@ export default {
       tableData: [],
       task_chooses: [],
       task_types: [],
-      task_scores: [
-        {
-          value: '评分规则1',
-          label: '评分规则1'
-        },
-        {
-          value: '评分规则2',
-          label: '评分规则2'
-        },
-        {
-          value: '评分规则3',
-          label: '评分规则3'
-        }
-      ],
       classrooms: [],
       taskResponse:{},
       taskData: {
@@ -332,7 +306,6 @@ export default {
         date: null,
         period: [null,null],
         type: '',
-        score: '',
         classroom: '',
         description: ''
       },
@@ -482,7 +455,6 @@ export default {
         date: null,
         period: [null,null],
         type: '',
-        score: '',
         classroom: '',
         description: ''
       }
@@ -505,7 +477,7 @@ export default {
       this.dialogFormVisible = true;
     },
     addTask() {
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -514,7 +486,6 @@ export default {
           name: this.taskData.name,
           chooseTask: this.taskData.option,
           type: this.taskData.type,
-          taskScore: this.taskData.score,
           inPlanTask: null,
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
