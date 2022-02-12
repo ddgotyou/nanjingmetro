@@ -102,14 +102,54 @@ function get_details(query) {
 
 //上传学员成绩
 //userId, scoringItemId, score
-function upload_score(query) {
+function upload_score(data) {
     return request({
         url: '/training-plan/scores',
         method: 'post',
         headers:{
             "Content-Type":"application/json",
         },
-        params: query
+        data: data
+    })
+}
+
+function fromTemplate_batch(data) {
+    return request({
+        url: '/training-plan/scoringItems/fromTemplate/batch',
+        method: 'post',
+        data: data
+    })
+}
+
+function fromTemplate(data) {
+    return request({
+        url: '/training-plan/scoringItems/fromTemplate',
+        method: 'post',
+        data: data
+    })
+}
+
+function findScoringItems(params) {
+    return request({
+        url: '/training-plan/scoringItems/search/findByPlanAndTaskOrder',
+        method: 'get',
+        params: params
+    })
+}
+function addScoringItems(data) {
+    return request({
+        url: '/training-plan/scoringItems',
+        method: 'post',
+        headers:{
+            "Content-Type":"application/json",
+        },
+        data: data
+    })
+}
+function delScoringItems(id) {
+    return request({
+        url: '/training-plan/scoringItems/'+id,
+        method: 'delete'
     })
 }
 
@@ -123,4 +163,9 @@ export{
     list_template,
     get_details,
     upload_score,
+    fromTemplate_batch,
+    fromTemplate,
+    findScoringItems,
+    addScoringItems,
+    delScoringItems
 }

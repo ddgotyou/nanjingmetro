@@ -11,14 +11,16 @@
                 v-model="searchData.period[0]"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 type="date"
-                placeholder="开始日期">
+                placeholder="开始日期"
+                clearable>
               </el-date-picker>
               <el-date-picker
                 style="width:50%"
                 v-model="searchData.period[1]"
                 value-format="yyyy-MM-dd HH:mm:ss"
                 type="date"
-                placeholder="结束日期">
+                placeholder="结束日期"
+                clearable>
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -28,6 +30,8 @@
                 v-model="searchData.teacher"
                 style="width:100%"
                 placeholder="请选择"
+                clearable
+                filterable
               >
                 <el-option
                   v-for="item in teachers"
@@ -42,7 +46,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" />
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" @change="search_commit" clearable />
             </el-form-item>
           </el-col>
         </el-row>
@@ -135,10 +139,12 @@
 </template>
 
 <script>
-import * as api from '@/api/training_plan/training_plan' 
+import * as api from '@/api/training_plan/training_plan'
+import * as api3 from '@/api/training_plan/account'
 export default {
   components: {
-    api
+    api,
+    api3
   },
   data() {
     return {
@@ -193,6 +199,7 @@ export default {
             for(var i = 0; i < res._embedded.plans.length; i++)
             {
               let item = {
+                id: res._embedded.plans[i].id,
                 name: res._embedded.plans[i].name,
                 startTime: res._embedded.plans[i].startTime,
                 endTime: res._embedded.plans[i].endTime,
@@ -202,13 +209,20 @@ export default {
               };
               for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
               {
-                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
               }
               that.tableData.push(item)
             }
           }
         }
       });
+      api3.getTrainer().then( res => {
+        this.teachers=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          this.teachers.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+        }
+      })
     },
     fresh(){
       if(this.search_status)
@@ -301,7 +315,7 @@ export default {
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: '未申请',
-        trainer: this.searchData.teacher,
+        trainers: this.searchData.teacher,
         keyword: this.searchData.value,
         page: this.index-1,
         size: this.pageSize
@@ -324,7 +338,7 @@ export default {
             };
             for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
             {
-              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
             }
             that.tableData.push(item)
           }

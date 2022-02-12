@@ -273,7 +273,14 @@
   </div>
 </template>
 <script>
-import api from "@/api/cameraip/cameraip";
+import {
+  addCam,
+  delCam,
+  kill,
+  turnoff,
+  connectAll,
+  getAll
+} from "@/api/cameraip/cameraip";
 
 export default {
   data() {

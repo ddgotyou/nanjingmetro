@@ -11,20 +11,35 @@ function submit(data) {
         data: data
     })
 }
-function list(query) {
+function findByAuditor(query){
     return request({
-        url: '/training-plan/applications',
+        url: '/training-plan/applications/search/findByAuditor',
         method: 'get',
         params: query
     })
 }
-function search(query){
+function findByAdmin(query){
     return request({
-        url: '/training-plan/applications/search/findOnAuditByConditions',
+        url: '/training-plan/applications/search/findByAdmin',
         method: 'get',
         params: query
     })
 }
+// 这些接口弃用
+// function list(query) {
+//     return request({
+//         url: '/training-plan/applications',
+//         method: 'get',
+//         params: query
+//     })
+// }
+// function search(query){
+//     return request({
+//         url: '/training-plan/applications/search/findOnAuditByConditions',
+//         method: 'get',
+//         params: query
+//     })
+// }
 function approve(id,data) {
     return request({
         url: '/training-plan/applications/'+id+'/approve',
@@ -42,8 +57,8 @@ function reject(id,data) {
 
 export{
     submit,
-    list,
-    search,
+    findByAuditor,
+    findByAdmin,
     approve,
     reject
 }

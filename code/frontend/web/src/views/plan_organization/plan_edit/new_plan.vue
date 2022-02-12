@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <el-button style="float:right;margin:10px;" icon="el-icon-arrow-left" circle @click="$router.go(-1)"></el-button>
     <el-form label-position="right" label-width="80px" :model="formData">
       <el-card class="box-card" style="width:100%">
         <div slot="header">基本信息</div>
@@ -29,6 +30,27 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="讲师">
+              <el-select
+                v-model="formData.teachers"
+                style="width:100%"
+                placeholder="请选择"
+                clearable
+                multiple
+                filterable
+              >
+                <el-option
+                  v-for="item in teacher_data"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -41,9 +63,6 @@
                 :picker-options="taskPeriodOptions">
               </el-date-picker>
             </el-form-item>
-            <!-- <el-form-item label="计划周期">
-              <el-input id="period" v-model="formData.period" name="period" />
-            </el-form-item> -->
           </el-col>
         </el-row>
         <el-row>
@@ -174,20 +193,6 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="评分">
-                <el-select id="task_type" v-model="taskData.score" style="width:100%" placeholder="请选择">
-                  <el-option
-                    v-for="item in task_scores"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
               <el-form-item label="教室">
                 <el-select v-model="taskData.classroom" style="width:100%" clearable placeholder="请选择" @change="changeClassroom">
                   <el-option
@@ -199,7 +204,9 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+          </el-row>
+          <el-row>
+            <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="taskData.description" />
               </el-form-item>
@@ -303,17 +310,16 @@
 import * as api from '@/api/training_plan/training_plan' 
 import * as api2 from '@/api/training_plan/application'
 import * as api3 from '@/api/training_plan/account'
-import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
     api,
     api2,
-    api3,
-    api4
+    api3
   },
   data() {
     return {
       people_data: [],
+      teacher_data: [],
       trainee_id2no:{},
       group_data: [],
       formData: {
@@ -323,7 +329,7 @@ export default {
         period: ['',''],
         description: '',
         people: [],
-        //classes: []
+        teachers: []
       },
       taskData: {
         name: '',
@@ -332,7 +338,7 @@ export default {
         date: null,
         period: [null,null],
         type: '',
-        score: '',
+        //score: '',
         classroom: '',
         description: ''
       },
@@ -343,7 +349,6 @@ export default {
       kinds: [],
       task_chooses: [],
       task_types: [],
-      task_scores: [],
       classrooms: [],
       tableData: [],
       departments: [],
@@ -379,6 +384,7 @@ export default {
       this.dialogFormVisible = true
     },
     addTask() {
+      var timestamp=new Date().getTime()
       if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
@@ -388,18 +394,15 @@ export default {
           name: this.taskData.name,
           chooseTask: this.taskData.option,
           type: this.taskData.type,
-          taskScore: this.taskData.score,
+          //scoringFormTemplate: this.taskData.score,
           inPlanTask: null,
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
-          // order: this.taskData.order,
+          order: timestamp,
           signInNumber: null,
           signOutNumber: null
         })
-        // this.tableData.sort(function (a,b) {
-        //   return a.order-b.order;
-        // })
       }
     },
     deleteRow(index, tableData) {
@@ -460,6 +463,13 @@ export default {
           }
         }
       })
+      api3.getTrainer().then( res => {
+        that.teacher_data=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          that.teacher_data.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+        }
+      })
       api3.getTraineeGroup().then( res => {
         that.group_data=[]
         if(res.hasOwnProperty('_embedded'))
@@ -492,16 +502,6 @@ export default {
           }
         }
       })
-      api4.list_template().then( res => {
-        that.task_scores=[]
-        if(res.hasOwnProperty('_embedded'))
-        {
-          for(var i=0;i<res._embedded.templates.length;i++)
-          {
-            that.task_scores.push({label:res._embedded.templates[i].name,value:res._embedded.templates[i].id})
-          }
-        }
-      })
     },
     save() {
       this.dialogFormVisible = false;
@@ -517,7 +517,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [{user: this.$user.userId}],
+        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
@@ -550,18 +550,14 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: [{user: this.$user.userId}],
+        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
       var auditors=[]
       for(var i=0;i<this.popData.approver.length;i++)
       {
-        auditors.push({
-          user:this.approvers_res[this.popData.approver[i]].id,
-          username:this.approvers_res[this.popData.approver[i]].name,
-          approved:'未审核'
-        })
+        auditors.push(this.approvers_res[this.popData.approver[i]].id)
       }
       data.auditors=auditors
       if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){

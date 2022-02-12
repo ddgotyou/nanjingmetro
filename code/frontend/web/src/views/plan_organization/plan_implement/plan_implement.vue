@@ -25,9 +25,12 @@
           <el-col :span="12">
             <el-form-item label="讲师">
               <el-select
-              style="width:100%"
-              v-model="searchData.teacher"
-              placeholder="请选择">
+                style="width:100%"
+                v-model="searchData.teacher"
+                placeholder="请选择"
+                clearable
+                filterable
+              >
               <el-option
                   v-for="item in teachers"
                   :key="item.value"
@@ -41,7 +44,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入"/>
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" @change="search_commit"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -194,20 +197,6 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="评分">
-                <el-select id="task_type" v-model="taskData.score" style="width:100%" placeholder="请选择">
-                  <el-option
-                    v-for="item in task_scores"
-                    :key="item.value"
-                    :label="item.lable"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
               <el-form-item label="教室">
                 <el-select v-model="taskData.classroom" style="width:100%" placeholder="请选择" clearable @change="changeClassroom()">
                   <el-option
@@ -219,7 +208,9 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+          </el-row>
+          <el-row>
+            <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="taskData.description" />
               </el-form-item>
@@ -278,10 +269,12 @@
 </template>
 
 <script>
-import * as api from '@/api/training_plan/training_plan' 
+import * as api from '@/api/training_plan/training_plan'
+import * as api3 from '@/api/training_plan/account' 
 export default {
   components: {
-    api
+    api,
+    api3
   },
   data() {
     return {
@@ -304,20 +297,6 @@ export default {
       tableData: [],
       task_chooses: [],
       task_types: [],
-      task_scores: [
-        {
-          value: '评分规则1',
-          label: '评分规则1'
-        },
-        {
-          value: '评分规则2',
-          label: '评分规则2'
-        },
-        {
-          value: '评分规则3',
-          label: '评分规则3'
-        }
-      ],
       classrooms: [],
       taskResponse:{},
       taskData: {
@@ -327,7 +306,6 @@ export default {
         date: null,
         period: [null,null],
         type: '',
-        score: '',
         classroom: '',
         description: ''
       },
@@ -391,8 +369,12 @@ export default {
                 endTime: res._embedded.plans[i].endTime,
                 teacher: '',
                 self: res._embedded.plans[i]._links.self.href,
-                teacher: res._embedded.plans[i].trainers[0]
+                teacher: ''
               };
+              for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+              {
+                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
+              }
               that.tableData.push(item)
             }
           }
@@ -405,7 +387,7 @@ export default {
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: '进行中',
-        trainer: this.searchData.teacher,
+        trainers: this.searchData.teacher,
         keyword: this.searchData.value,
         page: this.index-1,
         size: this.pageSize
@@ -424,8 +406,12 @@ export default {
               endTime: res._embedded.plans[i].endTime,
               teacher: '',
               self: res._embedded.plans[i]._links.self.href,
-              teacher: res._embedded.plans[i].trainers[0]
+              teacher: ''
             };
+            for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
+            {
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
+            }
             that.tableData.push(item)
           }
         }
@@ -469,7 +455,6 @@ export default {
         date: null,
         period: [null,null],
         type: '',
-        score: '',
         classroom: '',
         description: ''
       }
@@ -492,7 +477,7 @@ export default {
       this.dialogFormVisible = true;
     },
     addTask() {
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -501,7 +486,6 @@ export default {
           name: this.taskData.name,
           chooseTask: this.taskData.option,
           type: this.taskData.type,
-          taskScore: this.taskData.score,
           inPlanTask: null,
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
@@ -541,6 +525,13 @@ export default {
           var temp=res._embedded.classrooms[i]._links.self.href.split("/")
           var classroom_id=temp[temp.length-1]
           that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
+        }
+      })
+      api3.getTrainer().then( res => {
+        this.teachers=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          this.teachers.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
         }
       })
     },

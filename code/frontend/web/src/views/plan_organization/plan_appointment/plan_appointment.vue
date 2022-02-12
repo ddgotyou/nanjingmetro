@@ -85,20 +85,6 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="评分">
-                <el-select id="task_type" v-model="taskData.score" style="width:100%" placeholder="请选择">
-                  <el-option
-                    v-for="item in task_scores"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
               <el-form-item label="教室">
                 <el-select v-model="taskData.classroom" style="width:100%" clearable placeholder="请选择" @change="changeClassroom">
                   <el-option
@@ -110,7 +96,9 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+          </el-row>
+          <el-row>
+            <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="taskData.description" />
               </el-form-item>
@@ -144,10 +132,6 @@
           <el-table-column
             prop="type"
             label="类型"
-          />
-          <el-table-column
-            prop="taskScore"
-            label="评分"
           />
           <el-table-column
             prop="classroom"
@@ -187,12 +171,10 @@
 </template>
 
 <script>
-import * as api from '@/api/training_plan/training_plan' 
-import * as api4 from '@/api/training_plan/pad'
+import * as api from '@/api/training_plan/training_plan'
 export default {
   components: {
-    api,
-    api4
+    api
   },
   data() {
     return {
@@ -203,7 +185,6 @@ export default {
         date: null,
         period: [null,null],
         type: '',
-        score: '',
         classroom: '',
         description: ''
       },
@@ -219,8 +200,6 @@ export default {
       kinds: [],
       task_chooses: [],
       task_types: [],
-      task_scores: [],
-      task_scores_map: {},
       classrooms: [],
       tableData: [],
 
@@ -246,16 +225,6 @@ export default {
     }
   },
   methods:{
-    listpage1(){
-      this.index=0
-      api.getTempTasks({
-        page: 0,
-        size: this.pageSize
-      }).then( res => {
-        this.response=res
-        this.tableData=res._embedded.tmpTasks
-      })
-    },
     list() {
       var that=this
       api.getTempTasks({
@@ -267,12 +236,12 @@ export default {
         for(var i=0;i<res._embedded.tmpTasks.length;i++)
         {
           that.tableData.push({
+            id:res._embedded.tmpTasks[i].id,
             name:res._embedded.tmpTasks[i].name,
             chooseTask:res._embedded.tmpTasks[i].chooseTask,
             startTime:res._embedded.tmpTasks[i].startTime,
             endTime:res._embedded.tmpTasks[i].endTime,
             type:res._embedded.tmpTasks[i].type,
-            taskScore:that.task_scores_map[res._embedded.tmpTasks[i].taskScore],
             classroom:res._embedded.tmpTasks[i].classroom,
             description:res._embedded.tmpTasks[i].description
           })
@@ -280,7 +249,7 @@ export default {
       })
     },
     addTask() {
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -289,7 +258,6 @@ export default {
           name: this.taskData.name,
           chooseTask: this.taskData.option,
           type: this.taskData.type,
-          taskScore: this.taskData.score,
           inPlanTask: null,
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
@@ -308,9 +276,9 @@ export default {
       
     },
     deleteRow(index, tableData) {
-      console.log(this.tableData[index].id)
       api.deleteTempTask(this.tableData[index].id).then( res => {
-        this.listpage1()
+        this.index=0
+        this.list()
       })
     },
     getSelection() {
@@ -344,17 +312,6 @@ export default {
             var temp=res._embedded.classrooms[i]._links.self.href.split("/")
             var classroom_id=temp[temp.length-1]
             that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
-          }
-        }
-      })
-      api4.list_template().then( res => {
-        that.task_scores=[]
-        if(res.hasOwnProperty('_embedded'))
-        {
-          for(var i=0;i<res._embedded.templates.length;i++)
-          {
-            that.task_scores.push({label:res._embedded.templates[i].name,value:res._embedded.templates[i].id})
-            that.task_scores_map[res._embedded.templates[i].id]=res._embedded.templates[i].name
           }
         }
       })

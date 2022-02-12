@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <el-button style="float:right;margin:10px;" icon="el-icon-arrow-left" circle @click="$router.go(-1)"></el-button>
     <el-form label-position="right" label-width="80px" :model="baseData">
       <el-card class="box-card" style="width:100%">
         <div slot="header">基本信息</div>
@@ -42,7 +43,28 @@
         </el-row>
       </el-card>
       <el-card class="box-card" style="width:100%">
-        <div slot="header">人员</div>
+        <div slot="header">讲师</div>
+          <el-table
+            :data="baseData.trainers"
+            style="width: 100"
+            :default-sort = "{prop: 'user', order: 'ascending'}"
+          >
+            <el-table-column
+              prop="user"
+              label="用户"
+            />
+            <el-table-column
+              prop="username"
+              label="用户名"
+            />
+            <el-table-column
+              prop="userEmail"
+              label="邮箱"
+            />
+          </el-table>
+      </el-card>
+      <el-card class="box-card" style="width:100%">
+        <div slot="header">学员</div>
         <el-row>
           <el-col :span="24">
             <el-form-item label="模糊搜索">
@@ -57,21 +79,21 @@
           </el-col>
         </el-row>
         <el-divider />
-            <el-table
-              :data="baseData.trainees.filter(data => (!search_value || data.username.toLowerCase().includes(search_value.toLowerCase())))"
-              style="width: 100"
-              height="250"
-              :default-sort = "{prop: 'user', order: 'ascending'}"
-            >
-              <el-table-column
-                prop="user"
-                label="用户"
-              />
-              <el-table-column
-                prop="username"
-                label="用户名"
-              />
-            </el-table>
+          <el-table
+            :data="baseData.trainees.filter(data => (!search_value || data.user.toString().toLowerCase().includes(search_value.toLowerCase()) || data.username.toLowerCase().includes(search_value.toLowerCase())))"
+            style="width: 100"
+            height="250"
+            :default-sort = "{prop: 'user', order: 'ascending'}"
+          >
+            <el-table-column
+              prop="user"
+              label="用户"
+            />
+            <el-table-column
+              prop="username"
+              label="用户名"
+            />
+          </el-table>
       </el-card>
       <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
@@ -112,18 +134,13 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="评分">
-                <el-input id="task_standard" v-model="tableData_scores[tableData_tasks[taskIndex].taskScore]" style="width:100%" readonly />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
               <el-form-item label="教室">
                 <el-input v-model="tableData_classrooms[tableData_tasks[taskIndex].classroom]" style="width:100%" readonly />
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+          </el-row>
+          <el-row>
+            <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="tableData_tasks[taskIndex].description" style="width:100%" readonly />
               </el-form-item>
@@ -137,12 +154,7 @@
           highlight-current-row
           :cell-class-name="tableCellClassName"
           @cell-click="cellClick"
-          :default-sort = "{prop: 'order', order: 'ascending'}"
         >
-          <el-table-column
-            prop="order"
-            width="50"
-          />
           <el-table-column
             prop="name"
             label="任务名称"
@@ -157,16 +169,35 @@
           />
         </el-table>
       </el-card>
+      <el-card class="box-card" style="width:100%">
+        <div slot="header">审批人</div>
+          <el-table
+            :data="baseData.auditors"
+            style="width: 100"
+            :default-sort = "{prop: 'user', order: 'ascending'}"
+          >
+            <el-table-column
+              prop="user"
+              label="用户"
+            />
+            <el-table-column
+              prop="username"
+              label="用户名"
+            />
+            <el-table-column
+              prop="approved"
+              label="审批状态"
+            />
+          </el-table>
+      </el-card>
     </el-form>
   </div>
 </template>
 <script>
 import * as api from '@/api/training_plan/training_plan'
-import * as api4 from '@/api/training_plan/pad'
 export default {
   components: {
-    api,
-    api4
+    api
   },
   data() {
     return {
@@ -183,7 +214,6 @@ export default {
         classes: []
       },
       tableData_classrooms: {},
-      tableData_scores:{},
       tableData_tasks: [{}],
       taskIndex: 0,
       tab_activeName: 'students',
@@ -207,7 +237,9 @@ export default {
           period: res.startTime.substr(0,10)+'至'+res.endTime.substr(0,10),
           description: res.detailed,
           trainees: res.trainees,
-          classes: []
+          trainers: res.trainers,
+          classes: [],
+          auditors: res.auditors
         };
         if(res.tasks.length==0)
         {
@@ -225,16 +257,6 @@ export default {
           for(var i=0;i<res._embedded.classrooms.length;i++)
           {
             that.tableData_classrooms[res._embedded.classrooms[i].id]=res._embedded.classrooms[i].name
-          }
-        }
-      })
-      api4.list_template().then( res => {
-        that.tableData_scores={}
-        if(res.hasOwnProperty('_embedded'))
-        {
-          for(var i=0;i<res._embedded.templates.length;i++)
-          {
-            that.tableData_scores[res._embedded.templates[i].id]=res._embedded.templates[i].name
           }
         }
       })

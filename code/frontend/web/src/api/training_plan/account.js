@@ -10,6 +10,12 @@ function getTrainee() {
         method: 'get'
     })
 }
+function getTrainer() {
+    return request({
+        url: '/tms-account/users/getTrainer',
+        method: 'get'
+    })
+}
 function getTraineeGroup() {
     return request({
         url: '/tms-account/usergroup/getAllUsergroupInPlan',
@@ -31,6 +37,7 @@ function getAuditor(deptid) {
 
 export{
     getTrainee,
+    getTrainer,
     getTraineeGroup,
     getDepts,
     getAuditor

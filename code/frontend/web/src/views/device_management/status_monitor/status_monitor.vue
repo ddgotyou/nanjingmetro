@@ -142,12 +142,9 @@
 
 <script>
 import RFB from "@novnc/novnc/core/rfb";
-import api from "@/api/IPservice/IPservice";
+import { getAllIP, addIP, delIP } from "@/api/IPservice/IPservice";
 
 export default {
-  components: {
-    api
-  },
   data() {
     return {
       groups: [],
@@ -198,7 +195,7 @@ export default {
       let data = {
         id: this.ipSelDel
       };
-      api.delIP(data).then(res => {
+      delIP(data).then(res => {
         this.$message({ message: res });
         this.getIP();
       });
@@ -210,21 +207,21 @@ export default {
         port: this.ipInput.port,
         monitorgroup: this.ipInput.monitorGroup
       };
-      api.addIP(data).then(res => {
+      addIP(data).then(res => {
         this.$message({ message: res });
         this.getIP();
       });
     },
 
     getIP() {
-      api.getAllIP().then(response => {
+      getAllIP().then(response => {
         this.ipInfo = response;
         this.processGroup();
       });
     },
 
     getIPAutoConnect() {
-      api.getAllIP().then(response => {
+      getAllIP().then(response => {
         this.ipInfo = response;
         this.connectVnc();
       });

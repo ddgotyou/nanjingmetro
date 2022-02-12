@@ -28,6 +28,7 @@
                 v-model="searchData.status"
                 style="width:100%"
                 placeholder="请选择"
+                clearable
               >
                 <el-option
                   v-for="item in statuses"
@@ -44,6 +45,8 @@
                 v-model="searchData.teacher"
                 style="width:100%"
                 placeholder="请选择"
+                clearable
+                filterable
               >
                 <el-option
                   v-for="item in teachers"
@@ -58,7 +61,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模糊搜索">
-              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" />
+              <el-input id="search" v-model="searchData.value" name="search_value" placeholder="在此输入" @change="search_commit" clearable />
             </el-form-item>
           </el-col>
         </el-row>
@@ -114,6 +117,14 @@
             >
               详情
             </el-button>
+            <!-- <el-button
+              v-if="$user.userId==1"
+              type="text"
+              size="small"
+              @click.native.prevent="delete_plan(scope.$index, tableData)"
+            >
+              删除
+            </el-button> -->
           </template>
         </el-table-column>
       </el-table>
@@ -132,9 +143,11 @@
 
 <script>
 import * as api from '@/api/training_plan/training_plan' 
+import * as api3 from '@/api/training_plan/account'
 export default {
   components: {
-    api
+    api,
+    api3
   },
   data() {
     return {
@@ -182,35 +195,29 @@ export default {
       }).then( res => {
         that.response = res
         that.tableData = []
-        //that.names = [{label: '（任意）', value: ''}]
-        that.teachers = [{label: '（任意）', value: ''}]
         if(res.hasOwnProperty('_embedded'))
         {
           for(var i = 0; i < res._embedded.plans.length; i++)
           {
-            let item = {
+            var item={
+              id: res._embedded.plans[i].id,
               name: res._embedded.plans[i].name,
               startTime: res._embedded.plans[i].startTime,
               endTime: res._embedded.plans[i].endTime,
-              teacher: '',
+              teacher:'',
               status: res._embedded.plans[i].status,
               self: res._embedded.plans[i]._links.self.href
-            };
-
+            }
             for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
             {
-              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
-              if(!that.isInArray(that.teachers,res._embedded.plans[i].trainers[j].username))
-              {
-                that.teachers.push({label: res._embedded.plans[i].trainers[j].username, vlaue: res._embedded.plans[i].trainers[j].username})
-              }
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
             }
             that.tableData.push(item)
           }
         }
       });
       api.planStatuses().then( res => {
-        that.statuses = [{label: '（任意）', value: ''}]
+        that.statuses = []
         if(res.hasOwnProperty('_embedded'))
         {
           for(var i=0;i<res._embedded.strings.length;i++)
@@ -220,6 +227,13 @@ export default {
           }
         }
       });
+      api3.getTrainer().then( res => {
+        this.teachers=[]
+        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        {
+          this.teachers.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+        }
+      })
     },
     search_commit()
     {
@@ -232,11 +246,12 @@ export default {
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: this.searchData.status,
-        trainer: this.searchData.teacher,
+        trainers: this.searchData.teacher,
         keyword: this.searchData.value,
         page: this.index-1,
         size: this.pageSize
       };
+      console.log(params)
       let that=this;
       api.search(params).then( res => {
         that.response = res;
@@ -255,7 +270,7 @@ export default {
             };
             for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
             {
-              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username;
+              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
             }
             that.tableData.push(item)
           }
@@ -277,6 +292,21 @@ export default {
     },
     show_details(index, data) {
       this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].self }})
+    },
+    delete_plan(index, data) {
+      var that=this
+      api.del(that.tableData[index].id).then( () =>{
+        that.search_reset()
+        that.index=1
+        that.list()
+        that.$message({
+          type: 'success',
+          message: '已删除计划'+that.tableData[index].name+'!'
+        })
+
+      }).catch( err => {
+        console.log('删除任务'+that.tableData[index].name+'失败', err);
+      })
     },
     size_change(val){
       this.pageSize=val
