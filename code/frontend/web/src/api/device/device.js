@@ -2,10 +2,11 @@ import request from '@/utils/request'
 
 
   //获取设备列表
-  function listDevice() {
+  function listDevice(query) {
     return request({
       url: '/device/devices',
-      method: 'get'
+      method: 'get',
+      params: query
     })
   }
   //模糊搜索 //to do
@@ -92,6 +93,14 @@ import request from '@/utils/request'
       data: data
     })
   }
+  //删除实验室
+  function deleteClassroom(data){
+    return request({
+      url: '/training-plan/classrooms/'+data.id,
+      method: 'delete',
+      //data: data
+    })
+  }
   //获取人员列表
   function listPerson() {
     return request({
@@ -113,6 +122,7 @@ import request from '@/utils/request'
     addworksheet,
     classrooms,
     addClassroom,
-    listPerson
+    listPerson,
+    deleteClassroom
   }
 

@@ -84,7 +84,10 @@
       </el-table-column>
       <el-table-column prop="deviceClassroom" label="实验室名称"> </el-table-column>
       <el-table-column prop="deviceName" label="设备"> </el-table-column>
+      <el-table-column prop="deviceId" label="设备ID"> </el-table-column>
       <el-table-column prop="deviceDescription" label="状态"></el-table-column>
+      <el-table-column prop="afterSale" label="售后人员"> </el-table-column>
+      <el-table-column prop="afterSaleNumber" label="售后电话"></el-table-column>
       <el-table-column label="操作">
         <!-- icon="el-icon-edit" -->
         <template slot-scope="scope">
@@ -288,12 +291,18 @@ export default {
               deviceName: response._embedded.devices[i].deviceName,
               deviceDescription: response._embedded.devices[i].deviceStatusVO.name,
               deviceId:response._embedded.devices[i].deviceId,
+              chargePeople: response._embedded.devices[i].chargePeople,
+              chargePeopleName: response._embedded.devices[i].chargePeopleName,
+              chargePeopleTel: response._embedded.devices[i].chargePeopleTel,
+              afterSale: response._embedded.devices[i].afterSale,
+              afterSaleNumber: response._embedded.devices[i].afterSaleNumber,
             };
             this.tableData.push(item)
           }
         })
       });
       this.loading = false;
+      //console.log(this.tableData);
     },
 
     // 前往新增设备页面
@@ -338,6 +347,11 @@ export default {
               deviceName: response._embedded.devices[i].deviceName,
               deviceDescription: response._embedded.devices[i].deviceStatusVO.name,
               deviceId:response._embedded.devices[i].deviceId,
+              chargePeople: response._embedded.devices[i].chargePeople,
+              chargePeopleName: response._embedded.devices[i].chargePeopleName,
+              chargePeopleTel: response._embedded.devices[i].chargePeopleTel,
+              afterSale: response._embedded.devices[i].afterSale,
+              afterSaleNumber: response._embedded.devices[i].afterSaleNumber,
             };
             this.tableData.push(item)
           }
