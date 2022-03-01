@@ -303,6 +303,7 @@ export default {
         point:''
       }
       this.tableData=[]
+      this.list()
     }
   }
 }
