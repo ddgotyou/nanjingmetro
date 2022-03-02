@@ -23,6 +23,7 @@ import Pagination from "@/components/Pagination";
 import RightToolbar from "@/components/RightToolbar"
 import JsonExcel from 'vue-json-excel'
 
+import './utils/jsmpeg.min'
 
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
