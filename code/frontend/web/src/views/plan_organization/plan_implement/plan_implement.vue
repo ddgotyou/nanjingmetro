@@ -477,6 +477,7 @@ export default {
       this.dialogFormVisible = true;
     },
     addTask() {
+      var timestamp=new Date().getTime()
       if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
@@ -490,7 +491,7 @@ export default {
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
-          // order: this.taskData.order,
+          order: timestamp,
           signInNumber: null,
           signOutNumber: null
         })
