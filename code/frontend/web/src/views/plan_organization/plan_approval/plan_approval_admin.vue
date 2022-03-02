@@ -1,3 +1,7 @@
+<!--
+ * @Author: your name
+ * @LastEditors: your name
+-->
 <template>
   <div class="app-container">
     <el-card class="box-card" style="width:100%">
@@ -98,8 +102,8 @@
           label="审批状态"
         />
         <el-table-column
-          prop="approved"
-          label="操作状态"
+          prop="isAuditor"
+          label="是否参与"
         />
         <el-table-column
           label="操作"
@@ -110,20 +114,6 @@
               type="text"
               size="small">
               详情
-            </el-button>
-            <el-button
-              :disabled="tableData[scope.$index].approved!='未审核'"
-              @click.native.prevent="approve(scope.$index, tableData)"
-              type="text"
-              size="small">
-              通过
-            </el-button>
-            <el-button
-              :disabled="tableData[scope.$index].approved!='未审核'"
-              @click.native.prevent="reject(scope.$index, tableData)"
-              type="text"
-              size="small">
-              驳回
             </el-button>
           </template>
         </el-table-column>
@@ -189,7 +179,7 @@ export default {
         size: this.pageSize
       };
       var that=this;
-      api2.findByAuditor(params).then(res=>{
+      api2.findByAdmin(params).then(res=>{
         that.response=res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
@@ -197,7 +187,7 @@ export default {
           for(var i=0;i<res._embedded.applications.length;i++)
           {
             let item={
-              approved:res._embedded.applications[i].approved,
+              isAuditor:res._embedded.applications[i].isAuditor? '参与':'不参与',
               id:res._embedded.applications[i].detail.id,
               planName: res._embedded.applications[i].detail.planName,
               planId:res._embedded.applications[i].detail.plan,
@@ -225,7 +215,7 @@ export default {
         size: this.pageSize
       };
       let that=this;
-      api2.findByAuditor(params).then( res => {
+      api2.findByAdmin(params).then( res => {
         that.response = res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
@@ -233,7 +223,7 @@ export default {
           for(var i = 0; i < res._embedded.applications.length; i++)
           {
             let item={
-              approved:res._embedded.applications[i].approved,
+               isAuditor:res._embedded.applications[i].isAuditor? '参与':'不参与',
               id:res._embedded.applications[i].detail.id,
               planName: res._embedded.applications[i].detail.planName,
               planId:res._embedded.applications[i].detail.plan,
@@ -266,51 +256,6 @@ export default {
     },
     show_details(index, data) {
       this.$router.push({ path: 'plan_details', query: { self: this.tableData[index].planId }})
-    },
-    approve(index, data) {
-      var that=this;
-      var id=that.tableData[index].id
-      this.$confirm('此操作将通过计划'+that.tableData[index].planName+', 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        api2.approve(id, { auditor:this.$user.userId }).then( () => {
-          that.index=1;
-          that.fresh()
-          that.$message({
-          type: 'success',
-          message: '审批通过成功!'
-          })
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消审批'
-        });          
-      });
-    },
-    reject(index, data) {
-      var that=this;
-      var id=that.tableData[index].id
-      this.$prompt('请输入驳回原因', '驳回', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消'
-      }).then(({ value }) => {
-        api2.reject(id,{ auditor: this.$user.userId, reason: value}).then( () => {
-          that.index=1;
-          that.fresh()
-          that.$message({
-            type: 'success',
-            message: '审批驳回成功！'
-          })
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消审批'
-        });       
-      });
     },
     size_change(val){
       this.pageSize=val

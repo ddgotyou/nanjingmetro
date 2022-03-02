@@ -200,7 +200,7 @@ export default {
       form: {
         username: "", // 必填
         password: "", // 必填
-        status: "", // 必填
+        type: "", // 必填
         code: "",
         nickname: null,
         sex: null,

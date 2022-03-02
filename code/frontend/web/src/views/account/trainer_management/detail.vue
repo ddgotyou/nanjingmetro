@@ -8,7 +8,7 @@
         v-resize="setLabelWidth"
         :label-width="labelWidth"
         label-position="right"
-        class="student-form"
+        class="trainer-form"
       >
         <el-row>
           <el-col :span="12">
@@ -106,8 +106,7 @@
 </template>
 
 <script>
-import * as api from "@/api/personnel/teacher";
-import * as sel from "@/api/personnel/selection";
+import * as api from "@/api/account/trainer";
 import { resize } from "@/utils/resize";
 
 const inputWidth = 375;
@@ -195,7 +194,7 @@ export default {
     },
     // 返回上一级菜单
     onCancel() {
-      this.$router.push("/personnel/teacher-management");
+      this.$router.push("/account/trainer-management");
     },
   },
 };
@@ -207,7 +206,7 @@ export default {
   margin: 20px auto;
 }
 
-.student-form {
+.trainer-form {
   .el-autocomplete {
     width: 375px;
   }

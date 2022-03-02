@@ -9,11 +9,10 @@
       <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="resetOption()">
         重置
       </el-button>
-      <!--input type="file" id="fileExport" @change="handleFileChange()" ref="inputer">
 
-      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload2" @click="upload_test()">
-        上传测试
-      </el-button-->
+      <el-button  class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload2" @click="dialogTableVisible3 = true;">
+        上传规程
+      </el-button>
 
       <!--el-upload
         class="filter-item"
@@ -45,6 +44,14 @@
       </el-select>
       &nbsp;
     </div>
+
+    <el-dialog title="上传规程" :visible.sync="dialogTableVisible3" center @close='closeDialog'>
+      <input type="file" ref="clearFile" @change="getFile($event)" class="add-file-right-input" accept=".docx,.doc,.pdf" style="margin-left: 5%">
+      <div></div>
+      <el-button  class="filter-item" style="margin-left: 80%; margin-top: 20px; width: 20%" type="primary" icon="el-icon-upload2" @click="submitAddFile()">
+        上传
+      </el-button>
+    </el-dialog>
 
     <el-dialog title="规程概览" :visible.sync="dialogTableVisible2" center @close='closeDialog'>
       <!--div style="margin-bottom: 15px; text-align: right">
@@ -193,6 +200,7 @@ export default {
       },
       dialogTableVisible1:false,
       dialogTableVisible2:false,
+      dialogTableVisible3:false,
 
       now_num:0,
 
@@ -223,6 +231,8 @@ export default {
       filelist:[],
       formData:new FormData(),
       file:"",
+
+      addArr:[]
       
     }
   },
@@ -260,7 +270,9 @@ export default {
   },
   methods: {
     closeDialog(){
-      this.pdfPage = 1;
+      this.dialogTableVisible1 = false;
+      this.dialogTableVisible2 = false;
+      this.dialogTableVisible3 = false;
     },
 
     downloadFile(){
@@ -319,7 +331,7 @@ export default {
       });
     },
 
-    handleFileChange (e) {
+    /*handleFileChange (e) {
       console.log(this.filelist);
       let inputDOM = this.filelist[0].name;
       this.file = inputDOM.files[0];// 通过DOM取文件数据
@@ -337,6 +349,79 @@ export default {
       //console.log(this.formData);
       //console.log(this.file);
 
+    },*/
+
+    getFile(event){
+      //console.log(event);
+           var file = event.target.files;
+           for(var i = 0;i<file.length;i++){
+            //    上传类型判断
+               var imgName = file[i].name;
+                var idx = imgName.lastIndexOf(".");  
+                if (idx != -1){
+                    var ext = imgName.substr(idx+1).toUpperCase();   
+                    ext = ext.toLowerCase( ); 
+                     if (ext!='pdf' && ext!='doc' && ext!='docx'){
+                      this.$message({
+                        type: 'info',
+                        message: '您选择的文件格式不正确'
+                      });
+                    }else{
+                        this.addArr.push(file[i]);
+                    }   
+                }
+           }
+      console.log(this.addArr);
+    },
+
+    submitAddFile(){
+           if(0 == this.addArr.length){
+             this.$message({
+               type: 'info',
+               message: '请选择要上传的文件'
+             });
+             return;
+           }
+
+            var formData = new FormData();
+            formData.append('num', 1);
+            formData.append('linkId', 1);
+            formData.append('rfilename', "文件上传");
+            console.log(this.addArr[0]);
+
+            formData.append('file',this.addArr[0], "测试上传.pdf");
+
+            console.log(formData);
+
+
+
+          axios({
+            url: 'http://10.8.0.1:8080/device/protocols/upload',
+            method: 'post',
+            headers:{
+              "Content-Type":"multipart/form-data; boundary=<calculated when request is sent>",
+            },
+            data: formData
+          })
+
+          //api.upload_pdf(formData)
+          /*let config = {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            }
+          };
+          axios.post('http://10.8.0.1:8080/device/protocols/upload',formData,config)*/
+            .then((response) => {
+                console.log(response);
+                if(response.data.info=="success"){this.$message({
+                        type: 'success',
+                        message: '附件上传成功!'
+                    });
+                }
+          }).catch((err) => {
+            console.log("完蛋了");
+            console.log(err);
+          })
     },
 
     previewPDF(index){
@@ -362,10 +447,7 @@ export default {
         this.currentPage = res.page.number + 1;
         this.maxPage = res.page.totalPage;
 
-        //console.log("dashabi");
-        //console.log(res);
         this.list=res._embedded.workSheets;
-        //console.log(this.list);
       }).catch((error)=>{
         this.$message({
             message: '上述检索条件不存在维修信息',
