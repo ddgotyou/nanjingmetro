@@ -170,9 +170,9 @@
         <el-table-column prop="post" label="岗位" width="" align="center" />
         <el-table-column prop="edu" label="学历" width="" align="center" />
         <el-table-column prop="major" label="专业" width="" align="center" />
-        <el-table-column prop="status" label="学员状态" width="" align="center">
+        <el-table-column label="学员状态" width="" align="center">
           <template slot-scope="scope">
-            {{ getStatus(scope.row.status) }}
+            {{ getStatus(scope.row.type) }}
           </template>
         </el-table-column>
         <el-table-column prop="enabled" label="操作" align="center">

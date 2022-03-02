@@ -1,8 +1,8 @@
 <template>
   <el-radio-group v-model="checked">
-    <el-radio v-for="item in authoritys" :key="item.key" :label="item.value">{{
-      item.label
-    }}</el-radio>
+    <el-radio v-for="item in authoritys" :key="item.key" :label="item.value">
+      {{ item.label }}
+    </el-radio>
   </el-radio-group>
 </template>
 
