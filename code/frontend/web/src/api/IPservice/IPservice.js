@@ -6,14 +6,14 @@ import request from "@/utils/iprequest";
 
 export function getAllIP() {
   return request({
-    url: "/monitor-service/ip/selectAll",
+    url: "/monitor/ip/selectAll",
     method: "get"
   });
 }
 
 export function addIP(data) {
   return request({
-    url: "/monitor-service/ip/addIp",
+    url: "/monitor/ip/addIp",
     method: "post",
     data: data
   });
@@ -21,7 +21,7 @@ export function addIP(data) {
 
 export function delIP(data) {
   return request({
-    url: "/monitor-service/ip/delIp",
+    url: "/monitor/ip/delIp",
     method: "delete",
     data: data
   });
