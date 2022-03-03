@@ -56,7 +56,7 @@
         </el-input>
       </el-form-item>
       <!-- 角色类别 -->
-      <el-form-item prop="status">
+      <el-form-item prop="type">
         <el-select v-model="form.status" placeholder="角色类型">
           <svg-icon
             slot="prefix"
@@ -101,11 +101,11 @@
       class="register-form"
     >
       <!-- 姓名 -->
-      <el-form-item>
+      <el-form-item prop="name">
         <el-input v-model="form.nickname" placeholder="姓名"></el-input>
       </el-form-item>
       <!-- 性别 -->
-      <el-form-item>
+      <el-form-item prop="sex">
         <el-select v-model="form.sex" placeholder="性别">
           <el-option
             v-for="item in selection.sex"
@@ -116,7 +116,7 @@
         </el-select>
       </el-form-item>
       <!-- 联系方式 -->
-      <el-form-item>
+      <el-form-item prop="tel">
         <el-input v-model="form.tel" placeholder="联系方式"></el-input>
       </el-form-item>
       <!-- 身份证号 -->
@@ -226,10 +226,18 @@ export default {
         ],
         password: [
           { required: true, trigger: "blur", message: "密码不能为空" },
+          {
+            pattern: /^[0-9A-Za-z]{5,}$/,
+            trigger: "blur",
+            message: "密码需要由至少5位的数字或字母组成",
+          },
         ],
-        status: [
+        type: [
           { required: true, trigger: "blur", message: "用户类型不能为空" },
         ],
+        name: [{ required: true, trigger: "blur", message: "名称不能为空" }],
+        sex: [{ required: true, trigger: "blur", message: "性别不能为空" }],
+        tel: [{ required: true, trigger: "blur", message: "联系方式不能为空" }],
         idcard: [
           { required: true, trigger: "blur", message: "请输入身份证号" },
           {
