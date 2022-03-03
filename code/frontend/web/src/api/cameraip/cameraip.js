@@ -6,7 +6,7 @@ import request from "@/utils/iprequest";
 
 export function addCam(data) {
   return request({
-    url: "/cam/addCam",
+    url: "/monitor-service/cam/addCam",
     method: "post",
     data: data
   });
@@ -14,7 +14,7 @@ export function addCam(data) {
 
 export function delCam(data) {
   return request({
-    url: "/cam/delCam",
+    url: "/monitor-service/cam/delCam",
     method: "delete",
     data: data
   });
@@ -22,28 +22,28 @@ export function delCam(data) {
 
 export function kill() {
   return request({
-    url: "/rtsp/kill",
+    url: "/monitor-service/rtsp/kill",
     method: "post"
   });
 }
 
 export function turnoff() {
   return request({
-    url: "/cam/turnOff",
+    url: "/monitor-service/cam/turnOff",
     method: "post"
   });
 }
 
 export function connectAll(data) {
   return request({
-    url: "/cam/ConnectAll",
+    url: "/monitor-service/cam/ConnectAll",
     method: "post"
   });
 }
 
 export function getAll(data) {
   return request({
-    url: "/cam/GetAll",
+    url: "/monitor-service/cam/GetAll",
     method: "post",
     data: data
   });
