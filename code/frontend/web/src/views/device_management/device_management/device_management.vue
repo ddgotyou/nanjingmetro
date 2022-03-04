@@ -39,6 +39,36 @@
           </div>
         </el-dialog>
 
+      <el-dialog title="修改实验室信息" :visible.sync="dialogFormVisible1">
+        <div style="margin-left: 10%; padding-bottom: 5%; font-size: 15px">请确认您要对{{change_choice.name}}教室（编号为{{change_choice.id}}）要进行的修改：</div>
+        <el-form>
+            <el-form-item label="类型" label-width="100px">
+              <el-select
+                v-model="change_choice.type"
+                name="type"
+                style="width: 95%"
+              >
+                <el-option label="教学室" value="教学室"></el-option>
+                <el-option label="实训室" value="实训室"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="描述" label-width="100px">
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 2, maxRows: 4 }"
+                v-model="change_choice.description"
+              >
+              </el-input>
+            </el-form-item>
+          </el-form>
+        
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible1 = false">取 消</el-button>
+            <el-button type="primary" @click="handle_change_classroom()">确 定</el-button>
+        </div>
+        
+      </el-dialog>
+
       <div slot="header">
         <span>设备列表</span>
         <el-button
@@ -52,7 +82,7 @@
 
       <el-form label-position="right" label-width="80px" :model="searchData">
         <el-row>
-          <el-col span="24">
+          <el-col>
             <el-form-item label="模糊搜索">
               <el-input id="search" v-model="searchData.value" name="search_value" placeholder="请输入搜索关键词" style="width: 80%"/>
               <el-button type="primary" @click="search_commit" style="margin-left: 1.5%; width: 7%">搜 索</el-button>
@@ -130,11 +160,13 @@
       </el-table-column>
       <el-table-column prop="name" label="实验室名称" align="center"> </el-table-column>
       <el-table-column prop="id" label="实验室编号" align="center"> </el-table-column>
+      <el-table-column prop="type" label="实验室类型" width="center"> </el-table-column>
       <el-table-column prop="description" label="实验室描述" width="400"> </el-table-column>
-      <el-table-column label="操作" align="center">
+      <el-table-column label="操作" align="center" width="200">
         <!-- icon="el-icon-edit" -->
         <template slot-scope="scope">
           <el-button @click.native.prevent="delete_classroom(scope.$index)" type="text">删除实验室</el-button>
+          <el-button @click.native.prevent="change_classroom(scope.$index)" type="text">修改实验室</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -195,7 +227,15 @@ export default {
       maxPage:2,
 
       classrooms:[],
-      classroomlist:[]
+      classroomlist:[],
+
+      change_choice:{
+        name:"",
+        id:"",
+        type:"",
+        description:""
+      },
+      dialogFormVisible1: false,
     };
   },
 
@@ -237,6 +277,39 @@ export default {
       });
       //this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
       //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
+    },
+    change_classroom(index){
+      this.change_choice.name = this.classroomlist[index].name;
+      this.change_choice.id = this.classroomlist[index].id;
+      this.change_choice.type = this.classroomlist[index].type;
+      this.change_choice.description = this.classroomlist[index].description;
+
+      this.dialogFormVisible1 = true;
+      console.log(this.classroomlist[index]);
+    },
+    handle_change_classroom(){
+      var params = {
+        name: this.change_choice.name,
+        description: this.change_choice.description,
+        type: this.change_choice.type,
+        id: this.change_choice.id
+      }
+      api.changeClassroom(params).then((res)=>{
+        this.dialogFormVisible1 = false;
+        if(res.description == params.description && res.type == params.type){
+          this.$message({
+            message: "您已成功修改"+params.name+"教室的信息！",
+            type: 'success'
+          });
+        }
+      }).catch((err)=>{
+        this.$message({
+          message: "您输入的描述信息过长，请确认后重新输入",
+          type: 'error'
+        });
+        console.log(err);
+      });
+      this.getDeviceList();
     },
     //删除实验室
     delete_classroom(index){
