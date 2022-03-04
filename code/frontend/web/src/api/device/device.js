@@ -101,6 +101,14 @@ import request from '@/utils/request'
       //data: data
     })
   }
+  //修改实验室
+  function changeClassroom(data){
+    return request({
+      url: '/training-plan/classrooms/'+data.id,
+      method: 'put',
+      data: data
+    })
+  }
   //获取人员列表
   function listPerson() {
     return request({
@@ -123,6 +131,7 @@ import request from '@/utils/request'
     classrooms,
     addClassroom,
     listPerson,
-    deleteClassroom
+    deleteClassroom,
+    changeClassroom
   }
 
