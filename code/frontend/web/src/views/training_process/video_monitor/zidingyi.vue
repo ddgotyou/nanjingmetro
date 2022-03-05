@@ -7,8 +7,8 @@
           <el-option
             v-for="item in cameraGroup"
             :key="item.id"
-            :label="item.group"
-            :value="item.group"
+            :label="item.value"
+            :value="item.value"
           />
         </el-select>
         <div style="margin:10px;">
@@ -20,7 +20,12 @@
           >
           <el-button type="primary" @click="remoteShutdown">终止推流</el-button>
           <span style="margin-left:20px;display:inline-block">服务器接口:</span>
-          <span style="margin-left:5px;display:inline-block">{{ wsurl }}</span>
+          <el-input
+            id="wsurl"
+            v-model="wsurl"
+            name="wsurl"
+            style="width: 30%"
+          />
         </div>
       </div>
       <div
@@ -88,12 +93,7 @@
 </template>
 
 <script>
-import {
-  kill,
-  turnoff,
-  connectAll,
-  getAll
-} from "@/api/cameraip/cameraip";
+import { kill, turnoff, connectAll, getAll } from "@/api/cameraip/cameraip";
 
 export default {
   data: function() {
