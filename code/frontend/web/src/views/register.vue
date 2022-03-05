@@ -57,7 +57,7 @@
       </el-form-item>
       <!-- 角色类别 -->
       <el-form-item prop="type">
-        <el-select v-model="form.status" placeholder="角色类型">
+        <el-select v-model="form.type" placeholder="角色类型">
           <svg-icon
             slot="prefix"
             icon-class="user"
@@ -326,7 +326,7 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpeg");
+  background-image: url("../assets/images/login-background.jpg");
   background-size: cover;
 }
 .title {
@@ -339,9 +339,9 @@ export default {
   background: #fbfdfd;
   width: 400px;
   padding: 25px 25px 5px 25px;
-  position: absolute;
-  right: 120px;
-  bottom: 100px;
+  // position: absolute;
+  // right: 120px;
+  // bottom: 100px;
   .el-input {
     width: 350px;
     height: 38px;
