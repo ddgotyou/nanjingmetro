@@ -172,6 +172,7 @@ export default {
   align-items: center;
   height: 100%;
   background-image: url("../assets/images/login-background.jpg");
+  background-position: 0% 100%;
   background-size: cover;
 }
 .title {

@@ -101,7 +101,7 @@
       class="register-form"
     >
       <!-- 姓名 -->
-      <el-form-item prop="name">
+      <el-form-item prop="nickname">
         <el-input v-model="form.nickname" placeholder="姓名"></el-input>
       </el-form-item>
       <!-- 性别 -->
@@ -235,7 +235,9 @@ export default {
         type: [
           { required: true, trigger: "blur", message: "用户类型不能为空" },
         ],
-        name: [{ required: true, trigger: "blur", message: "名称不能为空" }],
+        nickname: [
+          { required: true, trigger: "blur", message: "名称不能为空" },
+        ],
         sex: [{ required: true, trigger: "blur", message: "性别不能为空" }],
         tel: [{ required: true, trigger: "blur", message: "联系方式不能为空" }],
         idcard: [
@@ -327,6 +329,7 @@ export default {
   align-items: center;
   height: 100%;
   background-image: url("../assets/images/login-background.jpg");
+  background-position: 0% 100%;
   background-size: cover;
 }
 .title {
