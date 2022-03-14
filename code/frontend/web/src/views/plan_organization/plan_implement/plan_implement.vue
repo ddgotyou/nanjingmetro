@@ -348,12 +348,13 @@ export default {
     },
     list() {
       var params = {
+        module: 'plan_impl',
         status: '进行中',
         page: this.index-1,
         size: this.pageSize
       };
       let that=this;
-      api.search(params).then( res => {
+      api.plans(this.$user.userId,params).then( res => {
         that.response = res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
@@ -384,6 +385,7 @@ export default {
     search_list() {
       console.log(this.searchData);
       var params = {
+        module: 'plan_impl',
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: '进行中',
@@ -393,7 +395,7 @@ export default {
         size: this.pageSize
       };
       let that=this;
-      api.search(params).then( res => {
+      api.plans(this.$user.userId,params).then( res => {
         that.response = res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
@@ -528,7 +530,7 @@ export default {
           that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
         }
       })
-      api3.getTrainer().then( res => {
+      api3.getTrainer(this.$user.userId).then( res => {
         this.teachers=[]
         for(var i=0;i<res._embedded.trainerVoes.length;i++)
         {

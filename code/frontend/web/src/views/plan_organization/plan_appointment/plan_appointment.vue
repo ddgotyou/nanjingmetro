@@ -227,10 +227,12 @@ export default {
   methods:{
     list() {
       var that=this
-      api.getTempTasks({
+      var params = {
+        module: 'tmp_task_list',
         page: that.index-1,
         size: that.pageSize
-      }).then( res => {
+      }
+      api.getTempTasks(this.$user.userId,params).then( res => {
         that.response=res
         that.tableData=[]
         for(var i=0;i<res._embedded.tmpTasks.length;i++)

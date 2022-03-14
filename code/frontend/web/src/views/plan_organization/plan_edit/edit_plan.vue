@@ -519,7 +519,7 @@ export default {
           }
         }
       })
-      api3.getTrainer().then( res => {
+      api3.getTrainer(this.$user.userId).then( res => {
         that.teacher_data=[]
         for(var i=0;i<res._embedded.trainerVoes.length;i++)
         {
