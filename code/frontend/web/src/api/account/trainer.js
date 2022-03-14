@@ -1,17 +1,18 @@
 import request from '@/utils/request'
 
 // 新增讲师
-function add(data) {
+function add(id, data) {
   return request({
-    url: '/tms-account/users/addTrainer',
+    url: '/tms-account/users/addTrainer' + '?myUserId=' + id,
     method: 'post',
     data: data
   })
 }
 
 // 查询讲师列表
-function list(query, page, size) {
+function list(id, query, page, size) {
   let params = {};
+  params["myUserId"] = id;
   if (page) params["page"] = page;
   if (size) params["size"] = size;
   for (let attr in query) {
@@ -44,18 +45,18 @@ function detail(id, query) {
 }
 
 // 编辑讲师
-function edit(id, data) {
+function edit(userId, id, data) {
   return request({
-    url: '/tms-account/users/editTrainer/' + id,
+    url: '/tms-account/users/editTrainer/' + id + '?myUserId=' + userId,
     method: 'put',
     data: data
   })
 }
 
 // 删除讲师
-function del(id) {
+function del(userId, id) {
   return request({
-    url: '/tms-account/users/deleteTrainer/' + id,
+    url: '/tms-account/users/deleteTrainer/' + id + '?myUserId=' + userId,
     method: 'delete'
   })
 }

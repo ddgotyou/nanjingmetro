@@ -293,7 +293,7 @@ export default {
         if (valid) {
           // 数据格式正确
           api
-            .edit(this.id, this.form)
+            .edit(this.$user.userId, this.id, this.form)
             .then((response) => {
               this.$message.success("编辑成功");
               this.onCancel();

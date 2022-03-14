@@ -309,7 +309,7 @@ export default {
     data(query, page, size) {
       this.loading = true;
       api
-        .list(query, page, size)
+        .list(this.$user.userId, query, page, size)
         .then((response) => {
           this.list = response._embedded.trainerVoes;
           this.page = response.page;
@@ -337,7 +337,7 @@ export default {
       sel.post({}).then((response) => {
         this.items.post.options = response._embedded.dboxVoes;
       });
-      api.list({}, 0, 10000).then((response) => {
+      api.list(this.$user.userId, {}, 0, 10000).then((response) => {
         this.table = response._embedded ? response._embedded.trainerVoes : [];
       });
       this.data({}, 0, this.page.size);
@@ -412,7 +412,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .del(this.selection[i].id)
+              .del(this.$user.userId, this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });

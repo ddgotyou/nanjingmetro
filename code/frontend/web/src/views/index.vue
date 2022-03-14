@@ -298,10 +298,10 @@ export default {
   },
   methods: {
     loadData() {
-      trainee.list(null).then((response) => {
+      trainee.list(this.$user.userId).then((response) => {
         this.numTrainee = response.page.totalElements;
       });
-      trainer.list(null).then((response) => {
+      trainer.list(this.$user.userId).then((response) => {
         this.numTrainer = response.page.totalElements;
       });
       api.plan(this.$user.userId).then((response) => {
@@ -328,7 +328,6 @@ export default {
         this.numAppAudited = response.page.totalElements;
       });
       api.task(this.$user.userId).then((response) => {
-        console.log(response);
         this.taskList = response._embedded
           ? response._embedded.tasks.slice(0, 2)
           : [];
