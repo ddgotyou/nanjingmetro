@@ -4,20 +4,23 @@
  */
 import request from '@/utils/request'
 
-function plans(query){
+function plans(userId,query){
     return request({
         url: '/training-plan/plans',
+        headers: {
+            user_id: userId
+        },
         method: 'get',
         params: query
     })
 }
-function search(query){
-    return request({
-        url: '/training-plan/plans/search/findByConditions',
-        method: 'get',
-        params: query
-    })
-}
+// function search(query){
+//     return request({
+//         url: '/training-plan/plans',
+//         method: 'get',
+//         params: query
+//     })
+// }
 function planStatuses(){
     return request({
         url: '/training-plan/plans/statuses',
@@ -88,9 +91,12 @@ function findAvailableTime(query){
         params: query
     })
 }
-function getTempTasks(query){
+function getTempTasks(userId,query){
     return request({
         url: '/training-plan/tmpTasks',
+        headers: {
+            myUserId: userId
+        },
         method: 'get',
         params: query
     })
@@ -111,7 +117,7 @@ function deleteTempTask(id){
 
 export{
     plans,
-    search,
+    //search,
     planStatuses,
     details,
     planTypes,

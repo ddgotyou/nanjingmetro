@@ -189,10 +189,12 @@ export default {
     },
     list() {
       let that = this;
-      api.plans({
+      var params = {
+        module: 'plan_query',
         page: that.index-1,
         size: that.pageSize
-      }).then( res => {
+      }
+      api.plans(this.$user.userId,params).then( res => {
         that.response = res
         that.tableData = []
         if(res.hasOwnProperty('_embedded'))
@@ -227,7 +229,7 @@ export default {
           }
         }
       });
-      api3.getTrainer().then( res => {
+      api3.getTrainer(this.$user.userId).then( res => {
         this.teachers=[]
         for(var i=0;i<res._embedded.trainerVoes.length;i++)
         {
@@ -243,6 +245,7 @@ export default {
     search_list() {
       console.log(this.searchData);
       var params = {
+        module: 'plan_query',
         startTime: this.searchData.period[0],
         endTime: this.searchData.period[1],
         status: this.searchData.status,
@@ -251,9 +254,8 @@ export default {
         page: this.index-1,
         size: this.pageSize
       };
-      console.log(params)
       let that=this;
-      api.search(params).then( res => {
+      api.plans(this.$user.userId,params).then( res => {
         that.response = res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))
