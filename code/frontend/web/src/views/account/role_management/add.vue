@@ -134,7 +134,7 @@ export default {
     // 加载数据
     loadData() {
       // 获取所有角色模板
-      api.list(null).then((response) => {
+      api.list(this.$user.userId, 0, 1000).then((response) => {
         this.selection.roles = response._embedded.groupVoes.map(
           (element, index) => {
             return { key: index, value: element.id, label: element.name };

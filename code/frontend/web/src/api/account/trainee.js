@@ -1,17 +1,18 @@
 import request from '@/utils/request'
 
 // 新增学员
-function add(data) {
+function add(id, data) {
   return request({
-    url: '/tms-account/users/addTrainee',
+    url: '/tms-account/users/addTrainee' + '?myUserId=' + id,
     method: 'post',
     data: data
   })
 }
 
 // 查询学员列表
-function list(query, page, size) {
+function list(id, query, page, size) {
   let params = {};
+  params["myUserId"] = id;
   if (page) params["page"] = page;
   if (size) params["size"] = size;
   for (let attr in query) {
@@ -44,18 +45,18 @@ function detail(id, query) {
 }
 
 // 编辑学员
-function edit(id, data) {
+function edit(userId, id, data) {
   return request({
-    url: '/tms-account/users/editTrainee/' + id,
+    url: '/tms-account/users/editTrainee/' + id + '?myUserId=' + userId,
     method: 'put',
     data: data
   })
 }
 
 // 删除学员
-function del(id) {
+function del(userId, id) {
   return request({
-    url: '/tms-account/users/deleteTrainee/' + id,
+    url: '/tms-account/users/deleteTrainee/' + id + '?myUserId=' + userId,
     method: 'delete'
   })
 }

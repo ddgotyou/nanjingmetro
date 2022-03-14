@@ -167,7 +167,7 @@ export default {
     // 用户组列表
     data(page, size) {
       this.loading = true;
-      api.list(page, size).then((response) => {
+      api.list(this.$user.userId, page, size).then((response) => {
         this.list = response._embedded ? response._embedded.groupVoes : [];
         this.page = response.page;
         this.loading = false;
@@ -184,7 +184,7 @@ export default {
     },
     // 加载数据
     loadData() {
-      api.list(0, 10000).then((response) => {
+      api.list(this.$user.userId, 0, 10000).then((response) => {
         this.table = response._embedded ? response._embedded.groupVoes : [];
       });
       this.data(0, this.page.size);

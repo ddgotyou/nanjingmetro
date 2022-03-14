@@ -60,7 +60,7 @@
               <div slot="header">
                 <span>权限设置</span>
               </div>
-              <auth-card :value="form.authority" />
+              <auth-card :value.sync="form.authority" />
             </el-card>
           </el-col>
         </el-row>
@@ -130,13 +130,16 @@ import * as api from "@/api/account/user_group";
 import * as user from "@/api/account/user";
 import * as role from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
+import AuthRadioGroup from "@/views/components/AuthRadioGroup.vue";
 
 export default {
   components: {
     AuthCard,
+    AuthRadioGroup,
   },
   data: function () {
     return {
+      test: "",
       // 用户组 ID
       id: null,
 

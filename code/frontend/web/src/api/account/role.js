@@ -1,18 +1,18 @@
 import request from '@/utils/request'
 
 // 新增角色
-function add(data) {
+function add(id, data) {
   return request({
-    url: '/tms-account/role/addRole',
+    url: '/tms-account/role/addRole' + '?myUserId=' + id,
     method: 'post',
     data: data
   })
 }
 
 // 查询角色列表
-function list(page, size) {
+function list(id, page, size) {
   return request({
-    url: '/tms-account/role/getAllRole' + '?page=' + page + '&size=' + size,
+    url: '/tms-account/role/getAllRole' + '?myUserId=' + id + '&page=' + page + '&size=' + size,
     method: 'get',
   })
 }
@@ -34,9 +34,9 @@ function detail(id) {
 }
 
 // 编辑角色
-function edit(id, data) {
+function edit(userId, id, data) {
   return request({
-    url: '/tms-account/role/editRole/' + id,
+    url: '/tms-account/role/editRole/' + id + '?myUserId=' + userId,
     method: 'put',
     data: data
   })

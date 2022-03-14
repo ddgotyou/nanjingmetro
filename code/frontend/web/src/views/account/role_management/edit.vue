@@ -67,6 +67,7 @@
 <script>
 import * as api from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
+import { clone, compare } from "@/utils/object";
 
 export default {
   components: {
@@ -98,6 +99,7 @@ export default {
             planImpl: "", // 计划实现
             planQuery: "", // 计划查询
             taskAppoint: "", // 任务预约
+            scoreTemplate: "", // 打分模板
           },
           // 培训过程监控
           trainProc: {
@@ -140,35 +142,40 @@ export default {
     // 加载数据
     loadData() {
       // 获取所有角色模板
-      api.list(null).then((response) => {
+      api.list(this.$user.userId, 0, 1000).then((response) => {
         this.selection.roles = response._embedded.groupVoes.map(
           (element, index) => {
-            return { key: index, value: element.id, label: element.name };
+            return {
+              key: index,
+              value: String(element.id),
+              label: element.name,
+            };
           }
         );
       });
       // 获取角色详情
       api.detail(this.id).then((response) => {
         this.form = response;
+        console.log(this.form);
+        if (this.form.authTemplate) {
+          api.detail(this.form.authTemplate).then((response) => {
+            this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
+          });
+        }
       });
     },
     // 权限模板发生改变
     handleChange(value) {
       // 返回对应 ID 的角色的详细信息
       api.detail(this.form.authTemplate).then((response) => {
-        // 将权限模板填充到对应表单
-        this.form.authority = response.authority;
-        // 保存原模板
-        this.template = response.authority;
+        this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
       });
     },
     // 提交编辑表单
     onSubmit() {
-      this.form.authTemplate = null;
-
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          api.edit(this.id, this.form).then((response) => {
+          api.edit(this.$user.userId, this.id, this.form).then((response) => {
             if (response.code === 200) {
               this.$message.success("编辑成功！");
               this.onCancel();

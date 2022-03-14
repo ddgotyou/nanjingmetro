@@ -57,7 +57,7 @@
       </el-form-item>
       <!-- 角色类别 -->
       <el-form-item prop="type">
-        <el-select v-model="form.status" placeholder="角色类型">
+        <el-select v-model="form.type" placeholder="角色类型">
           <svg-icon
             slot="prefix"
             icon-class="user"
@@ -101,7 +101,7 @@
       class="register-form"
     >
       <!-- 姓名 -->
-      <el-form-item prop="name">
+      <el-form-item prop="nickname">
         <el-input v-model="form.nickname" placeholder="姓名"></el-input>
       </el-form-item>
       <!-- 性别 -->
@@ -235,7 +235,9 @@ export default {
         type: [
           { required: true, trigger: "blur", message: "用户类型不能为空" },
         ],
-        name: [{ required: true, trigger: "blur", message: "名称不能为空" }],
+        nickname: [
+          { required: true, trigger: "blur", message: "名称不能为空" },
+        ],
         sex: [{ required: true, trigger: "blur", message: "性别不能为空" }],
         tel: [{ required: true, trigger: "blur", message: "联系方式不能为空" }],
         idcard: [
@@ -326,7 +328,8 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpeg");
+  background-image: url("../assets/images/login-background.jpg");
+  background-position: 0% 100%;
   background-size: cover;
 }
 .title {
@@ -339,9 +342,9 @@ export default {
   background: #fbfdfd;
   width: 400px;
   padding: 25px 25px 5px 25px;
-  position: absolute;
-  right: 120px;
-  bottom: 100px;
+  // position: absolute;
+  // right: 120px;
+  // bottom: 100px;
   .el-input {
     width: 350px;
     height: 38px;

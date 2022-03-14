@@ -64,6 +64,12 @@
             :options="[true, true, false, true]"
           />
         </el-form-item>
+        <el-form-item label="打分模板">
+          <auth-radio-group
+            :value.sync="authority.trainOrg.scoreTemplate"
+            :options="[true, false, false, true]"
+          />
+        </el-form-item>
       </el-collapse-item>
       <el-collapse-item title="培训过程" align="center">
         <el-form-item label="计划监控">
@@ -89,7 +95,7 @@
         <el-form-item label="数据管理">
           <auth-radio-group
             :value.sync="authority.effectEval.dataMgt"
-            :options="[true, true, true, true]"
+            :options="[true, true, false, true]"
           />
         </el-form-item>
         <el-form-item label="统计分析">
@@ -128,7 +134,7 @@
       <el-collapse-item title="综合信息展示" align="center">
         <el-form-item label="综合信息展示">
           <auth-radio-group
-            :value.sync="authority.synthInfoDisp"
+            :value.sync="authority.synthInfoDisp.synthInfoDisp"
             :options="[true, false, false, true]"
           />
         </el-form-item>

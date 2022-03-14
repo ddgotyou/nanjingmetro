@@ -134,30 +134,30 @@ export default {
       labelWidth: "auto",
 
       // 新增表单
-      // form: {
-      //   name: "", // 必填
-      //   sex: null,
-      //   tel: null,
-      //   email: "", // 必填
-      //   idcard: "", // 必填
-      //   usergroup: [],
-      //   dept: [],
-      //   leader: [],
-      //   post: null,
-      //   type: "", // 必填
-      // },
       form: {
-        name: "测试讲师", // 必填
-        sex: "1",
+        name: "", // 必填
+        sex: null,
         tel: null,
-        email: "test@163.com", // 必填
-        idcard: "123456123456781234", // 必填
-        usergroup: [102],
+        email: "", // 必填
+        idcard: "", // 必填
+        usergroup: [],
         dept: [],
         leader: [],
-        post: "普通员工",
-        type: "0", // 必填
+        post: null,
+        type: "", // 必填
       },
+      // form: {
+      //   name: "测试讲师", // 必填
+      //   sex: "1",
+      //   tel: null,
+      //   email: "test@163.com", // 必填
+      //   idcard: "123456123456781234", // 必填
+      //   usergroup: [102],
+      //   dept: [],
+      //   leader: [],
+      //   post: "普通员工",
+      //   type: "0", // 必填
+      // },
 
       // 表单中的选项值
       selection: {
@@ -284,7 +284,7 @@ export default {
         if (valid) {
           // 数据格式正确
           api
-            .add(this.form)
+            .add(this.$user.userId, this.form)
             .then((response) => {
               this.$message.success("新增成功");
               this.onCancel();
