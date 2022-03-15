@@ -10,12 +10,9 @@ function getTrainee() {
         method: 'get'
     })
 }
-function getTrainer(userId) {
+function getTrainer() {
     return request({
-        url: '/tms-account/users/getTrainer',
-        headers: {
-            myUserId: userId
-        },
+        url: 'tms-account/users/getAllTrainerInPlan',
         method: 'get'
     })
 }

@@ -229,11 +229,11 @@ export default {
           }
         }
       });
-      api3.getTrainer(this.$user.userId).then( res => {
+      api3.getTrainer().then( res => {
         this.teachers=[]
-        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        for(var i=0;i<res._embedded.hashMaps.length;i++)
         {
-          this.teachers.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+          this.teachers.push({label:res._embedded.hashMaps[i].name,value:res._embedded.hashMaps[i].id})
         }
       })
     },
