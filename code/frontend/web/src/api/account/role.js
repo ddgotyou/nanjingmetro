@@ -26,9 +26,9 @@ function search(keyword, page, size) {
 }
 
 // 查询角色
-function detail(id) {
+function detail(name) {
   return request({
-    url: '/tms-account/role/' + id,
+    url: '/tms-account/role/getRoleByName/' + name,
     method: 'get',
   })
 }

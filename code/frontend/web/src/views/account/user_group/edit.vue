@@ -235,10 +235,10 @@ export default {
     // 加载数据
     async loadData() {
       // 获取所有角色模板
-      role.list(null).then((response) => {
+      role.list(this.$user.userId, 0, 1000).then((response) => {
         this.selection.roles = response._embedded.groupVoes.map(
           (element, index) => {
-            return { key: index, value: element.id, label: element.name };
+            return { key: index, value: element.name, label: element.name };
           }
         );
       });

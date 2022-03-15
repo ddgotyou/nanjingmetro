@@ -76,6 +76,7 @@ export default {
   data: function () {
     return {
       // 角色 ID
+      name: null,
       id: null,
 
       // 编辑表单
@@ -98,7 +99,8 @@ export default {
             planApproval: "", // 计划审批
             planImpl: "", // 计划实现
             planQuery: "", // 计划查询
-            taskAppoint: "", // 任务预约
+            tmpTaskList: "", // 临时任务列表
+            tmpTaskEdit: "", // 临时任务编辑
             scoreTemplate: "", // 打分模板
           },
           // 培训过程监控
@@ -125,6 +127,7 @@ export default {
           },
         },
       },
+      authority: "",
 
       // 表单中的选择值
       selection: {
@@ -133,8 +136,9 @@ export default {
     };
   },
   mounted: function () {
-    // 保存上一级菜单传递的角色 ID
+    // 保存上一级菜单传递的角色 ID 和名称
     this.id = this.$route.query.id;
+    this.name = this.$route.query.name;
     // 加载数据
     this.loadData();
   },
@@ -145,36 +149,34 @@ export default {
       api.list(this.$user.userId, 0, 1000).then((response) => {
         this.selection.roles = response._embedded.groupVoes.map(
           (element, index) => {
-            return {
-              key: index,
-              value: String(element.id),
-              label: element.name,
-            };
+            return { key: index, value: element.name, label: element.name };
           }
         );
       });
       // 获取角色详情
-      api.detail(this.id).then((response) => {
+      api.detail(this.name).then((response) => {
         this.form = response;
-        console.log(this.form);
-        if (this.form.authTemplate) {
-          api.detail(this.form.authTemplate).then((response) => {
-            this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
-          });
-        }
+        // console.log(this.form);
+        if (this.form.authTemplate) this.handleChange();
       });
     },
     // 权限模板发生改变
-    handleChange(value) {
+    handleChange() {
       // 返回对应 ID 的角色的详细信息
       api.detail(this.form.authTemplate).then((response) => {
         this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
+        this.authority = clone(response.authority); // 记录原权限模板
       });
     },
     // 提交编辑表单
     onSubmit() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          // 检查是否改动了权限模板
+          if (!compare(this.authority, this.form.authority))
+            this.form.authTemplate = null;
+
+          // console.log(this.form);
           api.edit(this.$user.userId, this.id, this.form).then((response) => {
             if (response.code === 200) {
               this.$message.success("编辑成功！");

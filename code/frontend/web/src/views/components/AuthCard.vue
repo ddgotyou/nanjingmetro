@@ -58,9 +58,15 @@
             :options="[true, true, false, true]"
           />
         </el-form-item>
-        <el-form-item label="任务预约">
+        <el-form-item label="临时任务列表">
           <auth-radio-group
-            :value.sync="authority.trainOrg.taskAppoint"
+            :value.sync="authority.trainOrg.tmpTaskList"
+            :options="[true, true, false, true]"
+          />
+        </el-form-item>
+        <el-form-item label="临时任务编辑">
+          <auth-radio-group
+            :value.sync="authority.trainOrg.tmpTaskEdit"
             :options="[true, true, false, true]"
           />
         </el-form-item>

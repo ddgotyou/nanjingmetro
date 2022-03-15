@@ -258,7 +258,7 @@ export default {
     handleEdit(index) {
       this.$router.push({
         path: "/account/edit-role",
-        query: { id: this.list[index].id },
+        query: { id: this.list[index].id, name: this.list[index].name },
       });
     },
     // 当选中角色更改时，更新选中角色的列表
