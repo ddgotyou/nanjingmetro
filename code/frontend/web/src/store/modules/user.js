@@ -1,6 +1,7 @@
 import { login, logout, getInfo, refreshToken } from '@/api/login'
 import { getToken, setToken, setExpiresIn, removeToken } from '@/utils/auth'
 import Vue from 'vue'
+import service from '@/utils/request'
 import Cookies from "js-cookie";
 
 const user = {

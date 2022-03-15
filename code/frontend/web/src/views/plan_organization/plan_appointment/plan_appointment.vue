@@ -7,6 +7,7 @@
     <el-form label-position="right" label-width="80px">
       <el-card class="box-card" style="width:100%">
         <div slot="header">新增预约</div>
+        <el-divider content-position="left">基本信息</el-divider>
         <el-form label-position="right" label-width="80px" :model="taskData">
           <el-row>
             <el-col :span="12">
@@ -28,7 +29,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="24">
+            <el-col :span="12">
               <el-form-item label="课时安排">
                 <el-date-picker
                   style="width:50%;"
@@ -65,6 +66,25 @@
                 </el-time-picker>
               </el-form-item>
             </el-col>
+             <el-col :span="12">
+            <el-form-item label="讲师">
+              <el-select
+                v-model="taskData.trainers"
+                style="width:100%"
+                placeholder="请选择"
+                clearable
+                multiple
+                filterable
+              >
+                <el-option
+                  v-for="item in teacher_data"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
             <!-- <el-col :span="12">
               <el-form-item label="顺序">
                 <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
@@ -104,6 +124,39 @@
               </el-form-item>
             </el-col>
           </el-row>
+          <el-divider content-position="left">人员添加</el-divider>
+          <el-checkbox 
+            v-for="group in group_data" 
+            :label="group.label"  
+            :key="group.value"
+            :indeterminate="group.isIndeterminate"
+            v-model="group.isCheckAll"
+            border
+            @change="handleGroupChange(group.no)">
+            {{group.label}}
+          </el-checkbox>
+          <el-table
+            ref="traineeTable"
+            :data="people_data"
+            tooltip-effect="dark"
+            style="width: 100%"
+            height="250"
+            @select="handleTraineeChange"
+            @select-all="handleTraineeAll"
+            @selection-change="handleSelectionChange">
+            <el-table-column
+              type="selection">
+            </el-table-column>
+            <el-table-column
+              prop="key"
+              label="id">
+            </el-table-column>
+            <el-table-column
+              prop="label"
+              label="姓名">
+            </el-table-column>
+          </el-table>
+          <el-divider />
           <div style="text-align:right"><el-button type="primary" @click="addTask">确认新增</el-button></div>
         </el-form>
       </el-card>
@@ -172,6 +225,7 @@
 
 <script>
 import * as api from '@/api/training_plan/training_plan'
+import * as api3 from '@/api/training_plan/account'
 export default {
   components: {
     api
@@ -184,6 +238,8 @@ export default {
         // order: '',
         date: null,
         period: [null,null],
+        trainers: [],
+        trainees: [],
         type: '',
         classroom: '',
         description: ''
@@ -199,9 +255,14 @@ export default {
       },
       kinds: [],
       task_chooses: [],
+      teacher_data: [],
       task_types: [],
       classrooms: [],
       tableData: [],
+
+      group_data: [],
+      people_data: [],
+      trainee_id2no:{},
 
       first_choose: '',
       periods: [],
@@ -227,10 +288,12 @@ export default {
   methods:{
     list() {
       var that=this
-      api.getTempTasks({
+      var params = {
+        module: 'tmp_task_list',
         page: that.index-1,
         size: that.pageSize
-      }).then( res => {
+      }
+      api.getTempTasks(this.$user.userId,params).then( res => {
         that.response=res
         that.tableData=[]
         for(var i=0;i<res._embedded.tmpTasks.length;i++)
@@ -249,7 +312,7 @@ export default {
       })
     },
     addTask() {
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''||this.taskData.trainers.length==0||this.taskData.trainees.length==0){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -263,6 +326,8 @@ export default {
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
           // order: this.taskData.order,
+          trainees: this.taskData.trainees,
+          trainers: this.taskData.trainers,
           signInNumber: null,
           signOutNumber: null
         }).then( res => {
@@ -313,6 +378,46 @@ export default {
             var classroom_id=temp[temp.length-1]
             that.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
           }
+        }
+      })
+      api3.getTrainee().then( res => {
+        that.people_data=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          for(var i=0;i<res._embedded.hashMaps.length;i++)
+          {
+            that.people_data.push({label:res._embedded.hashMaps[i].name,key:res._embedded.hashMaps[i].id})
+            that.trainee_id2no[res._embedded.hashMaps[i].id]=i
+          }
+        }
+      })
+      api3.getTrainer().then( res => {
+        that.teacher_data=[]
+        for(var i=0;i<res._embedded.hashMaps.length;i++)
+        {
+          that.teacher_data.push({label:res._embedded.hashMaps[i].name,value:res._embedded.hashMaps[i].id})
+        }
+      })
+      api3.getTraineeGroup().then( res => {
+        that.group_data=[]
+        if(res.hasOwnProperty('_embedded'))
+        {
+          var no=0
+          for(var i=0;i<res._embedded.hashMaps.length;i++)
+          {
+            if(res._embedded.hashMaps[i].users.length>0){
+              that.group_data.push({
+                no:no,
+                label:res._embedded.hashMaps[i].name,
+                key:res._embedded.hashMaps[i].group_id,
+                users:res._embedded.hashMaps[i].users,
+                isIndeterminate:false,
+                isCheckAll:false,
+                selection:[]
+              })
+              no=no+1
+            }
+          }   
         }
       })
     },
@@ -461,6 +566,89 @@ export default {
     },
     index_change(){
       this.list()
+    },
+    handleGroupChange(gno){
+      if(this.group_data[gno].isIndeterminate)
+      {
+        this.group_data[gno].isIndeterminate=false
+      }
+      var users=this.group_data[gno].users
+      if(this.group_data[gno].isCheckAll)
+      {
+        this.group_data[gno].selection=[]
+        users.forEach(user => {
+          this.group_data[gno].selection.push(user)
+        });
+      }
+      else
+      {
+        this.group_data[gno].selection=[]
+      }
+      users.forEach(user => {
+        this.$refs.traineeTable.toggleRowSelection(this.people_data[this.trainee_id2no[user]],this.group_data[gno].isCheckAll);
+        this.traineeChange(user,this.group_data[gno].isCheckAll,gno)
+      });
+      //console.log(this.group_data[gno].selection)
+    },
+    handleSelectionChange(selection){
+      this.taskData.trainees=[]
+      for(var i=0;i<selection.length;i++)
+      {
+        this.taskData.trainees.push(selection[i].key)
+      }
+    },
+    handleTraineeChange(selection, row){
+      this.traineeChange(row.key,selection.indexOf(row)>=0)
+    },
+    handleTraineeAll(selection){
+      for(var i=0;i<this.people_data.length;i++)
+      {
+        this.traineeChange(this.people_data[i].key,selection.length!=0)
+      }
+      // for(var j=0;j<this.group_data.length;j++)
+      // {
+      //   console.log(this.group_data[j].label,this.group_data[j].selection)
+      // }
+    },
+    traineeChange(id,isselect,skip_gno=-1){
+      for(var i=0;i<this.group_data.length;i++)
+      {
+        if(i==skip_gno)
+        {
+          continue
+        }
+        if(this.group_data[i].users.indexOf(id)>=0)
+        {
+          if(isselect&&this.group_data[i].selection.indexOf(id)==-1)
+          {
+            this.group_data[i].selection.push(id)
+            if(this.group_data[i].selection.length==this.group_data[i].users.length)
+            {
+              this.group_data[i].isIndeterminate=false
+              this.group_data[i].isCheckAll=true
+            }
+            else
+            {
+              this.group_data[i].isIndeterminate=true
+              this.group_data[i].isCheckAll=false
+            }
+          }
+          if(!isselect&&this.group_data[i].selection.indexOf(id)>=0)
+          {
+            this.group_data[i].selection.splice(this.group_data[i].selection.indexOf(id),1)
+            if(this.group_data[i].selection.length==0)
+            {
+              this.group_data[i].isIndeterminate=false
+              this.group_data[i].isCheckAll=false
+            }
+            else
+            {
+              this.group_data[i].isIndeterminate=true
+              this.group_data[i].isCheckAll=false
+            }
+          }
+        }
+      }
     }
   }
 }

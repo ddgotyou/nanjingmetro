@@ -465,9 +465,9 @@ export default {
       })
       api3.getTrainer().then( res => {
         that.teacher_data=[]
-        for(var i=0;i<res._embedded.trainerVoes.length;i++)
+        for(var i=0;i<res._embedded.hashMaps.length;i++)
         {
-          that.teacher_data.push({label:res._embedded.trainerVoes[i].name,value:res._embedded.trainerVoes[i].id})
+          that.teacher_data.push({label:res._embedded.hashMaps[i].name,value:res._embedded.hashMaps[i].id})
         }
       })
       api3.getTraineeGroup().then( res => {

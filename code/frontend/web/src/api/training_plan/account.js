@@ -12,7 +12,7 @@ function getTrainee() {
 }
 function getTrainer() {
     return request({
-        url: '/tms-account/users/getTrainer',
+        url: 'tms-account/users/getAllTrainerInPlan',
         method: 'get'
     })
 }
