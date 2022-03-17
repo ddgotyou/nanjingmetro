@@ -43,9 +43,9 @@ function edit(userId, id, data) {
 }
 
 // 删除角色
-function del(id) {
+function del(userId, id) {
   return request({
-    url: '/system/role/' + id,
+    url: '/tms-account/role/deleteRole/' + id + '?myUserId=' + userId,
     method: 'delete'
   })
 }

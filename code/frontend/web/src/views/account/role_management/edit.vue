@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-card class="card-box" style="width: 100%">
-      <el-form ref="form" :model="form" label-width="auto">
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto">
         <el-row :gutter="20">
           <el-col :span="12">
             <!-- 基本信息卡片 -->
@@ -11,7 +11,7 @@
               </div>
               <el-col :span="22">
                 <!-- 名称 -->
-                <el-form-item label="名称">
+                <el-form-item label="名称" prop="name">
                   <el-input v-model="form.name"></el-input>
                 </el-form-item>
                 <!-- 权限模板 -->
@@ -133,6 +133,17 @@ export default {
       selection: {
         roles: [],
       },
+
+      rules: {
+        name: [
+          {
+            type: "string",
+            required: true,
+            message: "请输入名称",
+            trigger: "blur",
+          },
+        ],
+      },
     };
   },
   mounted: function () {
@@ -156,7 +167,6 @@ export default {
       // 获取角色详情
       api.detail(this.name).then((response) => {
         this.form = response;
-        console.log(this.form);
         if (this.form.authTemplate) this.handleChange();
       });
     },
@@ -175,6 +185,19 @@ export default {
           // 检查是否改动了权限模板
           if (!compare(this.authority, this.form.authority))
             this.form.authTemplate = null;
+
+          // 检查权限模板是否有空项
+          let flag = false;
+          for (let level1 in this.form.authority) {
+            let dict = this.form.authority[level1];
+            for (let level2 in dict) {
+              if (!dict[level2]) flag = true;
+            }
+          }
+          if (flag) {
+            this.$message.warning("请选择未选的权限项！");
+            return;
+          }
 
           // console.log(this.form);
           api.edit(this.$user.userId, this.id, this.form).then((response) => {

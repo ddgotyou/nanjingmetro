@@ -16,7 +16,11 @@
                 </el-form-item>
                 <!-- 用户组类型 -->
                 <el-form-item label="用户组类型">
-                  <el-select v-model="form.roleType" placeholder="请选择">
+                  <el-select
+                    v-model="form.roleType"
+                    placeholder="请选择"
+                    @change="handleChangeType"
+                  >
                     <el-option
                       v-for="type in selection.types"
                       :key="type.key"
@@ -130,12 +134,11 @@ import * as api from "@/api/account/user_group";
 import * as user from "@/api/account/user";
 import * as role from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
-import AuthRadioGroup from "@/views/components/AuthRadioGroup.vue";
+import { clone, compare } from "@/utils/object";
 
 export default {
   components: {
     AuthCard,
-    AuthRadioGroup,
   },
   data: function () {
     return {
@@ -194,7 +197,7 @@ export default {
       },
 
       // 模板的权限表
-      template: {},
+      authority: {},
 
       // 表单中的选项值
       selection: {
@@ -253,18 +256,33 @@ export default {
           let user = this.usersOptional.find(
             (element) => element.value === this.form.users[i]
           );
-          this.usersAdded.push(user.key);
+          if (user) this.usersAdded.push(user.key);
         }
+        // 处理用户
+        if (!this.form.users) this.form.users = [];
       });
+    },
+    // 用户类型发生改变
+    handleChangeType(value) {
+      switch (value) {
+        case "管理员":
+          this.form.authTemplate = "管理员";
+          break;
+        case "讲师":
+          this.form.authTemplate = "讲师";
+          break;
+        case "学员":
+          this.form.authTemplate = "学员";
+          break;
+      }
+      this.handleChangeRole(this.form.authTemplate);
     },
     // 权限模板发生改变
     handleChangeRole(value) {
       // 返回对应 ID 的角色的详细信息
-      role.detail(this.form.authTemplate).then((response) => {
-        // 将权限模板填充到对应表单
-        this.form.authority = response.authority;
-        // 保存原模板
-        this.template = response.authority;
+      role.detail(value).then((response) => {
+        this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
+        this.authority = clone(response.authority); // 记录原权限模板
       });
     },
     // 用户组的用户发生改变
@@ -291,7 +309,7 @@ export default {
             (element) => element.key === movedKeys[i]
           );
           // 将用户名添加到表单的 users 数组中
-          this.form.users.push(user.value);
+          if (user) this.form.users.push(user.value);
         }
       }
     },
@@ -310,17 +328,26 @@ export default {
     },
     // 提交编辑表单
     onSubmit() {
-      // 处理权限模板是否做出了修改
-      if (this.form.authority === this.template) {
-        this.form.authTemplate = null;
-      }
-      // 处理用户
-      if (!this.form.users) this.form.users = [];
-      console.log(this.form);
-
       this.$refs["form"].validate((valid) => {
         if (valid) {
-          api.edit(this.id, this.form).then((response) => {
+          // 检查是否改动了权限模板
+          if (!compare(this.authority, this.form.authority))
+            this.form.authTemplate = null;
+
+          // 检查权限模板是否有空项
+          let flag = false;
+          for (let level1 in this.form.authority) {
+            let dict = this.form.authority[level1];
+            for (let level2 in dict) {
+              if (!dict[level2]) flag = true;
+            }
+          }
+          if (flag) {
+            this.$message.warning("请选择未选的权限项！");
+            return;
+          }
+
+          api.edit(this.$user.userId, this.id, this.form).then((response) => {
             if (response.code === 200) {
               this.$message.success("编辑成功！");
               this.onCancel();
