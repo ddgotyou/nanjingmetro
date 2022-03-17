@@ -85,7 +85,7 @@
             </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
-              <el-select v-model="form.post" filterable allow-create>
+              <el-select v-model="form.post" multiple filterable allow-create>
                 <el-option
                   v-for="item in selection.post"
                   :key="item.key"
@@ -134,7 +134,7 @@ export default {
         usergroup: [],
         dept: [],
         leader: [],
-        post: null,
+        post: [],
         type: "", // 必填
       },
 

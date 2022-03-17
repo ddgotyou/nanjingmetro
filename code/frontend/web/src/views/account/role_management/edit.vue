@@ -156,7 +156,7 @@ export default {
       // 获取角色详情
       api.detail(this.name).then((response) => {
         this.form = response;
-        // console.log(this.form);
+        console.log(this.form);
         if (this.form.authTemplate) this.handleChange();
       });
     },
