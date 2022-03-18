@@ -41,28 +41,6 @@ module.exports = {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
       },
-      '/monitor': {
-        target: 'http://10.8.0.1:8081',
-        changeOrigin: true,
-        secure: false,
-        pathRewrite: {
-          ['^' + '/monitor']: ''
-        }
-      },
-   //   '/ip': {
-   //     target: 'http://10.8.0.1:8081',
-   //     changeOrigin: true,
-   //     secure: false,
-   //     pathRewrite: {}
-   //   },
-   //   "/cam": {
-   //     target: `http://10.8.0.1:8081`,
-   //     changeOrigin: true
-   //   },
-      "/rtsp": {
-        target: `http://10.8.0.1:8081`,
-        changeOrigin: true
-      },
     },
     disableHostCheck: true
   },
