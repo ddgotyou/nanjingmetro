@@ -331,7 +331,7 @@ export default {
     list() {
       var that=this
       var params = {
-        module: 'tmp_task_list',
+        module: 'tmp_task_edit',
         page: that.index-1,
         size: that.pageSize
       }
