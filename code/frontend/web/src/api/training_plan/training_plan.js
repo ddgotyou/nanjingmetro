@@ -114,6 +114,13 @@ function deleteTempTask(id){
         method: 'delete'
     })
 }
+function updateTempTask(id,data){
+    return request({
+        url: '/training-plan/tmpTasks/'+id,
+        method: 'put',
+        data: data
+    })
+}
 
 export{
     plans,
@@ -131,5 +138,6 @@ export{
     findAvailableTime,
     getTempTasks,
     addTempTask,
-    deleteTempTask
+    deleteTempTask,
+    updateTempTask
 }

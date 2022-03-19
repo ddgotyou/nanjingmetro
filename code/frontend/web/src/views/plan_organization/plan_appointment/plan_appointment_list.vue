@@ -190,24 +190,38 @@
             prop="classroom"
             label="教室"
           />
+            <el-table-column
+            label="讲师"
+          >
+            <template slot-scope="scope">
+              <el-select value="" filterable placeholder="搜索">
+                <el-option
+                  v-for="item in scope.row.trainers"
+                  :key="item.user"
+                  :label="item.username"
+                  :value="item.user">
+                </el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="学员"
+          >
+            <template slot-scope="scope">
+              <el-select value="" filterable placeholder="搜索">
+                <el-option
+                  v-for="item in scope.row.trainees"
+                  :key="item.user"
+                  :label="item.username"
+                  :value="item.user">
+                </el-option>
+              </el-select>
+            </template>
+          </el-table-column>
           <el-table-column
             prop="description"
             label="描述"
           />
-          <el-table-column
-            label="操作"
-            width="120"
-          >
-            <template slot-scope="scope">
-              <el-button
-                type="text"
-                size="small"
-                @click.native.prevent="deleteRow(scope.$index, tableData)"
-              >
-                移除
-              </el-button>
-            </template>
-          </el-table-column>
         </el-table>
         <el-pagination style="text-align: center"
           layout="total, sizes, prev, pager, next, jumper"
@@ -306,7 +320,9 @@ export default {
             endTime:res._embedded.tmpTasks[i].endTime,
             type:res._embedded.tmpTasks[i].type,
             classroom:res._embedded.tmpTasks[i].classroom,
-            description:res._embedded.tmpTasks[i].description
+            description:res._embedded.tmpTasks[i].description,
+            trainers:res._embedded.tmpTasks[i].trainers,
+            trainees:res._embedded.tmpTasks[i].trainees
           })
         }
       })
@@ -339,12 +355,6 @@ export default {
         })
       }
       
-    },
-    deleteRow(index, tableData) {
-      api.deleteTempTask(this.tableData[index].id).then( res => {
-        this.index=0
-        this.list()
-      })
     },
     getSelection() {
       let that=this
