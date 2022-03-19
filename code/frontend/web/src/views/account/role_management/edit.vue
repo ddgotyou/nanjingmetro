@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-card class="card-box" style="width: 100%">
-      <el-form ref="form" :model="form" label-width="auto">
+      <el-form ref="form" :model="form" :rules="rules" label-width="auto">
         <el-row :gutter="20">
           <el-col :span="12">
             <!-- 基本信息卡片 -->
@@ -11,7 +11,7 @@
               </div>
               <el-col :span="22">
                 <!-- 名称 -->
-                <el-form-item label="名称">
+                <el-form-item label="名称" prop="name">
                   <el-input v-model="form.name"></el-input>
                 </el-form-item>
                 <!-- 权限模板 -->
@@ -76,6 +76,7 @@ export default {
   data: function () {
     return {
       // 角色 ID
+      name: null,
       id: null,
 
       // 编辑表单
@@ -98,7 +99,8 @@ export default {
             planApproval: "", // 计划审批
             planImpl: "", // 计划实现
             planQuery: "", // 计划查询
-            taskAppoint: "", // 任务预约
+            tmpTaskList: "", // 临时任务列表
+            tmpTaskEdit: "", // 临时任务编辑
             scoreTemplate: "", // 打分模板
           },
           // 培训过程监控
@@ -125,16 +127,29 @@ export default {
           },
         },
       },
+      authority: "",
 
       // 表单中的选择值
       selection: {
         roles: [],
       },
+
+      rules: {
+        name: [
+          {
+            type: "string",
+            required: true,
+            message: "请输入名称",
+            trigger: "blur",
+          },
+        ],
+      },
     };
   },
   mounted: function () {
-    // 保存上一级菜单传递的角色 ID
+    // 保存上一级菜单传递的角色 ID 和名称
     this.id = this.$route.query.id;
+    this.name = this.$route.query.name;
     // 加载数据
     this.loadData();
   },
@@ -145,36 +160,46 @@ export default {
       api.list(this.$user.userId, 0, 1000).then((response) => {
         this.selection.roles = response._embedded.groupVoes.map(
           (element, index) => {
-            return {
-              key: index,
-              value: String(element.id),
-              label: element.name,
-            };
+            return { key: index, value: element.name, label: element.name };
           }
         );
       });
       // 获取角色详情
-      api.detail(this.id).then((response) => {
+      api.detail(this.name).then((response) => {
         this.form = response;
-        console.log(this.form);
-        if (this.form.authTemplate) {
-          api.detail(this.form.authTemplate).then((response) => {
-            this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
-          });
-        }
+        if (this.form.authTemplate) this.handleChange();
       });
     },
     // 权限模板发生改变
-    handleChange(value) {
+    handleChange() {
       // 返回对应 ID 的角色的详细信息
       api.detail(this.form.authTemplate).then((response) => {
         this.form.authority = clone(response.authority); // 将权限模板填充到对应表单
+        this.authority = clone(response.authority); // 记录原权限模板
       });
     },
     // 提交编辑表单
     onSubmit() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
+          // 检查是否改动了权限模板
+          if (!compare(this.authority, this.form.authority))
+            this.form.authTemplate = null;
+
+          // 检查权限模板是否有空项
+          let flag = false;
+          for (let level1 in this.form.authority) {
+            let dict = this.form.authority[level1];
+            for (let level2 in dict) {
+              if (!dict[level2]) flag = true;
+            }
+          }
+          if (flag) {
+            this.$message.warning("请选择未选的权限项！");
+            return;
+          }
+
+          // console.log(this.form);
           api.edit(this.$user.userId, this.id, this.form).then((response) => {
             if (response.code === 200) {
               this.$message.success("编辑成功！");

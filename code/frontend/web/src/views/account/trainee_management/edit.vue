@@ -61,7 +61,6 @@
                 filterable
                 allow-create
                 multiple
-                collapse-tags
                 @change="handleChange"
               >
                 <el-option
@@ -74,12 +73,7 @@
             </el-form-item>
             <!-- 组长 -->
             <el-form-item label="组长">
-              <el-select
-                v-model="form.leader"
-                multiple
-                collapse-tags
-                placeholder="不是组长"
-              >
+              <el-select v-model="form.leader" multiple placeholder="不是组长">
                 <el-option
                   v-for="item in selection.leader"
                   :key="item.key"
@@ -91,7 +85,7 @@
             </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
-              <el-select v-model="form.post" filterable allow-create>
+              <el-select v-model="form.post" multiple filterable allow-create>
                 <el-option
                   v-for="item in selection.post"
                   :key="item.key"
@@ -161,7 +155,7 @@ export default {
         idcard: "", // 必填
         dept: [],
         leader: [],
-        post: null,
+        post: [],
         edu: null,
         major: null,
         type: "", // 必填
@@ -299,6 +293,7 @@ export default {
               this.onCancel();
             })
             .catch((error) => {
+              // console.log(error);
               // this.$message.error(error.response.data);
             });
         } else {

@@ -220,7 +220,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .del(this.selection[i].id)
+              .del(this.$user.userId, this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });

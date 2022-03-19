@@ -230,7 +230,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .del(this.selection[i].id)
+              .del(this.$user.userId, this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });
@@ -258,7 +258,7 @@ export default {
     handleEdit(index) {
       this.$router.push({
         path: "/account/edit-role",
-        query: { id: this.list[index].id },
+        query: { id: this.list[index].id, name: this.list[index].name },
       });
     },
     // 当选中角色更改时，更新选中角色的列表

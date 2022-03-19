@@ -203,6 +203,7 @@
 <script>
 import * as api from "@/api/account/trainer";
 import * as sel from "@/api/account/selection";
+import { auth } from "@/api/auth";
 import JsonExcel from "vue-json-excel";
 
 export default {
@@ -474,10 +475,15 @@ export default {
     },
     // 编辑某个讲师
     handleEdit(index) {
-      let id = this.list[index].id;
-      this.$router.push({
-        path: "/account/edit-trainer",
-        query: { id: id },
+      auth(this.$user.userId, "tchMgt").then((response) => {
+        if (response.msg === "view") {
+          this.$message.success("你没有编辑权限！");
+        } else {
+          this.$router.push({
+            path: "/account/edit-trainer",
+            query: { id: this.list[index].id },
+          });
+        }
       });
     },
     // 查看某个讲师详情

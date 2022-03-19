@@ -209,6 +209,7 @@
 <script>
 import * as api from "@/api/account/trainee";
 import * as sel from "@/api/account/selection";
+import { auth } from "@/api/auth";
 import JsonExcel from "vue-json-excel";
 
 export default {
@@ -504,9 +505,15 @@ export default {
     },
     // 编辑某个学员
     handleEdit(index) {
-      this.$router.push({
-        path: "/account/edit-trainee",
-        query: { id: this.list[index].id },
+      auth(this.$user.userId, "stuMgt").then((response) => {
+        if (response.msg === "view") {
+          this.$message.success("你没有编辑权限！");
+        } else {
+          this.$router.push({
+            path: "/account/edit-trainee",
+            query: { id: this.list[index].id },
+          });
+        }
       });
     },
     // 查看某个学员详情

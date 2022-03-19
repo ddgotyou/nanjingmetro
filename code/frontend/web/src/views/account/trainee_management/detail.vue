@@ -48,7 +48,7 @@
             </el-form-item>
             <!-- 岗位 -->
             <el-form-item label="岗位">
-              <el-input :value="form.post" :readonly="true"></el-input>
+              <el-input :value="getPost" :readonly="true"></el-input>
             </el-form-item>
             <!-- 学历 -->
             <el-form-item label="学历">
@@ -101,7 +101,7 @@ export default {
         usergroup: [],
         dept: [],
         leader: [],
-        post: null,
+        post: [],
         edu: null,
         major: null,
         status: null,
@@ -123,6 +123,10 @@ export default {
     // 将组长数组转换为字符串
     getLeader() {
       return this.form.leader.join("，");
+    },
+    // 将岗位数组转换为字符串
+    getPost() {
+      return this.form.post.join("，");
     },
     // 将用户组数组转换为字符串
     getUserGroup() {
