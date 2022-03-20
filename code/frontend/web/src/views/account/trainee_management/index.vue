@@ -81,6 +81,7 @@
           <div style="float: left">
             <!-- 新增按钮 -->
             <el-button
+              :disabled="perm.add"
               plain
               type="primary"
               icon="el-icon-plus"
@@ -89,6 +90,7 @@
             >
             <!-- 删除按钮 -->
             <el-button
+              :disabled="perm.delete"
               plain
               type="danger"
               icon="el-icon-delete"
@@ -167,8 +169,12 @@
             {{ getDept(scope.row.dept) }}
           </template>
         </el-table-column>
-        <el-table-column prop="post" label="岗位" width="" align="center" />
-        <el-table-column prop="edu" label="学历" width="" align="center" />
+        <el-table-column label="岗位" width="" align="center">
+          <template slot-scope="scope">
+            {{ getPost(scope.row.post) }}
+          </template>
+        </el-table-column>
+        <el-table-column psrop="edu" label="学历" width="" align="center" />
         <el-table-column prop="major" label="专业" width="" align="center" />
         <el-table-column label="学员状态" width="" align="center">
           <template slot-scope="scope">
@@ -178,13 +184,17 @@
         <el-table-column prop="enabled" label="操作" align="center">
           <template slot-scope="scope">
             <!-- 单条详情按钮 -->
-            <el-button type="text" @click="handleDetail(scope.$index)"
-              >详情</el-button
-            >
+            <el-button type="text" @click="handleDetail(scope.$index)">
+              详情
+            </el-button>
             <!-- 单条编辑按钮 -->
-            <el-button type="text" @click="handleEdit(scope.$index)"
-              >编辑</el-button
+            <el-button
+              :disabled="perm.edit"
+              type="text"
+              @click="handleEdit(scope.$index)"
             >
+              编辑
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -211,6 +221,7 @@ import * as api from "@/api/account/trainee";
 import * as sel from "@/api/account/selection";
 import { auth } from "@/api/auth";
 import JsonExcel from "vue-json-excel";
+import Template from "../../plan_organization/pad/template.vue";
 
 export default {
   components: {
@@ -218,6 +229,13 @@ export default {
   },
   data: function () {
     return {
+      // 权限
+      perm: {
+        add: false,
+        delete: false,
+        edit: false,
+      },
+
       // 导出Excel表格的表头设置
       fields: {
         姓名: "name",
@@ -327,6 +345,13 @@ export default {
   },
   mounted: function () {
     this.loadData();
+    auth(this.$user.userId, "stuMgt").then((response) => {
+      if (response.msg === "view") {
+        this.perm.add = true;
+        this.perm.delete = true;
+        this.perm.edit = true;
+      }
+    });
   },
   methods: {
     // 学员列表
@@ -396,6 +421,10 @@ export default {
     // 将部门数组转换为字符串
     getDept(dept) {
       return dept.join("，");
+    },
+    // 将岗位数组转换为字符串
+    getPost(post) {
+      return post.join("，");
     },
     // 将“0/1”转换为“正式/临时”
     getStatus(status) {
@@ -505,15 +534,9 @@ export default {
     },
     // 编辑某个学员
     handleEdit(index) {
-      auth(this.$user.userId, "stuMgt").then((response) => {
-        if (response.msg === "view") {
-          this.$message.success("你没有编辑权限！");
-        } else {
-          this.$router.push({
-            path: "/account/edit-trainee",
-            query: { id: this.list[index].id },
-          });
-        }
+      this.$router.push({
+        path: "/account/edit-trainee",
+        query: { id: this.list[index].id },
       });
     },
     // 查看某个学员详情
