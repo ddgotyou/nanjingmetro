@@ -94,8 +94,8 @@
         <el-table-column prop="enabled" label="操作" align="center">
           <template slot-scope="scope">
             <el-button type="text" @click="handleEdit(scope.$index)">
-              编辑</el-button
-            >
+              编辑
+            </el-button>
           </template>
         </el-table-column>
       </el-table>

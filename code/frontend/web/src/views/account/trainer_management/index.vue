@@ -81,20 +81,24 @@
           <div style="float: left">
             <!-- 新增按钮 -->
             <el-button
+              :disabled="perm.add"
               plain
               type="primary"
               icon="el-icon-plus"
               @click="handleAdd"
-              >新增</el-button
             >
+              新增
+            </el-button>
             <!-- 删除按钮 -->
             <el-button
+              :disabled="perm.delete"
               plain
               type="danger"
               icon="el-icon-delete"
               @click="handleDelete"
-              >删除</el-button
             >
+              删除
+            </el-button>
             <!-- 导入按钮 -->
             <el-button
               plain
@@ -163,7 +167,11 @@
             {{ getDept(scope.row.dept) }}
           </template>
         </el-table-column>
-        <el-table-column prop="post" label="岗位" width="" align="center" />
+        <el-table-column label="岗位" width="" align="center">
+          <template slot-scope="scope">
+            {{ getPost(scope.row.post) }}
+          </template>
+        </el-table-column>
         <el-table-column label="讲师状态" width="" align="center">
           <template slot-scope="scope">
             {{ getStatus(scope.row.type) }}
@@ -172,13 +180,17 @@
         <el-table-column prop="enabled" label="操作" align="center">
           <template slot-scope="scope">
             <!-- 单条详情按钮 -->
-            <el-button type="text" @click="handleDetail(scope.$index)"
-              >详情</el-button
-            >
+            <el-button type="text" @click="handleDetail(scope.$index)">
+              详情
+            </el-button>
             <!-- 单条编辑按钮 -->
-            <el-button type="text" @click="handleEdit(scope.$index)"
-              >编辑</el-button
+            <el-button
+              :disabled="perm.edit"
+              type="text"
+              @click="handleEdit(scope.$index)"
             >
+              编辑
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -212,6 +224,13 @@ export default {
   },
   data: function () {
     return {
+      // 权限
+      perm: {
+        add: false,
+        delete: false,
+        edit: false,
+      },
+
       // 导出Excel表格的表头设置
       fields: {
         姓名: "name",
@@ -304,6 +323,13 @@ export default {
   },
   mounted: function () {
     this.loadData();
+    auth(this.$user.userId, "stuMgt").then((response) => {
+      if (response.msg === "view") {
+        this.perm.add = true;
+        this.perm.delete = true;
+        this.perm.edit = true;
+      }
+    });
   },
   methods: {
     // 学员列表
@@ -366,6 +392,10 @@ export default {
     // 将部门数组转换为字符串
     getDept(dept) {
       return dept.join("，");
+    },
+    // 将岗位数组转换为字符串
+    getPost(post) {
+      return post.join("，");
     },
     // 将“0/1”转换为“正式/临时”
     getStatus(status) {

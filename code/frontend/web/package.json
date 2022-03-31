@@ -38,7 +38,7 @@
     "clipboard": "2.0.6",
     "core-js": "3.8.1",
     "echarts": "4.9.0",
-    "element-ui": "2.15.0",
+    "element-ui": "^2.15.0",
     "file-saver": "2.0.4",
     "fuse.js": "6.4.3",
     "highlight.js": "9.18.5",
@@ -52,11 +52,11 @@
     "vue": "2.6.12",
     "vue-count-to": "1.0.13",
     "vue-cropper": "0.5.5",
+    "vue-json-excel": "^0.3.0",
     "vue-router": "3.4.9",
     "vuedraggable": "2.24.3",
     "vuex": "3.6.0",
-    "xlsx": "^0.17.4",
-    "vue-json-excel": "^0.3.0"
+    "xlsx": "^0.17.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.4.6",

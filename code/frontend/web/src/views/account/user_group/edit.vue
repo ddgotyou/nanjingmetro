@@ -252,6 +252,7 @@ export default {
       // 获取用户组详情
       await api.detail(this.id).then((response) => {
         this.form = response;
+        console.log(this.form);
         for (let i in this.form.users) {
           let user = this.usersOptional.find(
             (element) => element.value === this.form.users[i]
@@ -259,6 +260,8 @@ export default {
           if (user) this.usersAdded.push(user.key);
         }
         // 处理用户
+        if (this.form.authTemplate)
+          this.handleChangeRole(this.form.authTemplate);
         if (!this.form.users) this.form.users = [];
       });
     },
