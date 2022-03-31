@@ -560,6 +560,7 @@ export default {
       })
     },
     save() {
+      console.log(this.formData.trainers)
       this.dialogFormVisible = false;
       var data={
         name: this.formData.name,
@@ -573,11 +574,11 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.trainers,
+        trainers: this.formData.teachers,
         tasks: this.tableData,
         //user: this.$user.userId
       }
-      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||!data.hasOwnProperty('trainees')||data.trainees.length==0){
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||!data.hasOwnProperty('trainees')||data.trainees.length==0||data.trainers.length==0){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -605,7 +606,7 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.trainers,
+        trainers: this.formData.teachers,
         tasks: this.tableData,
         //user: this.$user.userId
       }
@@ -615,7 +616,7 @@ export default {
         auditors.push(this.approvers_res[this.popData.approver[i]].id)
       }
       data.auditors=auditors
-      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.trainers.length==0||data.auditors.length==0){
         this.$message.error('表单内存在空值！');
       }
       else{
