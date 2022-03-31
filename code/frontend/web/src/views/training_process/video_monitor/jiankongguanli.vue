@@ -1,16 +1,16 @@
 <template>
   <div class="app-container">
     <el-row>
-      <el-col :span="11">
+      <el-col :span="12">
         <el-card class="box-card" style="margin:10px">
           <div slot="header">
             监控管理
-            <el-button type="primary" @click="edit" style="margin-left:30px">
+            <el-button type="text" @click="edit" style="margin-left:30px">
               监控查看</el-button
             >
           </div>
           <div style="margin:15px;margin-bottom:20px">
-            摄像头：
+            选择摄像头
             <el-select
               size="medium"
               v-model="cameraIpSelected"
@@ -29,13 +29,15 @@
           <div style="margin-left:20px">
             <el-button type="primary" @click="show">显示</el-button>
             <el-button @click="terminate">关闭</el-button>
-            <el-button @click="remoteShutdown">终止服务器推流</el-button>
           </div>
           <div style="margin-left:20px;margin-top:20px">
-            <el-button type="primary" @click="connectAllCamera">开启推流</el-button>
-            <span style="margin-left:10px;display:inline-block"
-              >websocket:</span
+            <el-button type="primary" @click="connectAllCamera"
+              >开启推流</el-button
             >
+            <el-button type="warning" @click="remoteShutdown"
+              >关闭推流</el-button
+            >
+            <span class="span-in-card">websocket:</span>
             <el-input
               :style="{ width: '300px', margin: '5px' }"
               v-model="wsurl"
@@ -45,44 +47,58 @@
           <el-divider content-position="left">配置</el-divider>
           <div style="margin-left:20px;margin-top:10px">
             <div>
-              <span style="margin-left:10px;display:inline-block"
-                >账号：
+              <span class="span-in-card"
+                >账号
                 <el-input
-                  :style="{ width: '200px', margin: '5px' }"
+                  class="input-in-card"
                   v-model="cameraToAdd.admin"
                   placeholder="账号"
                 ></el-input>
               </span>
-              <span style="margin-left:10px;display:inline-block"
-                >密码：
+              <span class="span-in-card"
+                >密码
                 <el-input
-                  :style="{ width: '200px', margin: '5px' }"
+                  class="input-in-card"
                   v-model="cameraToAdd.password"
                   placeholder="密码"
                 ></el-input
               ></span>
             </div>
             <div>
-              <span style="margin-left:10px;display:inline-block"
-                >地址：
+              <span class="span-in-card"
+                >地址
                 <el-input
-                  :style="{ width: '200px', margin: '5px' }"
+                  class="input-in-card"
                   v-model="cameraToAdd.ipport"
                   placeholder="ip和端口"
                 ></el-input>
               </span>
-              <span style="margin-left:10px;display:inline-block"
-                >接口：
+              <span class="span-in-card"
+                >接口
                 <el-input
-                  :style="{ width: '200px', margin: '5px' }"
+                  class="input-in-card"
                   v-model="cameraToAdd.wsurl"
                   placeholder="wsurl"
                 ></el-input>
+                <el-popover
+                  placement="top-start"
+                  width="150"
+                  trigger="hover"
+                  content="必须以live开头,不可带有空格,建议设置为live0,live1,live2..."
+                >
+                  <el-button
+                    type="info"
+                    plain
+                    circle
+                    icon="el-icon-question"
+                    slot="reference"
+                  />
+                </el-popover>
               </span>
-              <span style="margin-left:10px;display:inline-block"
-                >分组：
+              <span class="span-in-card"
+                >分组
                 <el-input
-                  :style="{ width: '200px', margin: '5px' }"
+                  class="input-in-card"
                   v-model="cameraToAdd.camgroup"
                   placeholder="group"
                 ></el-input>
@@ -92,31 +108,45 @@
               :style="{ marginTop: '10px' }"
               type="primary"
               @click="addCam"
-              >添加摄像头配置</el-button
+              >添加摄像头</el-button
             >
           </div>
           <div style="margin-left:20px;margin-top:10px">
             <el-input
-              :style="{ width: '200px', margin: '5px' }"
+              class="input-in-card"
               v-model="cameraToDel.id"
               placeholder="输入id删除摄像头"
             ></el-input>
-            <el-button type="primary" @click="delCam">删除</el-button>
+            <el-button type="warning" @click="delCam">删除</el-button>
           </div>
         </el-card>
         <el-card class="box-card" style="margin:10px">
           <el-table :data="cameraIpResult">
-            <el-table-column prop="id" label="ID" />
+            <el-table-column prop="id" label="ID" width="40" />
             <el-table-column prop="admin" label="账号" />
-            <el-table-column prop="password" label="密码" />
-            <el-table-column prop="ipport" label="IP地址" />
+            <el-table-column prop="password" label="密码" width="100" />
+            <el-table-column prop="ipport" label="IP地址" width="150" />
             <el-table-column prop="wsurl" label="连接url" />
             <el-table-column prop="camgroup" label="分组" />
+            <el-table-column label="操作" width="120">
+              <template slot-scope="scope">
+                <el-button
+                  type="text"
+                  size="small"
+                  @click="delCamButton(scope.row.id)"
+                  >删除</el-button
+                >
+              </template>
+            </el-table-column>
           </el-table>
         </el-card>
       </el-col>
       <el-col :span="11" :style="{ margin: '20px' }">
-        <canvas style="height:450px;width:600px;" id="CamPlayer_1"></canvas>
+        <canvas
+          class="canvas-for-test"
+          id="CamPlayer_1"
+          v-if="ReloadCanvas"
+        ></canvas>
       </el-col>
     </el-row>
   </div>
@@ -136,19 +166,10 @@ export default {
   data() {
     return {
       canvas: null,
-      wsurl: "ws://139.224.212.195:8081/",
+      wsurl: "ws://192.168.1.110:8081/", //139.224.212.195
       player_1: null,
       cameraIpSelected: "",
-      cameraIpResult: [
-        //    {
-        //       id: 1,
-        //      admin: "admin",
-        //      password: "admin123",
-        //      ipport: "192.168.1.8:554",
-        //      wsurl: "live0",
-        //      camgroup
-        //    },
-      ],
+      cameraIpResult: [],
       cameraToAdd: {
         admin: "admin",
         password: "admin123",
@@ -156,11 +177,10 @@ export default {
         wsurl: "live0",
         camgroup: "group1"
       },
-      cameraGroup: [],
-      groupId: 0,
       cameraToDel: {
         id: null
-      }
+      },
+      ReloadCanvas: true
     };
   },
   watch: {
@@ -180,13 +200,21 @@ export default {
   },
 
   methods: {
+    delCamButton(id) {
+      let data = { id: id };
+      delCam(data).then(res => {
+        this.$message({
+          message: res
+        });
+        this.getAllCamera();
+      });
+    },
     delCam() {
       let data = { id: this.cameraToDel.id };
       delCam(data).then(res => {
         this.$message({
           message: res
         });
-        //  console.log(res);
         this.getAllCamera();
       });
     },
@@ -205,7 +233,6 @@ export default {
       getAll()
         .then(res => {
           this.cameraIpResult = res;
-          this.processGroup();
         })
         .catch(error => {
           console.log(error);
@@ -214,6 +241,7 @@ export default {
           //  });
         });
     },
+
     connectAllCamera() {
       connectAll()
         .then(res => {
@@ -225,35 +253,10 @@ export default {
         })
         .catch(error => {
           console.log(error);
-          //  this.$message({
-          //    message: error
-          //  });
         });
     },
 
-    processGroup() {
-      var s = this.cameraIpResult.length;
-      var isRepeat = false;
-      for (let i = 0; i < s; i = i + 1) {
-        for (let gd = 0; gd < this.cameraGroup.length; gd = gd + 1) {
-          if (this.cameraGroup[gd].value === this.cameraIpResult[i].camgroup) {
-            isRepeat = true;
-            break;
-          }
-        }
-        if (isRepeat === false) {
-          let pushData = {
-            id: this.groupId,
-            value: this.cameraIpResult[i].camgroup
-          };
-          this.groupId = this.groupId + 1;
-          this.cameraGroup.push(pushData);
-        }
-        isRepeat = false;
-      }
-    },
-
-    show: function() {
+    show() {
       if (this.cameraIpSelected === "") {
         return;
       }
@@ -265,17 +268,23 @@ export default {
         disableGl: true
       });
       if (this.player_1.paused) this.player_1.play();
-      //  console.log(this.player_1);
     },
 
-    terminate: function() {
+    terminate() {
       if (this.player_1 != null) this.player_1.destroy();
       this.player_1 = null;
-      //  console.log(this.player_1);
+      this.reload();
     },
 
     remoteShutdown() {
       turnoff().then(kill());
+    },
+
+    reload() {
+      this.ReloadCanvas = false;
+      this.$nextTick(() => {
+        this.ReloadCanvas = true;
+      });
     },
 
     edit() {
@@ -287,9 +296,18 @@ export default {
 };
 </script>
 <style>
-/*修正下拉框位置*/
-/*.el-select-dropdown {
-    top: 400px !important;
-    left: 500px !important;
-  }*/
+.input-in-card {
+  width: 30vh;
+  margin: 5px;
+}
+.span-in-card {
+  margin-left: 5px;
+  display: inline-block;
+}
+.canvas-for-test {
+  height: 45vh;
+  width: 60vh;
+  background-color: rgba(73, 73, 73, 0.137);
+  border-radius: 5px;
+}
 </style>
