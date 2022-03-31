@@ -76,7 +76,7 @@ export default {
       groupId: 0,
       groupPicked: "",
       cameraIpResult: [],
-      wsurl: "ws://192.168.1.110:8081/", //139.224.212.195
+      wsurl: "ws://139.224.212.195:8081/",
       JsPlayerPool: [],
       DivNum: 15,
       ReloadCanvas: true,

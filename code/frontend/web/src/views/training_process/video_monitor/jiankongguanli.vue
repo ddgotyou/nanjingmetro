@@ -166,7 +166,7 @@ export default {
   data() {
     return {
       canvas: null,
-      wsurl: "ws://192.168.1.110:8081/", //139.224.212.195
+      wsurl: "ws://139.224.212.195:8081/",
       player_1: null,
       cameraIpSelected: "",
       cameraIpResult: [],
