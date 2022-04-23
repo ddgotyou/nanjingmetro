@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 
-
+  var title = '/device'
   //获取设备列表
   function listDevice(query) {
     return request({
-      url: '/device/devices',
+      url: title+'/devices',
       method: 'get',
       params: query
     })
@@ -12,7 +12,7 @@ import request from '@/utils/request'
   //模糊搜索 //to do
   function search(query){
     return request({
-      url: '/device/devices/search/findByConditions',
+      url: title+'/devices/search/findByConditions',
       method: 'get',
       params: query
     })
@@ -20,14 +20,14 @@ import request from '@/utils/request'
   //获取规程下拉框
   function protocols(){
     return request({
-      url: '/device/protocols',
+      url: title+'/protocols',
       method: 'get'
     })
   }
   //新增设备
   function add(data){
     return request({
-      url: '/device/devices',
+      url: title+'/devices',
       method: 'post',
       data: data
     })
@@ -35,7 +35,7 @@ import request from '@/utils/request'
   //删除设备
   function deldevice(data){
     return request({
-      url: '/device/devices',
+      url: title+'/devices',
       method: 'delete',
       params: data
     })
@@ -43,21 +43,21 @@ import request from '@/utils/request'
   //查看设备详情
   function details(id){
     return request({
-      url: '/device/devices/'+id,
+      url: title+'/devices/'+id,
       method: 'get'
     })
   }
   //获取维保信息列表
   function listWorksheet(id){
     return request({
-      url: '/device/worksheets/deviceId/'+id,
+      url: title+'/worksheets/deviceId/'+id,
       method: 'get'
     })
   }
   //修改设备
   function update_device(data,id){
     return request({
-      url: '/device/devices',
+      url: title+'/devices',
       method: 'put',
       data: data,
     })
@@ -65,7 +65,7 @@ import request from '@/utils/request'
   //新增规程
   function addrule(data){
     return request({
-      url: '/device/protocols',
+      url: title+'/protocols',
       method: 'post',
       data: data
     })
@@ -73,7 +73,7 @@ import request from '@/utils/request'
   //新增维保信息
   function addworksheet(data){
     return request({
-      url: '/device/worksheets',
+      url: title+'/worksheets',
       method: 'post',
       data: data
     })

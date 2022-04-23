@@ -69,6 +69,92 @@
         
       </el-dialog>
 
+      <el-dialog :visible.sync="dialogFormVisible2" width="80vw" style="padding-top: 0;" class="detail_dialog">
+        <template slot="title">
+          <div style="display: inline-block; font-size: 20px; text-align: left; width: fit-content;">{{dialog_title}}详细信息</div>
+          <div class="new_clip_item" style="display: inline-block; margin-left: 2vw;" 
+              @click="change_type_name.name = ''; dialogFormVisible3 = true;">[添加type]</div>
+        </template>
+
+        <div>
+          <el-table
+              :data = "now_type_list"
+              style="width: 100%;"
+              v-loading="type_loading" element-loading-text="正在获取数据...">
+                <el-table-column>
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">ID</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <div style="padding-left: 0.2vw;">{{scope.row.id}}</div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column>
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">名称</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <div style="padding-left: 0.2vw;">{{scope.row.name}}</div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column width="120">
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">操作</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-popconfirm
+                        :title='"您确定要删除这条数据吗？"'
+                        @confirm = "type_delete(scope.row.id)">
+                      <div slot="reference" class="table_opera">删除</div>
+                    </el-popconfirm>
+                  </template>
+                  <div slot="reference" class="table_opera" 
+                        @click="dialogFormVisible4 = true; 
+                                change_type_temp = scope.row.name;
+                                change_type_name.name = scope.row.name;
+                                change_type_name.id = scope.row.id;">修改</div>
+                </el-table-column>
+
+            </el-table>
+        </div>
+      </el-dialog>
+
+      <el-dialog :visible.sync="dialogFormVisible3" width="60vw">
+        <template slot="title">
+          <div style="font-size: 18px;">新建类型</div>
+        </template>
+        <div style="padding-right: 8vw;">
+          <el-form ref="change_type_name" :model="new_dataset" label-width="15vw">
+            <el-form-item label="类型名称：">
+              <el-input v-model="change_type_name.name" placeholder="请输入类型名称"></el-input>
+            </el-form-item>
+            <el-form-item style="margin-top: 40px;">
+              <el-button type="primary" @click="type_new()">立即创建</el-button>
+              <el-button @click="dialogFormVisible3 = false;" >取消</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-dialog>
+
+      <el-dialog :visible.sync="dialogFormVisible4" width="60vw">
+        <template slot="title">
+          <div style="font-size: 18px;">修改类型</div>
+        </template>
+        <div style="padding-right: 8vw;">
+          <el-form ref="change_type_name" :model="new_dataset" label-width="15vw">
+            <el-form-item label="类型名称：">
+              <el-input v-model="change_type_name.name" placeholder="请输入类型名称"></el-input>
+            </el-form-item>
+            <el-form-item style="margin-top: 40px;">
+              <el-button type="primary" @click="type_change()">立即修改</el-button>
+              <el-button @click="dialogFormVisible4 = false;" >取消</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-dialog>
+
       <div slot="header">
         <span>设备列表</span>
         <el-button
@@ -91,8 +177,9 @@
           </el-col>
         </el-row>
         <el-row style="margin-bottom: 20px">
-          <el-button @click="handleDelete" style="width: 8%; background-color: #bb505d; color: white">删除设备</el-button>
-          <el-button type="primary" style="width: 8%;" @click="add">新增设备</el-button>
+          <el-button @click="handleDelete" style="background-color: #bb505d; color: white">删除设备</el-button>
+          <el-button type="primary" @click="add">新增设备</el-button>
+          <el-button @click="handle_dialogForm();">设备类型管理</el-button>
         </el-row>
       </el-form>
 
@@ -118,10 +205,12 @@
       <el-table-column prop="deviceDescription" label="状态"></el-table-column>
       <el-table-column prop="afterSale" label="售后人员"> </el-table-column>
       <el-table-column prop="afterSaleNumber" label="售后电话"></el-table-column>
+      <el-table-column prop="deviceTypeName" label="类型"></el-table-column>
       <el-table-column label="操作">
         <!-- icon="el-icon-edit" -->
         <template slot-scope="scope">
           <el-button @click.native.prevent="edit(scope.$index)" type="text">修改</el-button>
+          <el-button @click.native.prevent="apply(scope.$index)" type="text">申请</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -183,6 +272,17 @@
 .el-aside {
   color: #333;
 }
+
+.detail_dialog .el-dialog__body{
+  padding-top: 5px;
+}
+
+.new_clip_item:hover{
+  text-decoration: underline; 
+  cursor: pointer; 
+  margin-left: 2vw;
+  color: #494e8f;
+}
 </style>
 
 <script>
@@ -236,6 +336,18 @@ export default {
         description:""
       },
       dialogFormVisible1: false,
+
+      dialogFormVisible2: false,
+      dialogFormVisible3: false,
+      dialogFormVisible4: false,
+
+      now_type_list:[],
+      change_type_name:{
+        name:"",
+        id:""
+      },
+      type_loading: false,
+      change_type_temp:"",
     };
   },
 
@@ -244,6 +356,85 @@ export default {
     this.getDeviceList();
   },
   methods: {
+    handle_dialogForm(){
+      this.type_loading = true;
+      this.dialogFormVisible2 = true;
+
+      api.type_get({
+        
+      }).then(response => {
+        console.log(response);
+        this.now_type_list = response._embedded.deviceTypes;
+        this.type_loading = false;
+      }).catch((error)=>{
+        this.$message({
+          message: '类型列表加载失败',
+          type: 'warning'
+        });
+      });
+      
+    },
+
+    type_delete(index){
+      api.type_delete({
+        id: index
+      }).then(response => {
+        this.$message({
+          message: '类型删除成功',
+          type: 'warning'
+        });
+        this.type_get();
+      }).catch((error)=>{
+        this.$message({
+          message: '类型删除失败',
+          type: 'warning'
+        });
+      });
+    },
+
+    type_new(){
+      api.type_new({
+        name: this.change_type_name.name
+      }).then(response => {
+        this.$message({
+          message: '类型添加成功',
+          type: 'warning'
+        });
+        this.type_get();
+      }).catch((error)=>{
+        this.$message({
+          message: '类型添加失败',
+          type: 'warning'
+        });
+      });
+    },
+
+    type_change(){
+      if(this.change_type_name.name == this.change_type_temp){
+        this.$message({
+          message: '您输入的类型名与原有的类型名相同，请核实！',
+          type: 'warning'
+        });
+        return;
+      }
+
+      api.type_change({
+        name: this.change_type_name.name,
+        id: this.change_type_name.id
+      }).then(response => {
+        this.$message({
+          message: '类型修改成功',
+          type: 'warning'
+        });
+        this.type_get();
+      }).catch((error)=>{
+        this.$message({
+          message: '类型修改失败',
+          type: 'warning'
+        });
+      });
+    },
+
     //新增实验室
     addclassroom(){
       var data={
@@ -273,6 +464,19 @@ export default {
       //前往修改页面
       this.$router.push({
         path: 'device_edit',
+        query: { id },
+      });
+      //this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
+      //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
+    },
+    apply(index) {
+      let id = this.tableData[index].deviceId;
+      console.log("申请使用")
+      console.log(id);
+
+      //前往修改页面
+      this.$router.push({
+        path: 'device_apply',
         query: { id },
       });
       //this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
@@ -375,7 +579,7 @@ export default {
         })
       });
       this.loading = false;
-      //console.log(this.tableData);
+      console.log(this.tableData);
     },
 
     // 前往新增设备页面
