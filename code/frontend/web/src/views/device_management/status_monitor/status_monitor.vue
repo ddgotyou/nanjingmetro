@@ -28,6 +28,9 @@
                 <span v-show="ScreenSizeChange[n - 1] == 1">{{
                   ipInfo[n - 1] != null ? "IP为" + `${ipInfo[n - 1].ip}` : "无"
                 }}</span>
+
+                <!-- 此处实现了点击方框缩放的功能，两个class用于css替换，替换是由@click点击触发， ScreenSizeChange 和 ScreenIsShow 两个数组维护状态
+                具体逻辑是，一个监控画面放大时，其余画面都要隐藏，再次点击时接触该状态 -->
                 <div
                   :class="{ 'image-box-enlarge': ScreenSizeChange[n - 1] == 1 }"
                   class="image-box"
@@ -132,7 +135,12 @@ export default {
       ipInfo: [],
       ScreenSizeChange: [],
       ScreenIsShow: [],
-      wsURL: "127.0.0.1",
+
+      //！！！WebSocket地址，远程桌面的实现与摄像头不同，主要依赖 VNC 进行，在被监控机器上运行 Ultra VNC Server ，浏览器配置 noVNC
+      //当前大致逻辑是，被监控计算机 →→→ 被监控计算机上的WebSocket
+      //                                     ⬇ 
+      //                              浏览器所在计算机     （可看到服务器其实不参与）
+      // wsURL: "127.0.0.1", //已无实际意义
       RFBPool: [],
       PortWebSocket: 9000,
 
@@ -203,7 +211,9 @@ export default {
         this.connectVnc();
       });
     },
+    //以上均为api
 
+    //提取数据中的分组信息
     getGroup() {
       for (var i = 0; i < this.ipInfo.length; i++) {
         if (this.ipGroups.indexOf(this.ipInfo[i].monitorgroup) == -1) {
@@ -212,15 +222,23 @@ export default {
       }
     },
 
+    //新建VNC连接，项目中引入了noVNC库，这是一个浏览器端的VNC组件，即import RFB from "@novnc/novnc/core/rfb";
+    //有关noVNC的各类用法，详见 https://novnc.com/info.html   https://github.com/novnc/noVNC
     connectVnc() {
+      //密码来源于VNC服务器的设置
       const PASSWORD = "4396";
+
+      //处理分组
       let needConnect = [];
       for (let i = 0; i < this.ipInfo.length; i = i + 1) {
         if (this.ipInfo[i].monitorgroup === this.selectedGroup) {
           needConnect.push(this.ipInfo[i]);
         }
       }
+
       let SessionNum = needConnect.length;
+
+      //以下语句新建VNC实例并存入 RFBPool 中以便管理
       for (var i = 0; i < SessionNum && i < 4; i++) {
         let url =
           "ws://" +
@@ -257,6 +275,7 @@ export default {
       this.connectVnc();
     },
 
+    //按照传入的 current值 ，隐藏所有监控画面的div方框，除了点击放大的那个
     screenShowOne(current) {
       for (let i = 0; i < this.ScreenIsShow.length; i = i + 1) {
         if (i !== current) {
@@ -284,7 +303,7 @@ export default {
             this.screenShowAll(i);
           }
 
-          //大小控制
+          //大小控制 注意对数组操作要用 this.$set
           if (this.ScreenSizeChange[i] === 0) {
             this.$set(this.ScreenSizeChange, i, 1);
           } else {
@@ -294,6 +313,7 @@ export default {
       }
     },
 
+    //刷新div的方法，清除连接中断后留在网页上的监控图像
     reload() {
       this.ReloadDiv = false;
       this.$nextTick(() => {
@@ -302,45 +322,6 @@ export default {
     },
 
     handleCollapse(val) {}
-  },
-
-  computed: {
-    videoWidth1: {
-      get: function() {
-        if (this.SignalScreenSizeChange[0] == 0) {
-          return 300;
-        } else if (this.SignalScreenSizeChange[0] == 1) {
-          return 800;
-        }
-      }
-    },
-    videoHeight1: {
-      get: function() {
-        if (this.SignalScreenSizeChange[0] == 0) {
-          return 300;
-        } else if (this.SignalScreenSizeChange[0] == 1) {
-          return 600;
-        }
-      }
-    },
-    videoWidth2: {
-      get: function() {
-        if (this.SignalScreenSizeChange[1] == 0) {
-          return 300;
-        } else if (this.SignalScreenSizeChange[1] == 1) {
-          return 800;
-        }
-      }
-    },
-    videoHeight2: {
-      get: function() {
-        if (this.SignalScreenSizeChange[1] == 0) {
-          return 300;
-        } else if (this.SignalScreenSizeChange[1] == 1) {
-          return 600;
-        }
-      }
-    }
   }
 };
 </script>
@@ -359,6 +340,8 @@ export default {
   margin-right: 10px;
   display: inline-block;
 }
+
+/* 以下两个css用于切换，实现监控画面点击放大 */
 .image-box {
   height: 30vh;
   width: 40vh;
