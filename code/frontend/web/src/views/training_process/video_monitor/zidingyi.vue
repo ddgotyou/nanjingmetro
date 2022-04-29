@@ -69,7 +69,13 @@
 </template>
 
 <script>
-import { kill, turnoff, connectAll, getAll } from "@/api/cameraip/cameraip";
+import {
+  kill,
+  newSession,
+  turnoff,
+  connectAll,
+  getAll
+} from "@/api/cameraip/cameraip";
 
 export default {
   data: function() {
@@ -79,15 +85,15 @@ export default {
       groupPicked: "",
       cameraIpResult: [],
 
-      //！！！WebSocket地址，注意由于监控画面的传输都是 服务器 →→→ 浏览器 形式，此种服务器连续主动向浏览器发送数据的形式HTTP请求不支持，故需要 WebSocket 
+      //！！！WebSocket地址，注意由于监控画面的传输都是 服务器 →→→ 浏览器 形式，此种服务器连续主动向浏览器发送数据的形式HTTP请求不支持，故需要 WebSocket
       //当前大致逻辑是，摄像头 →→→ 服务器上的FFmpeg
-      //                             ⬇ 
+      //                             ⬇
       //                   服务器上的WebSocket →→→ 浏览器
       //因此要获得监控，必须输入正确的WebSocket地址，例如服务器当前在192.168.1.108:8080（内网 + 端口）上运行，
       //就请求 ws://192.168.1.108:8080/live0 （live + 任意字符）形式，这样服务器的WebSocket能捕获该请求并在有监控画面时不断进行传输
-      wsurl: "ws://139.224.212.195:8081/",  
+      wsurl: "ws://139.224.212.195:8081/",
 
-      JsPlayerPool: [],   //对新建的多个Jsmpeg播放器进行管理
+      JsPlayerPool: [], //对新建的多个Jsmpeg播放器进行管理
       DivNum: 5,
       ReloadCanvas: true,
       CanvasWidth: 40,
@@ -173,11 +179,13 @@ export default {
         let TmpPlayer = null;
         TmpPlayer = new JSMpeg.Player(this.wsurl + willConnect[i].wsurl, {
           canvas: document.getElementById("CamPlayerGroup_" + (i + 1)),
-          disableGl: true   //使用WebGL导致视频流无法正确播放，不确定原因
+          disableGl: true //使用WebGL导致视频流无法正确播放，不确定原因
         });
         if (TmpPlayer.paused) TmpPlayer.play();
         this.JsPlayerPool.push(TmpPlayer);
       }
+
+      NewSession();
     },
 
     terminate() {

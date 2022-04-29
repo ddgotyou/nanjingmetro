@@ -164,6 +164,7 @@ import {
   addCam,
   delCam,
   kill,
+  newSession,
   turnoff,
   connectAll,
   getAll
@@ -282,6 +283,7 @@ export default {
         disableGl: true
       });
       if (this.player_1.paused) this.player_1.play();
+      NewSession();
     },
 
     //关闭网页上的播放器，this.reload()作用是刷新掉播放器中已停止的画面，使其变成原始灰色
