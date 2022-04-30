@@ -141,6 +141,8 @@
           </el-table>
         </el-card>
       </el-col>
+
+      <!-- 播放器的canvas，v-if用于刷新 -->
       <el-col :span="11" :style="{ margin: '20px' }">
         <canvas
           class="canvas-for-test"
@@ -152,17 +154,24 @@
   </div>
 </template>
 
+<!--
+页面使用element-ui，具体tag组件详见https://element.eleme.cn/#/zh-CN/component/installation  （注意版本区别）
+-->
+
 <script>
+//引入用到的api
 import {
   addCam,
   delCam,
   kill,
+  newSession,
   turnoff,
   connectAll,
   getAll
 } from "@/api/cameraip/cameraip";
 
 export default {
+  //定义该Vue页面的数据
   data() {
     return {
       canvas: null,
@@ -183,6 +192,8 @@ export default {
       ReloadCanvas: true
     };
   },
+
+  //Vue watch属性 在cameraIpSelected值发生变化时刷新播放器
   watch: {
     cameraIpSelected() {
       if (this.player_1 != null) this.player_1.destroy();
@@ -190,16 +201,19 @@ export default {
     }
   },
 
+  //页面加载时执行，从后端接口获取数据
   mounted() {
     this.getAllCamera();
   },
 
+  //离开该页面前，关闭播放器
   beforeDestroy() {
     this.terminate();
     this.remoteShutdown();
   },
 
   methods: {
+    //两个删除数据接口函数，分别对应表格和按钮
     delCamButton(id) {
       let data = { id: id };
       delCam(data).then(res => {
@@ -219,6 +233,7 @@ export default {
       });
     },
 
+    //添加数据
     addCam() {
       let data = this.cameraToAdd;
       addCam(data).then(res => {
@@ -229,6 +244,7 @@ export default {
       });
     },
 
+    //获取所有摄像头数据
     getAllCamera() {
       getAll()
         .then(res => {
@@ -236,12 +252,10 @@ export default {
         })
         .catch(error => {
           console.log(error);
-          //  this.$message({
-          //    message: error
-          //  });
         });
     },
 
+    //请求服务器连接摄像头
     connectAllCamera() {
       connectAll()
         .then(res => {
@@ -256,6 +270,7 @@ export default {
         });
     },
 
+    //开启播放器，即新建一个JSMpeg实例，具体使用方法详见https://github.com/phoboslab/jsmpeg
     show() {
       if (this.cameraIpSelected === "") {
         return;
@@ -268,14 +283,17 @@ export default {
         disableGl: true
       });
       if (this.player_1.paused) this.player_1.play();
+      NewSession();
     },
 
+    //关闭网页上的播放器，this.reload()作用是刷新掉播放器中已停止的画面，使其变成原始灰色
     terminate() {
       if (this.player_1 != null) this.player_1.destroy();
       this.player_1 = null;
       this.reload();
     },
 
+    //请求服务器关闭FFmpeg实例
     remoteShutdown() {
       turnoff().then(kill());
     },
@@ -287,6 +305,7 @@ export default {
       });
     },
 
+    //Vue路由跳转到其他页面
     edit() {
       if (this.player_1 != null) this.player_1.destroy();
       this.player_1 = null;
@@ -310,4 +329,5 @@ export default {
   background-color: rgba(73, 73, 73, 0.137);
   border-radius: 5px;
 }
+/* css样式 */
 </style>
