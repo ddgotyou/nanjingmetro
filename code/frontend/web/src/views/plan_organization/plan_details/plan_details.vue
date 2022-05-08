@@ -43,27 +43,6 @@
         </el-row>
       </el-card>
       <el-card class="box-card" style="width:100%">
-        <div slot="header">讲师</div>
-          <el-table
-            :data="baseData.trainers"
-            style="width: 100"
-            :default-sort = "{prop: 'user', order: 'ascending'}"
-          >
-            <el-table-column
-              prop="user"
-              label="用户"
-            />
-            <el-table-column
-              prop="username"
-              label="用户名"
-            />
-            <el-table-column
-              prop="userEmail"
-              label="邮箱"
-            />
-          </el-table>
-      </el-card>
-      <el-card class="box-card" style="width:100%">
         <div slot="header">学员</div>
         <el-row>
           <el-col :span="24">
@@ -79,7 +58,7 @@
           </el-col>
         </el-row>
         <el-divider />
-          <el-table
+          <!-- <el-table
             :data="baseData.trainees.filter(data => (!search_value || data.user.toString().toLowerCase().includes(search_value.toLowerCase()) || data.username.toLowerCase().includes(search_value.toLowerCase())))"
             style="width: 100"
             height="250"
@@ -93,7 +72,7 @@
               prop="username"
               label="用户名"
             />
-          </el-table>
+          </el-table> -->
       </el-card>
       <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
@@ -143,6 +122,30 @@
             <el-col :span="24">
               <el-form-item label="描述">
                 <el-input v-model="tableData_tasks[taskIndex].description" style="width:100%" readonly />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="讲师">
+                <el-table
+                  :data="tableData_tasks[taskIndex].trainers"
+                  style="width: 100"
+                  :default-sort = "{prop: 'user', order: 'ascending'}"
+                >
+                  <el-table-column
+                    prop="user"
+                    label="用户"
+                  />
+                  <el-table-column
+                    prop="username"
+                    label="用户名"
+                  />
+                  <el-table-column
+                    prop="userEmail"
+                    label="邮箱"
+                  />
+                </el-table>
               </el-form-item>
             </el-col>
           </el-row>
@@ -210,7 +213,6 @@ export default {
         type: '',
         period: '',
         description: '',
-        trainees: [],
         classes: []
       },
       tableData_classrooms: {},
@@ -236,8 +238,7 @@ export default {
           type: res.type,
           period: res.startTime.substr(0,10)+'至'+res.endTime.substr(0,10),
           description: res.detailed,
-          trainees: res.trainees,
-          trainers: res.trainers,
+          //trainees: res.trainees,
           classes: [],
           auditors: res.auditors
         };

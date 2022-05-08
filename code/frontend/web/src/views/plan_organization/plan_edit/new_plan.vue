@@ -30,27 +30,6 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="讲师">
-              <el-select
-                v-model="formData.teachers"
-                style="width:100%"
-                placeholder="请选择"
-                clearable
-                multiple
-                filterable
-              >
-                <el-option
-                  v-for="item in teacher_data"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -136,7 +115,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="24">
+            <el-col :span="12">
               <el-form-item label="课时安排">
                 <el-date-picker
                   style="width:50%;"
@@ -173,11 +152,25 @@
                 </el-time-picker>
               </el-form-item>
             </el-col>
-            <!-- <el-col :span="12">
-              <el-form-item label="顺序">
-                <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
+            <el-col :span="12">
+              <el-form-item label="讲师">
+                <el-select
+                  v-model="taskData.teachers"
+                  style="width:100%"
+                  placeholder="请选择"
+                  clearable
+                  multiple
+                  filterable
+                >
+                  <el-option
+                    v-for="item in teacher_data"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
               </el-form-item>
-            </el-col> -->
+            </el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
@@ -328,8 +321,7 @@ export default {
         type: '',
         period: ['',''],
         description: '',
-        people: [],
-        teachers: []
+        people: []
       },
       taskData: {
         name: '',
@@ -337,6 +329,7 @@ export default {
         // order: '',
         date: null,
         period: [null,null],
+        teachers: [],
         type: '',
         //score: '',
         classroom: '',
@@ -385,7 +378,7 @@ export default {
     },
     addTask() {
       var timestamp=new Date().getTime()
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.teachers.length==0||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -399,6 +392,7 @@ export default {
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
+          trainers: this.taskData.teachers,
           order: timestamp,
           signInNumber: null,
           signOutNumber: null
@@ -517,7 +511,6 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
@@ -550,7 +543,6 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }

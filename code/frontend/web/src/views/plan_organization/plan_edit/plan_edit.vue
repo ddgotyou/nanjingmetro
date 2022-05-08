@@ -96,10 +96,6 @@
           label="结束时间"
         />
         <el-table-column
-          prop="teacher"
-          label="讲师"
-        />
-        <el-table-column
           prop="status"
           label="状态"
         />
@@ -208,10 +204,6 @@ export default {
                 status: res._embedded.plans[i].status,
                 self: res._embedded.plans[i]._links.self.href
               };
-              for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
-              {
-                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
-              }
               that.tableData.push(item)
             }
           }

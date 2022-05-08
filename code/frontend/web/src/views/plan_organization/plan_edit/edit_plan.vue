@@ -34,27 +34,6 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="讲师">
-              <el-select
-                v-model="formData.teachers"
-                style="width:100%"
-                placeholder="请选择"
-                clearable
-                multiple
-                filterable
-              >
-                <el-option
-                  v-for="item in teacher_data"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -143,7 +122,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="24">
+            <el-col :span="12">
               <el-form-item label="课时安排">
                 <el-date-picker
                   style="width:50%;"
@@ -178,6 +157,25 @@
                   }"
                   @change="changeEndTime">
                 </el-time-picker>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="讲师">
+                <el-select
+                  v-model="taskData.teachers"
+                  style="width:100%"
+                  placeholder="请选择"
+                  clearable
+                  multiple
+                  filterable
+                >
+                  <el-option
+                    v-for="item in teacher_data"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
             <!-- <el-col :span="12">
@@ -340,8 +338,7 @@ export default {
         type: '',
         period: ['',''],
         description: '',
-        people: [],
-        teachers: []
+        people: []
         //classes: []
       },
       taskData: {
@@ -350,6 +347,7 @@ export default {
         // order: '',
         date: null,
         period: [null,null],
+        teachers: [],
         type: '',
         //score: '',
         classroom: '',
@@ -406,19 +404,14 @@ export default {
           period: [res.startTime,res.endTime],
           description: res.detailed,
           people: [],
-          teachers: [],
           classes: []
         };
-        for(var i=0;i<res.trainees.length;i++)
-        {
-          that.formData.people.push(res.trainees[i].user)
-          that.$refs.traineeTable.toggleRowSelection(that.people_data[that.trainee_id2no[res.trainees[i].user]],true);
-          that.traineeChange(res.trainees[i].user,true)
-        }
-        for(var i=0;i<res.trainers.length;i++)
-        {
-          that.formData.teachers.push(res.trainers[i].user)
-        }
+        // for(var i=0;i<res.trainees.length;i++)
+        // {
+        //   that.formData.people.push(res.trainees[i].user)
+        //   that.$refs.traineeTable.toggleRowSelection(that.people_data[that.trainee_id2no[res.trainees[i].user]],true);
+        //   that.traineeChange(res.trainees[i].user,true)
+        // }
         if(res.tasks.length==0)
         {
           that.tableData=[]
@@ -438,7 +431,7 @@ export default {
     },
     addTask() {
       var timestamp=new Date().getTime()
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.teachers.length==0||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -452,6 +445,7 @@ export default {
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
+          trainers: this.taskData.teachers,
           order: timestamp,
           signInNumber: null,
           signOutNumber: null
@@ -560,7 +554,6 @@ export default {
       })
     },
     save() {
-      console.log(this.formData.trainers)
       this.dialogFormVisible = false;
       var data={
         name: this.formData.name,
@@ -574,11 +567,10 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.teachers,
         tasks: this.tableData,
         //user: this.$user.userId
       }
-      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||!data.hasOwnProperty('trainees')||data.trainees.length==0||data.trainers.length==0){
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||!data.hasOwnProperty('trainees')||data.trainees.length==0){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -606,7 +598,6 @@ export default {
         endTime: this.formData.period[1],
         trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.teachers,
         tasks: this.tableData,
         //user: this.$user.userId
       }
@@ -616,7 +607,7 @@ export default {
         auditors.push(this.approvers_res[this.popData.approver[i]].id)
       }
       data.auditors=auditors
-      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.trainers.length==0||data.auditors.length==0){
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){
         this.$message.error('表单内存在空值！');
       }
       else{

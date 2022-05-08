@@ -79,10 +79,6 @@
           label="结束时间"
         />
         <el-table-column
-          prop="teacher"
-          label="讲师"
-        />
-        <el-table-column
           label="操作"
           width="150">
           <template slot-scope="scope">
@@ -368,14 +364,9 @@ export default {
                 name: res._embedded.plans[i].name,
                 startTime: res._embedded.plans[i].startTime,
                 endTime: res._embedded.plans[i].endTime,
-                teacher: '',
                 self: res._embedded.plans[i]._links.self.href,
                 teacher: ''
               };
-              for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
-              {
-                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
-              }
               that.tableData.push(item)
             }
           }
