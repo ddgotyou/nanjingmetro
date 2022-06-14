@@ -69,9 +69,95 @@
         
       </el-dialog>
 
-      <el-dialog :visible.sync="dialogFormVisible2" width="80vw" style="padding-top: 0;" class="detail_dialog">
+      <el-dialog :visible.sync="dialogFormVisible2_apply" width="80vw" style="padding-top: 0;" class="detail_dialog">
         <template slot="title">
-          <div style="display: inline-block; font-size: 20px; text-align: left; width: fit-content;">{{dialog_title}}详细信息</div>
+          <div style="display: inline-block; font-size: 20px; text-align: left; width: fit-content;">设备1预约</div>
+          <div class="new_clip_item" style="display: inline-block; margin-left: 2vw;" 
+              @click="change_apply.start_ = null; change_apply.start_format = ''; change_apply.desc = ''; value2 = [];
+                      change_apply.end_ = null; change_apply.end_format = ''; dialogFormVisible3_apply = true;">[新建预约]</div>
+        </template>
+
+        <div>
+          <el-table
+              :data = "apply_list"
+              style="width: 100%;"
+              v-loading="type_loading" element-loading-text="正在获取数据...">
+                <el-table-column>
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">开始时间</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <div style="padding-left: 0.2vw;">{{scope.row.start_format}}</div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column>
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">结束时间</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <div style="padding-left: 0.2vw;">{{scope.row.end_format}}</div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column>
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">用途说明</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <div style="padding-left: 0.2vw;">{{scope.row.desc}}</div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column width="120">
+                  <template slot="header">
+                    <div style="font-size: medium; padding-left: 0.2vw;">操作</div>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-popconfirm
+                        :title='"您确定要删除这次预约吗？"'
+                        @confirm = "apply_delete(scope.$index)">
+                      <div slot="reference" class="table_opera">删除</div>
+                    </el-popconfirm>
+                  </template>
+                </el-table-column>
+
+            </el-table>
+        </div>
+      </el-dialog>
+
+      <el-dialog :visible.sync="dialogFormVisible3_apply" width="60vw">
+        <template slot="title">
+          <div style="font-size: 18px;">新建预约</div>
+        </template>
+        <div style="padding-right: 8vw;">
+          <el-form ref="change_type_name" :model="new_dataset" label-position="top" style="margin-left: 10vw">
+            <el-form-item label="简述申请用途：">
+              <el-input v-model="change_apply.desc" placeholder="请输入申请用途"></el-input>
+            </el-form-item>
+            <el-form-item label="选择预约时间段：">
+              <el-date-picker
+                  style="margin-top: 10px;"
+                  v-model="value2"
+                  type="datetimerange"
+                  value-format="timestamp"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  :default-time="['12:00:00','12:00:00']"
+                  @change="apply_new_change()">
+                </el-date-picker>
+            </el-form-item>
+            <el-form-item style="margin-top: 40px;">
+              <el-button type="primary" @click="apply_new()">立即创建</el-button>
+              <el-button @click="dialogFormVisible3_apply = false;" >取消</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-dialog>
+
+      <el-dialog :visible.sync="dialogFormVisible2" width="80vw" style="padding-top: 0;" class="detail_dialog" @close="fake_close_type_dialog()" >
+        <template slot="title">
+          <div style="display: inline-block; font-size: 20px; text-align: left; width: fit-content;">设备类型管理</div>
           <div class="new_clip_item" style="display: inline-block; margin-left: 2vw;" 
               @click="change_type_name.name = ''; dialogFormVisible3 = true;">[添加type]</div>
         </template>
@@ -106,15 +192,15 @@
                   <template slot-scope="scope">
                     <el-popconfirm
                         :title='"您确定要删除这条数据吗？"'
-                        @confirm = "type_delete(scope.row.id)">
+                        @confirm = "type_delete(scope.$index)">
                       <div slot="reference" class="table_opera">删除</div>
                     </el-popconfirm>
+                    <div slot="reference" class="table_opera" style="margin-left: 10px"
+                          @click="dialogFormVisible4 = true; 
+                                  change_type_temp = scope.row.name;
+                                  change_type_name.name = scope.row.name;
+                                  change_type_name.id = scope.row.id;">修改</div>
                   </template>
-                  <div slot="reference" class="table_opera" 
-                        @click="dialogFormVisible4 = true; 
-                                change_type_temp = scope.row.name;
-                                change_type_name.name = scope.row.name;
-                                change_type_name.id = scope.row.id;">修改</div>
                 </el-table-column>
 
             </el-table>
@@ -283,6 +369,18 @@
   margin-left: 2vw;
   color: #494e8f;
 }
+
+.table_opera{
+  padding-left: 0.4vw;
+  display: inline-block;
+}
+.table_opera:hover{
+  padding-left: 0.4vw;
+  display: inline-block;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
 </style>
 
 <script>
@@ -341,13 +439,73 @@ export default {
       dialogFormVisible3: false,
       dialogFormVisible4: false,
 
-      now_type_list:[],
+      dialogFormVisible2_apply: false,
+      dialogFormVisible3_apply: false,
+
+      apply_list:[
+        {
+          start_: 1651363200,
+          start_format: "2022-05-01 08:00",
+          end_: 1651370400,
+          end_format: "2022-05-01 10:00",
+          desc: "教学使用"
+        },
+        {
+          start_: 1651473000,
+          start_format: "2022-05-02 14:30",
+          end_: 1651487400,
+          end_format: "2022-05-02 18:30",
+          desc: "申请申请123"
+        },
+        {
+          start_: 1651550400,
+          start_format: "2022-05-03 12:00",
+          end_: 1651552200,
+          end_format: "2022-05-03 12:30",
+          desc: "申请使用test"
+        },
+        {
+          start_: 1651579200,
+          start_format: "2022-05-03 20:00",
+          end_: 1651591800,
+          end_format: "2022-05-03 23:30",
+          desc: "test_123321"
+        },
+      ],
+      change_apply:{
+        start_: null,
+        start_format: "",
+        end_: null,
+        end_format: "",
+        desc: ""
+      },
+
+      value2: [],
+
+      now_type_list:[
+        {
+          id: 0,
+          name: "电脑"
+        },
+        {
+          id: 1,
+          name: "监控设备"
+        },
+        {
+          id: 2,
+          name: "教学设备"
+        }
+      ],
       change_type_name:{
         name:"",
         id:""
       },
       type_loading: false,
       change_type_temp:"",
+
+      fake_type_id: 3,
+      fake_temp_arr: [], 
+      fake_type_change_arr: [],
     };
   },
 
@@ -356,11 +514,79 @@ export default {
     this.getDeviceList();
   },
   methods: {
-    handle_dialogForm(){
-      this.type_loading = true;
-      this.dialogFormVisible2 = true;
+    apply_new(){
+      if(this.desc == ""){
+        this.$message({
+          message: '您尚未输入申请用途',
+          type: 'warning'
+        });
+      }
+      var falg = 0;
+      for(let i in this.apply_list){
+        if(this.change_apply.end_ < this.apply_list[i].start_){
+          continue;
+        }
+        else if(this.change_apply.start_ > this.apply_list[i].end_){
+          continue;
+        }
+        else{
+          this.$message({
+            message: '您申请的时间段与已有安排冲突',
+            type: 'warning'
+          });
+          falg = 1;
+          break;
+        }
+      }
+      setTimeout(() => {
+        if(falg == 0){
+          this.apply_list.push({
+            start_: this.change_apply.start_,
+            start_format: this.change_apply.start_format,
+            end_: this.change_apply.end_,
+            end_format: this.change_apply.end_format,
+            desc: this.change_apply.desc
+          },);
+          this.dialogFormVisible3_apply = false;
+        }
+      }, 1000);
+      
+    },
 
-      api.type_get({
+    formateDate (date) {
+      var nian = date.getFullYear()
+      var yue = (date.getMonth() + 1).toString().padStart(2, '0')
+      var ri = date.getDate().toString().padStart(2, '0')
+      var shi = date.getHours().toString().padStart(2, '0')
+      var fen = date.getMinutes().toString().padStart(2, '0')
+      var miao = date.getSeconds().toString().padStart(2, '0')
+
+      return ""+nian+"-"+yue+"-"+ri+" "+shi+":"+fen
+    },
+
+    apply_delete(index){
+      setTimeout(() => {
+        this.apply_list.splice(index,1);
+      }, 1000);
+    },
+
+    apply_new_change(){
+      this.change_apply.start_ = this.value2[0] / 1000;
+      this.change_apply.end_ = this.value2[1] / 1000;
+      var start_sp = new Date(this.value2[0]);
+      var end_sp = new Date(this.value2[1]);
+      this.change_apply.start_format = this.formateDate(start_sp);
+      this.change_apply.end_format = this.formateDate(end_sp);
+      console.log(this.change_apply);
+    },
+
+    fake_close_type_dialog(){
+      this.getDeviceList();
+    },
+
+    handle_dialogForm(){
+      //this.type_loading = true;
+      /*api.type_get({
         
       }).then(response => {
         console.log(response);
@@ -371,12 +597,15 @@ export default {
           message: '类型列表加载失败',
           type: 'warning'
         });
-      });
+      });*/
+      setTimeout(() => {
+        this.dialogFormVisible2 = true;
+      }, 1000);
       
     },
 
     type_delete(index){
-      api.type_delete({
+      /*api.type_delete({
         id: index
       }).then(response => {
         this.$message({
@@ -389,11 +618,17 @@ export default {
           message: '类型删除失败',
           type: 'warning'
         });
-      });
+      });*/
+      setTimeout(() => {
+        var temp = this.now_type_list[index].name;
+        this.now_type_list.splice(index,1);
+
+        this.fake_temp_arr.push(temp);
+      }, 1000);
     },
 
     type_new(){
-      api.type_new({
+      /*api.type_new({
         name: this.change_type_name.name
       }).then(response => {
         this.$message({
@@ -406,7 +641,16 @@ export default {
           message: '类型添加失败',
           type: 'warning'
         });
-      });
+      });*/
+      
+      setTimeout(() => {
+        this.now_type_list.push({
+          id: this.fake_type_id,
+          name: this.change_type_name.name
+        });
+        this.dialogFormVisible3 = false;
+        this.change_type_name.name = "";
+      }, 1000);
     },
 
     type_change(){
@@ -418,21 +662,21 @@ export default {
         return;
       }
 
-      api.type_change({
-        name: this.change_type_name.name,
-        id: this.change_type_name.id
-      }).then(response => {
-        this.$message({
-          message: '类型修改成功',
-          type: 'warning'
-        });
-        this.type_get();
-      }).catch((error)=>{
-        this.$message({
-          message: '类型修改失败',
-          type: 'warning'
-        });
-      });
+      setTimeout(() => {
+        for (let i in this.now_type_list){
+          if(this.now_type_list[i].id == this.change_type_name.id){
+            var temp = this.now_type_list[i].name;
+            this.now_type_list[i].name = this.change_type_name.name;
+            this.fake_type_change_arr.push({
+              ori: temp,
+              new_: this.change_type_name.name
+            });
+            break;
+          }
+        }
+        this.dialogFormVisible4 = false;
+        this.change_type_name.name = "";
+      }, 1000);
     },
 
     //新增实验室
@@ -470,15 +714,9 @@ export default {
       //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
     },
     apply(index) {
-      let id = this.tableData[index].deviceId;
-      console.log("申请使用")
-      console.log(id);
-
-      //前往修改页面
-      this.$router.push({
-        path: 'device_apply',
-        query: { id },
-      });
+      setTimeout(() => {
+        this.dialogFormVisible2_apply = true;
+      }, 1000);
       //this.$router.push({ path: 'device_edit', query: { self: this.tableData[index].self }})
       //this.$router.push({ path: 'device_edit', query: {self: this.tableData[1].self}});
     },
@@ -541,7 +779,7 @@ export default {
       };
       api.listDevice(params).then((response) => {
 
-        console.log(response);
+        //console.log(this.fake_type_change_arr);
 
         this.totalPage = response.page.totalElements;
         this.currentPage = response.page.number + 1;
@@ -560,9 +798,22 @@ export default {
             this.classroomid[classroom_id] = res._embedded.classrooms[i].name
             //this.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
           }
-
+          
+          var sp = 0;
+          var type_list = ["电脑","电脑","监控设备","教学设备","电脑","监控设备","教学设备","监控设备","电脑","监控设备"];
           for(var i = 0; i < response._embedded.devices.length; i++)
           {
+            var ttmp = type_list[sp];
+            for(let i in this.fake_temp_arr){
+              if(ttmp == this.fake_temp_arr[i]){
+                ttmp = "";
+              }
+            }
+            for(let i in this.fake_type_change_arr){
+              if(ttmp == this.fake_type_change_arr[i].ori){
+                ttmp = this.fake_type_change_arr[i].new_;
+              }
+            }
             let item = {
               deviceClassroom: this.classroomid[response._embedded.devices[i].deviceClassroom],
               deviceName: response._embedded.devices[i].deviceName,
@@ -573,7 +824,9 @@ export default {
               chargePeopleTel: response._embedded.devices[i].chargePeopleTel,
               afterSale: response._embedded.devices[i].afterSale,
               afterSaleNumber: response._embedded.devices[i].afterSaleNumber,
+              deviceTypeName: ttmp   
             };
+            sp = (sp + 1) % type_list.length;
             this.tableData.push(item)
           }
         })
@@ -617,6 +870,8 @@ export default {
             //this.classrooms.push({label:res._embedded.classrooms[i].name,value:classroom_id})
           }
           //console.log(this.classrooms)
+          var sp = 0;
+          var type_list = ["电脑","电脑","监控设备","教学设备","电脑","监控设备","教学设备","监控设备","电脑","监控设备"];
           for(var i = 0; i < response._embedded.devices.length; i++)
           {
             let item = {
@@ -629,7 +884,9 @@ export default {
               chargePeopleTel: response._embedded.devices[i].chargePeopleTel,
               afterSale: response._embedded.devices[i].afterSale,
               afterSaleNumber: response._embedded.devices[i].afterSaleNumber,
+              deviceTypeName: type_list[sp]     
             };
+            sp = (sp + 1) % type_list.length;
             this.tableData.push(item)
           }
         })

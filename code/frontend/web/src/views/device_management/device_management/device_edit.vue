@@ -252,6 +252,9 @@ export default {
     this.listworksheet()
   },
   methods: {
+    test_kua(){
+      console.log("123" + this.dialogFormVisible);
+    },
     //获取人员下拉框
     getPersonSelection(){
       console.log("获取人员下拉框，account正常")
