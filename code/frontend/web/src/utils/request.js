@@ -11,11 +11,12 @@ const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
   baseURL: process.env.VUE_APP_BASE_API,
   // 超时
-  timeout: 10000
+  timeout: 90000
 })
 
 // request拦截器
 service.interceptors.request.use(config => {
+  if (config.method === 'post') console.log(config);
   // 是否需要设置 token
   const isToken = (config.headers || {}).isToken === false
   if (getToken() && !isToken) {
@@ -39,6 +40,7 @@ service.interceptors.request.use(config => {
         }
       }
     }
+    if (config.method === 'post') console.log(config)
     url = url.slice(0, -1);
     config.params = {};
     config.url = url;

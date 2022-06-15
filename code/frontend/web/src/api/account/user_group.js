@@ -11,9 +11,9 @@ function add(id, data) {
 }
 
 // 查询用户组列表
-function list(id, page, size) {
+function list(page, size) {
   return request({
-    url: '/tms-account/usergroup/getAllUsergroup' + '?myUserId=' + id + '&page=' + page + '&size=' + size,
+    url: '/tms-account/usergroup/getAllUsergroup' + '?page=' + page + '&size=' + size,
     method: 'get',
   })
 }

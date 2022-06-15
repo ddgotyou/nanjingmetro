@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询用户列表
 function list(query) {
   return request({
-    url: '/tms-account/usergroup/getAllUser',
+    url: '/tms-account/dbox/getAllUser',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ function list(query) {
 // 模糊搜索用户
 function search(keyword) {
   return request({
-    url: '/tms-account/usergroup/getUserLike/' + keyword,
+    url: '/tms-account/dbox/getUserLike/{keys}' + keyword,
     method: 'get',
   })
 }

@@ -167,8 +167,8 @@ export default {
     // 用户组列表
     data(page, size) {
       this.loading = true;
-      api.list(this.$user.userId, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.groupVoes : [];
+      api.list(page, size).then((response) => {
+        this.list = response._embedded.usergroupVoes || [];
         this.page = response.page;
         this.loading = false;
       });
@@ -177,7 +177,7 @@ export default {
     search(key, page, size) {
       this.loading = true;
       api.search(key, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.groupVoes : [];
+        this.list = response._embedded.usergroupVoes || [];
         this.page = response.page;
         this.loading = false;
       });
