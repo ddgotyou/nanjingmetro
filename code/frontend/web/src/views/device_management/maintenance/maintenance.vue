@@ -122,7 +122,7 @@
 
       <el-table-column label="维保人员" align="center" property="re_peopleName"></el-table-column>
 
-      <el-table-column label="预计维修日期" align="center" property="reminderDay"></el-table-column>
+      <!--el-table-column label="预计维修日期" align="center" property="reminderDay"></el-table-column-->
 
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">

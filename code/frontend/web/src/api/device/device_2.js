@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
-
+  var title = '/device'
   function listMaintenance(query) {
     return request({
-      url: '/device/worksheets/search/getMaintenceList',
+      url: title+'/worksheets/search/getMaintenceList',
       method: 'get',
       params: query
     })
@@ -11,7 +11,7 @@ import request from '@/utils/request'
 
   function listOption(query) {
     return request({
-      url: '/device/worksheets/getList',
+      url: title+'/worksheets/getList',
       method: 'get',
       params: query
     })
@@ -19,7 +19,7 @@ import request from '@/utils/request'
 
   function listRepair(query){
     return request({
-        url: '/device/devices/search/getRepairList',
+        url: title+'/devices/search/getRepairList',
         method: 'get',
         params: query
       })
@@ -27,7 +27,7 @@ import request from '@/utils/request'
 
   function listRepairOption(query) {
     return request({
-      url: '/device/devices/getList',
+      url: title+'/devices/getList',
       method: 'get',
       params: query
     })
@@ -35,7 +35,7 @@ import request from '@/utils/request'
 
   function changeStatus(query){
     return request({
-        url: '/device/devices/updateStatus',
+        url: title+'/devices/updateStatus',
         method: 'put',
         params: query
     });
@@ -43,7 +43,7 @@ import request from '@/utils/request'
 
   function find_devices(query){
     return request({
-      url: '/device/devices/search/findByConditions',
+      url: title+'/devices/search/findByConditions',
       method: 'get',
       params: query
   });
@@ -51,7 +51,7 @@ import request from '@/utils/request'
 
   function upload_pdf(data) {
     return request({
-      url: '/device/protocols/upload',
+      url: title+'/protocols/upload',
       method: 'post',
       headers:{
         "Content-Type":"multipart/form-data; boundary=<calculated when request is sent>",
@@ -59,6 +59,39 @@ import request from '@/utils/request'
       data: data
     })
   }
+
+  function type_get(query){
+    return request({
+        url: title+'/devices/type/getTypes',
+        method: 'get',
+        params: query
+    });
+  }
+
+  function type_new(query){
+    return request({
+        url: title+'/devices/type',
+        method: 'post',
+        params: query
+    });
+  }
+
+  function type_change(query){
+    return request({
+        url: title+'/devices/type/' + query.id,
+        method: 'put',
+        params: query
+    });
+  }
+
+  function type_delete(query){
+    return request({
+        url: title+'/devices/type/' + query.id,
+        method: 'delete'
+    });
+  }
+
+  
 
 
   export{
@@ -68,6 +101,11 @@ import request from '@/utils/request'
     listRepairOption,
     changeStatus,
     find_devices,
-    upload_pdf
+    upload_pdf,
+
+    type_get,
+    type_new,
+    type_delete,
+    type_change
   }
 
