@@ -62,7 +62,10 @@
                   style="width: 100; background: #f5f5f5"
                   empty-text="暂无待审核申请"
                 >
-                  <el-table-column min-width="70%">
+                  <el-table-column
+                    :show-overflow-tooltip="true"
+                    min-width="70%"
+                  >
                     <template slot-scope="scope">
                       {{ getAppContent(scope.row.detail.planFirstTrainer) }}
                     </template>
@@ -99,10 +102,13 @@
                     min-width="40%"
                     align="center"
                   />
-                  <el-table-column label="任务" min-width="60%" align="center">
-                    <template slot-scope="scope">
-                      {{ getTaskContent(scope.row.taskDetails.description) }}
-                    </template>
+                  <el-table-column
+                    prop="taskDetails.description"
+                    :show-overflow-tooltip="true"
+                    label="任务"
+                    min-width="60%"
+                    align="center"
+                  >
                   </el-table-column>
                 </el-table>
               </el-card>
@@ -156,7 +162,7 @@
               />
               <el-table-column label="讲师" width="" align="center">
                 <template slot-scope="scope">
-                  {{ getTrainer(scope.row.planDetails.trainers) }}
+                  <!-- {{ getTrainer(scope.row.planDetails.trainers) }} -->
                 </template>
               </el-table-column>
               <el-table-column label="开始时间" width="" align="center">
@@ -215,10 +221,11 @@
                     <div class="point bgcolor-lightgreen"></div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="msg" min-width="70%">
-                  <template slot-scope="scope">
-                    <span> {{ getNoticeMsg(scope.row.msg) }} </span>
-                  </template>
+                <el-table-column
+                  prop="msg"
+                  :show-overflow-tooltip="true"
+                  min-width="70%"
+                >
                 </el-table-column>
                 <el-table-column prop="date" min-width="25%" align="right">
                   <template slot-scope="scope">
@@ -306,12 +313,13 @@ export default {
       });
       api.plan(this.$user.userId).then((response) => {
         this.planList = response._embedded.plans.slice(0, 4);
+        console.log(this.planList);
         this.planAllList = response._embedded.plans.map((item) => {
           return {
             name: item.planDetails.name,
-            trainers: item.planDetails.trainers
-              .map((item) => item.username)
-              .join("，"),
+            // trainers: item.planDetails.trainers
+            //   .map((item) => item.username)
+            //   .join("，"),
             startTime: item.planDetails.startTime,
             endTime: item.planDetails.endTime,
           };
@@ -338,12 +346,6 @@ export default {
     },
     getAppTime(time) {
       return time.split(" ")[0];
-    },
-    getTaskContent(content) {
-      return content.substring(0, 10) + "...";
-    },
-    getNoticeMsg(msg) {
-      return msg.substring(0, 13) + "...";
     },
     getTrainer(trainers) {
       return trainers.map((item) => item.username).join("，");
