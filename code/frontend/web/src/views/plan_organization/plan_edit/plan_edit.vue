@@ -74,6 +74,7 @@
         tooltip-effect="dark"
         style="width: 100"
         @selection-change="handleSelectionChange"
+        :default-sort = "{prop: 'index', order: 'descending'}"
       >
         <el-table-column
           type="selection"
@@ -88,16 +89,14 @@
           label="计划名称"
         />
         <el-table-column
+          sortable
           prop="startTime"
           label="开始时间"
         />
         <el-table-column
+          sortable
           prop="endTime"
           label="结束时间"
-        />
-        <el-table-column
-          prop="teacher"
-          label="讲师"
         />
         <el-table-column
           prop="status"
@@ -208,10 +207,6 @@ export default {
                 status: res._embedded.plans[i].status,
                 self: res._embedded.plans[i]._links.self.href
               };
-              for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
-              {
-                item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
-              }
               that.tableData.push(item)
             }
           }
@@ -272,39 +267,6 @@ export default {
       });
       setTimeout(() => {that.fresh();},500);
     },
-    // delreq() {
-    //   var that=this;
-    //   this.$confirm('此操作将删除所有选中的计划, 是否继续?', '提示', {
-    //     confirmButtonText: '确定',
-    //     cancelButtonText: '取消',
-    //     type: 'warning'
-    //   }).then(() => {
-    //     console.log(that.multipleSelection)
-    //     for(var i=0;i<that.multipleSelection.length;i++)
-    //     {
-    //       var temp=that.multipleSelection[i].self.split("/")
-    //       var id=temp[temp.length-1]
-    //       api.del(id).then(
-    //         this.$message({
-    //           type: 'success',
-    //           message: '已删除计划'+that.multipleSelection[i].name+'!'
-    //         })
-    //       ).catch( err => {
-    //         console.log('删除任务'+that.multipleSelection[i].name+'失败', err);
-    //       })
-    //       if(i==that.multipleSelection.length-1)
-    //       {
-    //         that.fresh()
-    //       }
-    //     }
-    //   }).catch(() => {
-    //     this.$message({
-    //       type: 'info',
-    //       message: '取消删除操作'
-    //     });          
-    //   }); 
-    //   return Promise.resolve()
-    // },
     search_commit()
     {
       this.index=1
