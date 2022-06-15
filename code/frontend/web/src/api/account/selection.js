@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询用户组下拉框选项
 function userGroup(query) {
   return request({
-    url: '/tms-account/users/getUsergroup',
+    url: '/tms-account/dbox/getAllUsergroup',
     method: 'get',
     params: query
   })
@@ -35,7 +35,7 @@ function dept(query) {
 // 查询岗位下拉框选项
 function post(query) {
   return request({
-    url: '/tms-account/users/getAllPost',
+    url: '/tms-account/dbox/getAllPost',
     method: 'get',
     params: query
   })
@@ -44,7 +44,7 @@ function post(query) {
 // 查询学历下拉框选项
 function edu(query) {
   return request({
-    url: '/tms-account/users/getAllEdu',
+    url: '/tms-account/dbox/getAllEdu',
     method: 'get',
     params: query
   })
@@ -53,7 +53,7 @@ function edu(query) {
 // 查询专业下拉框选项
 function major(query) {
   return request({
-    url: '/tms-account/users/getAllMajor',
+    url: '/tms-account/dbox/getAllMajor',
     method: 'get',
     params: query
   })

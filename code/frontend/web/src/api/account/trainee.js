@@ -1,18 +1,17 @@
 import request from '@/utils/request'
 
 // 新增学员
-function add(id, data) {
+function add(data) {
   return request({
-    url: '/tms-account/users/addTrainee' + '?myUserId=' + id,
+    url: '/tms-account/users/addTrainee' + id,
     method: 'post',
     data: data
   })
 }
 
 // 查询学员列表
-function list(id, query, page, size) {
+function list(query, page, size) {
   let params = {};
-  params["myUserId"] = id;
   if (page) params["page"] = page;
   if (size) params["size"] = size;
   for (let attr in query) {
