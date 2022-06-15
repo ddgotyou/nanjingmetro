@@ -1,99 +1,81 @@
 <template>
   <div class="app-container">
-    <el-card class="box-card" style="width:100%">
-      <div slot="header">监控画面</div>
-      <div>
-        <el-select v-model="groupPicked" clearable placeholder="请选择摄像头">
+    <el-card class="box-card">
+      <div slot="header">
+        监控画面
+        <el-button
+          type="text"
+          @click="goto_management"
+          style="margin-left:30px"
+        >
+          监控管理</el-button
+        >
+      </div>
+      <div class="monitor-div">
+        <el-select
+          v-model="groupPicked"
+          clearable
+          placeholder="选择分组"
+          class="select-in-monitor"
+        >
           <el-option
             v-for="item in cameraGroup"
-            :key="item.id"
-            :label="item.value"
-            :value="item.value"
+            :key="item"
+            :label="item"
+            :value="item"
           />
         </el-select>
-        <div style="margin:10px;">
-          <el-button type="primary" @click="show">打开</el-button>
-          <el-button @click="terminate">关闭</el-button>
-          <el-button @click="pause">暂停</el-button>
-          <el-button type="primary" @click="connectAllCamera"
-            >开启推流</el-button
-          >
-          <el-button type="primary" @click="remoteShutdown">终止推流</el-button>
-          <span style="margin-left:20px;display:inline-block">服务器接口:</span>
-          <el-input
-            id="wsurl"
-            v-model="wsurl"
-            name="wsurl"
-            style="width: 30%"
-          />
+        <el-button type="primary" @click="InitPlayer">开启</el-button>
+        <el-button @click="terminate">关闭</el-button>
+        <el-button type="warning" @click="remoteShutdown">终止推流</el-button>
+        <span style="margin-left:20px;display:inline-block">服务器接口</span>
+        <el-input
+          id="wsurl"
+          v-model="wsurl"
+          name="wsurl"
+          style="margin: 5px; width: 30%"
+        />
+
+        <el-button
+          type="info"
+          plain
+          circle
+          icon="el-icon-circle-plus-outline"
+          @click="canvasResizeEnlarge"
+        ></el-button>
+        <el-button
+          type="info"
+          plain
+          circle
+          icon="el-icon-remove-outline"
+          @click="canvasResizeShrink"
+        ></el-button>
+      </div>
+
+      <!-- 通过v-for循环生成DivNum个canvas，注意id和key用于对生成内容进行区分
+      canvasResize用于调整大小 -->
+      <div>
+        <div class="canvas-div" v-for="n in DivNum" :key="`none-${n}`">
+          <canvas
+            :style="canvasResize"
+            class="monitor-canvas"
+            :id="`CamPlayerGroup_${n}`"
+            v-if="ReloadCanvas"
+          ></canvas>
         </div>
-      </div>
-      <div
-        class="monitor-canvas"
-        id="location01"
-        style="height:200px;width:300px;"
-      >
-        <canvas
-          style="height:200px;width:300px;"
-          id="CamPlayerGroup_1"
-        ></canvas>
-      </div>
-      <div
-        class="monitor-canvas"
-        id="location02"
-        style="height:200px;width:300px;"
-      >
-        <canvas
-          style="height:200px;width:300px;"
-          id="CamPlayerGroup_2"
-        ></canvas>
-      </div>
-      <div
-        class="monitor-canvas"
-        id="location03"
-        style="height:200px;width:300px;"
-      >
-        <canvas
-          style="height:200px;width:300px;"
-          id="CamPlayerGroup_3"
-        ></canvas>
-      </div>
-      <div
-        class="monitor-canvas"
-        id="location04"
-        style="height:200px;width:300px;"
-      >
-        <canvas
-          style="height:200px;width:300px;"
-          id="CamPlayerGroup_4"
-        ></canvas>
-      </div>
-      <div
-        class="monitor-canvas"
-        id="location05"
-        style="height:200px;width:300px;"
-      >
-        <canvas
-          style="height:200px;width:300px;"
-          id="CamPlayerGroup_5"
-        ></canvas>
-      </div>
-      <div
-        class="monitor-canvas"
-        id="location06"
-        style="height:200px;width:300px;"
-      >
-        <canvas
-          style="height:200px;width:300px;"
-          id="CamPlayerGroup_6"
-        ></canvas>
       </div>
     </el-card>
   </div>
 </template>
 
 <script>
-import { kill, turnoff, connectAll, getAll } from "@/api/cameraip/cameraip";
+import {
+  kill,
+  newSession,
+  turnoff,
+  connectAll,
+  getAll
+} from "@/api/cameraip/cameraip";
 
 export default {
   data: function() {
@@ -102,31 +84,52 @@ export default {
       groupId: 0,
       groupPicked: "",
       cameraIpResult: [],
+
+      //！！！WebSocket地址，注意由于监控画面的传输都是 服务器 →→→ 浏览器 形式，此种服务器连续主动向浏览器发送数据的形式HTTP请求不支持，故需要 WebSocket
+      //当前大致逻辑是，摄像头 →→→ 服务器上的FFmpeg
+      //                             ⬇
+      //                   服务器上的WebSocket →→→ 浏览器
+      //因此要获得监控，必须输入正确的WebSocket地址，例如服务器当前在192.168.1.108:8080（内网 + 端口）上运行，
+      //就请求 ws://192.168.1.108:8080/live0 （live + 任意字符）形式，这样服务器的WebSocket能捕获该请求并在有监控画面时不断进行传输
       wsurl: "ws://139.224.212.195:8081/",
-      player_1: null,
-      player_2: null,
-      player_3: null,
-      player_4: null,
-      player_5: null,
-      player_6: null
+
+      JsPlayerPool: [], //对新建的多个Jsmpeg播放器进行管理
+      DivNum: 5,
+      ReloadCanvas: true,
+      CanvasWidth: 40,
+      CanvasHeight: 30
     };
   },
 
-  mounted() {
-    this.getAllCamera();
-  },
-
-  beforeDestroy() {
-    this.terminate();
-    this.remoteShutdown();
+  //computed是Vue的计算属性，即CanvasHeight与CanvasWidth一旦发生变化，就自动执行该函数调整大小
+  computed: {
+    canvasResize() {
+      return {
+        "--CanvasHeight": this.CanvasHeight + "vh",
+        "--CanvasWidth": this.CanvasWidth + "vh"
+      };
+    }
   },
 
   methods: {
+    canvasResizeEnlarge() {
+      if (this.CanvasHeight < 80) {
+        this.CanvasHeight = this.CanvasHeight + 5;
+        this.CanvasWidth = this.CanvasWidth + 5;
+      }
+    },
+    canvasResizeShrink() {
+      if (this.CanvasHeight > 20) {
+        this.CanvasHeight = this.CanvasHeight - 5;
+        this.CanvasWidth = this.CanvasWidth - 5;
+      }
+    },
+
     getAllCamera() {
       getAll()
         .then(res => {
           this.cameraIpResult = res;
-          this.processGroup();
+          this.getGroup();
         })
         .catch(error => {
           console.log(error);
@@ -145,25 +148,12 @@ export default {
         });
     },
 
-    processGroup() {
-      var s = this.cameraIpResult.length;
-      var isRepeat = false;
-      for (let i = 0; i < s; i = i + 1) {
-        for (let gd = 0; gd < this.cameraGroup.length; gd = gd + 1) {
-          if (this.cameraGroup[gd].value === this.cameraIpResult[i].camgroup) {
-            isRepeat = true;
-            break;
-          }
-        }
-        if (isRepeat === false) {
-          let pushData = {
-            id: this.groupId,
-            value: this.cameraIpResult[i].camgroup
-          };
+    getGroup() {
+      for (var i = 0; i < this.cameraIpResult.length; i++) {
+        if (this.cameraGroup.indexOf(this.cameraIpResult[i].camgroup) == -1) {
+          this.cameraGroup.push(this.cameraIpResult[i].camgroup);
           this.groupId = this.groupId + 1;
-          this.cameraGroup.push(pushData);
         }
-        isRepeat = false;
       }
     },
 
@@ -171,20 +161,11 @@ export default {
       turnoff().then(kill());
     },
 
-    show: function() {
-      if (this.player_1 != null) this.player_1.destroy();
-      this.player_1 = null;
-      if (this.player_2 != null) this.player_2.destroy();
-      this.player_2 = null;
-      if (this.player_3 != null) this.player_3.destroy();
-      this.player_3 = null;
-      if (this.player_4 != null) this.player_4.destroy();
-      this.player_4 = null;
-      if (this.player_5 != null) this.player_5.destroy();
-      this.player_5 = null;
-      if (this.player_6 != null) this.player_6.destroy();
-      this.player_6 = null;
+    //初始化播放器，准备播放摄像头监控画面
+    InitPlayer() {
+      this.connectAllCamera();
 
+      //从数据中依据分组得出要连接的摄像头
       var willConnect = [];
       var s = this.cameraIpResult.length;
       for (let i = 0; i < s; i = i + 1) {
@@ -193,72 +174,75 @@ export default {
         }
       }
 
-      this.player_1 = new JSMpeg.Player(this.wsurl + willConnect[0].wsurl, {
-        canvas: document.getElementById("CamPlayerGroup_1"),
-        disableGl: true
-      });
-      this.player_2 = new JSMpeg.Player(this.wsurl + willConnect[1].wsurl, {
-        canvas: document.getElementById("CamPlayerGroup_2"),
-        disableGl: true
-      });
-      this.player_3 = new JSMpeg.Player(this.wsurl + willConnect[2].wsurl, {
-        canvas: document.getElementById("CamPlayerGroup_3"),
-        disableGl: true
-      });
-      this.player_4 = new JSMpeg.Player(this.wsurl + willConnect[3].wsurl, {
-        canvas: document.getElementById("CamPlayerGroup_4"),
-        disableGl: true
-      });
-      this.player_5 = new JSMpeg.Player(this.wsurl + willConnect[4].wsurl, {
-        canvas: document.getElementById("CamPlayerGroup_5"),
-        disableGl: true
-      });
-      this.player_6 = new JSMpeg.Player(this.wsurl + willConnect[5].wsurl, {
-        canvas: document.getElementById("CamPlayerGroup_6"),
-        disableGl: true
-      });
-      if (this.player_1.paused) this.player_1.play();
-      if (this.player_2.paused) this.player_2.play();
-      if (this.player_3.paused) this.player_3.play();
-      if (this.player_4.paused) this.player_4.play();
-      if (this.player_5.paused) this.player_5.play();
-      if (this.player_6.paused) this.player_6.play();
+      //新建相应数量的Jsmpeg，并存入JsPlayerPool[] 以便管理
+      for (let i = 0; i < willConnect.length; i = i + 1) {
+        let TmpPlayer = null;
+        TmpPlayer = new JSMpeg.Player(this.wsurl + willConnect[i].wsurl, {
+          canvas: document.getElementById("CamPlayerGroup_" + (i + 1)),
+          disableGl: true //使用WebGL导致视频流无法正确播放，不确定原因
+        });
+        if (TmpPlayer.paused) TmpPlayer.play();
+        this.JsPlayerPool.push(TmpPlayer);
+      }
+
+      NewSession();
     },
 
-    pause: function() {
-      if (this.player_1 != null) this.player_1.pause();
-      if (this.player_2 != null) this.player_2.pause();
-      if (this.player_3 != null) this.player_3.pause();
-      if (this.player_4 != null) this.player_4.pause();
-      if (this.player_5 != null) this.player_5.pause();
-      if (this.player_6 != null) this.player_6.pause();
+    terminate() {
+      this.remoteShutdown();
+      for (let i = 0; i < this.JsPlayerPool.length; i = i + 1) {
+        if (this.JsPlayerPool[i] != null) this.JsPlayerPool[i].destroy();
+        this.JsPlayerPool[i] = null;
+      }
+      this.reload();
     },
 
-    terminate: function() {
+    reload() {
+      this.ReloadCanvas = false;
+      this.$nextTick(() => {
+        this.ReloadCanvas = true;
+      });
+    },
+
+    goto_management() {
       if (this.player_1 != null) this.player_1.destroy();
       this.player_1 = null;
-      if (this.player_2 != null) this.player_2.destroy();
-      this.player_2 = null;
-      if (this.player_3 != null) this.player_3.destroy();
-      this.player_3 = null;
-      if (this.player_4 != null) this.player_4.destroy();
-      this.player_4 = null;
-      if (this.player_5 != null) this.player_5.destroy();
-      this.player_5 = null;
-      if (this.player_6 != null) this.player_6.destroy();
-      this.player_6 = null;
+      this.$router.push("jiankongguanli");
     }
+  },
+
+  mounted() {
+    this.getAllCamera();
+  },
+
+  beforeDestroy() {
+    this.terminate();
   }
 };
 </script>
 <style lang="scss" scoped>
 .box-card {
-  width: 400px;
+  min-width: 400px;
   max-width: 100%;
-  margin: 5px auto;
+  margin: 3px;
 }
-.monitor-canvas {
+.canvas-div {
+  margin: 2px;
+  display: inline-block;
+}
+.monitor-div {
   margin: 5px;
+}
+
+/* 注意Css变量  var(--CanvasHeight)  的用法 */
+.monitor-canvas {
+  height: var(--CanvasHeight);
+  width: var(--CanvasWidth);
+  background-color: rgba(73, 73, 73, 0.137);
+  border-radius: 5px;
+}
+.select-in-monitor {
+  margin-right: 5px;
   display: inline-block;
 }
 </style>

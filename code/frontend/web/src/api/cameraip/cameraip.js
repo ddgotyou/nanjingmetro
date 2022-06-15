@@ -27,6 +27,13 @@ export function kill() {
   });
 }
 
+export function newSession() {
+  return request({
+    url: "/monitor/rtsp/newSession",
+    method: "post"
+  });
+}
+
 export function turnoff() {
   return request({
     url: "/monitor/cam/turnOff",
