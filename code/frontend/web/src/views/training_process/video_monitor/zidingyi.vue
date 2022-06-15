@@ -52,6 +52,8 @@
         ></el-button>
       </div>
 
+      <!-- 通过v-for循环生成DivNum个canvas，注意id和key用于对生成内容进行区分
+      canvasResize用于调整大小 -->
       <div>
         <div class="canvas-div" v-for="n in DivNum" :key="`none-${n}`">
           <canvas
@@ -67,7 +69,13 @@
 </template>
 
 <script>
-import { kill, turnoff, connectAll, getAll } from "@/api/cameraip/cameraip";
+import {
+  kill,
+  newSession,
+  turnoff,
+  connectAll,
+  getAll
+} from "@/api/cameraip/cameraip";
 
 export default {
   data: function() {
@@ -76,15 +84,24 @@ export default {
       groupId: 0,
       groupPicked: "",
       cameraIpResult: [],
+
+      //！！！WebSocket地址，注意由于监控画面的传输都是 服务器 →→→ 浏览器 形式，此种服务器连续主动向浏览器发送数据的形式HTTP请求不支持，故需要 WebSocket
+      //当前大致逻辑是，摄像头 →→→ 服务器上的FFmpeg
+      //                             ⬇
+      //                   服务器上的WebSocket →→→ 浏览器
+      //因此要获得监控，必须输入正确的WebSocket地址，例如服务器当前在192.168.1.108:8080（内网 + 端口）上运行，
+      //就请求 ws://192.168.1.108:8080/live0 （live + 任意字符）形式，这样服务器的WebSocket能捕获该请求并在有监控画面时不断进行传输
       wsurl: "ws://139.224.212.195:8081/",
-      JsPlayerPool: [],
-      DivNum: 15,
+
+      JsPlayerPool: [], //对新建的多个Jsmpeg播放器进行管理
+      DivNum: 5,
       ReloadCanvas: true,
       CanvasWidth: 40,
       CanvasHeight: 30
     };
   },
 
+  //computed是Vue的计算属性，即CanvasHeight与CanvasWidth一旦发生变化，就自动执行该函数调整大小
   computed: {
     canvasResize() {
       return {
@@ -144,9 +161,11 @@ export default {
       turnoff().then(kill());
     },
 
+    //初始化播放器，准备播放摄像头监控画面
     InitPlayer() {
       this.connectAllCamera();
 
+      //从数据中依据分组得出要连接的摄像头
       var willConnect = [];
       var s = this.cameraIpResult.length;
       for (let i = 0; i < s; i = i + 1) {
@@ -155,15 +174,18 @@ export default {
         }
       }
 
+      //新建相应数量的Jsmpeg，并存入JsPlayerPool[] 以便管理
       for (let i = 0; i < willConnect.length; i = i + 1) {
         let TmpPlayer = null;
         TmpPlayer = new JSMpeg.Player(this.wsurl + willConnect[i].wsurl, {
           canvas: document.getElementById("CamPlayerGroup_" + (i + 1)),
-          disableGl: true
+          disableGl: true //使用WebGL导致视频流无法正确播放，不确定原因
         });
         if (TmpPlayer.paused) TmpPlayer.play();
         this.JsPlayerPool.push(TmpPlayer);
       }
+
+      NewSession();
     },
 
     terminate() {
@@ -211,6 +233,8 @@ export default {
 .monitor-div {
   margin: 5px;
 }
+
+/* 注意Css变量  var(--CanvasHeight)  的用法 */
 .monitor-canvas {
   height: var(--CanvasHeight);
   width: var(--CanvasWidth);
