@@ -43,38 +43,6 @@
         </el-row>
       </el-card>
       <el-card class="box-card" style="width:100%">
-        <div slot="header">学员</div>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="模糊搜索">
-              <el-input
-                id="search"
-                v-model="search_value"
-                type="text"
-                placeholder="在此输入搜索信息"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-divider />
-          <!-- <el-table
-            :data="baseData.trainees.filter(data => (!search_value || data.user.toString().toLowerCase().includes(search_value.toLowerCase()) || data.username.toLowerCase().includes(search_value.toLowerCase())))"
-            style="width: 100"
-            height="250"
-            :default-sort = "{prop: 'user', order: 'ascending'}"
-          >
-            <el-table-column
-              prop="user"
-              label="用户"
-            />
-            <el-table-column
-              prop="username"
-              label="用户名"
-            />
-          </el-table> -->
-      </el-card>
-      <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
         <el-form label-position="right" label-width="80px" :model="tableData_tasks[taskIndex]">
           <el-row>
@@ -149,8 +117,39 @@
               </el-form-item>
             </el-col>
           </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="学员">                
+                <el-input
+                  id="search"
+                  v-model="search_value"
+                  type="text"
+                  placeholder="在此输入搜索信息"
+                  clearable
+                />
+                <el-divider />
+                <el-table
+                  :data="tableData_tasks[taskIndex].trainees.filter(data => (!search_value || data.user.toString().toLowerCase().includes(search_value.toLowerCase()) || data.username.toLowerCase().includes(search_value.toLowerCase())))"
+                  style="width: 100"
+                  height="250"
+                  :default-sort = "{prop: 'user', order: 'ascending'}"
+                >
+                  <el-table-column
+                    prop="user"
+                    label="用户"
+                  />
+                  <el-table-column
+                    prop="username"
+                    label="用户名"
+                  />
+                </el-table>
+              </el-form-item>
+            </el-col>
+          </el-row>
         </el-form>
-        <el-divider />
+      </el-card>
+      <el-card class="box-card" style="width:100%">
+        <div slot="header">任务列表</div>
         <el-table
           :data="tableData_tasks"
           style="width: 100"
