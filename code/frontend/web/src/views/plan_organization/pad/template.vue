@@ -205,7 +205,7 @@ export default {
     edit(index) {
       this.select_id=this.templates[index].id
       this.dialogFormVisible=true
-      this.pop_title='编辑模板'+this.templates[index].name
+      this.pop_title='编辑模板'
       this.formData={
         name: this.templates[index].name
       }

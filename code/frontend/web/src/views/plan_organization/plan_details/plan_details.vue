@@ -216,8 +216,7 @@ export default {
       },
       tableData_classrooms: {},
       tableData_tasks: [{}],
-      taskIndex: 0,
-      tab_activeName: 'students',
+      taskIndex: 0
     }
   },
   created() {

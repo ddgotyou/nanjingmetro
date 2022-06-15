@@ -215,7 +215,10 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <div style="text-align:right"><el-button type="primary" @click="addTask">确认新增</el-button></div>
+          <div style="text-align:right">
+            <el-button type="primary" @click="saveTask" :disabled="taskIndex<0">修改任务</el-button>
+            <el-button type="primary" @click="addTask">确认新增</el-button>
+          </div>
         </el-form>
       </el-card>
       <el-card>
@@ -223,6 +226,9 @@
         <el-table
           :data="tableData"
           style="width: 100"
+          highlight-current-row
+          :cell-class-name="tableCellClassName"
+          @cell-click="cellClick"
         >
           <el-table-column
             type="index"
@@ -326,6 +332,81 @@ export default {
   },
   data() {
     return {
+      fake: {
+        "id" : 15,
+        "name" : "test",
+        "major" : "321",
+        "type" : "新职",
+        "goal" : "",
+        "detailed" : "321",
+        "status" : "未申请",
+        "searchText" : "test  321 321",
+        "startTime" : "2022-07-03 00:00:00",
+        "endTime" : "2022-07-11 00:00:00",
+        "auditors" : [ ],
+        "tasks" : [ {
+          "classroom" : 7,
+          "name" : "321",
+          "chooseTask" : "理论",
+          "type" : "练习",
+          "inPlanTask" : null,
+          "description" : "312",
+          "startTime" : "2022-06-23 15:31:00",
+          "endTime" : "2022-06-23 16:31:00",
+          "order" : 1655278281670,
+          "signInNumber" : null,
+          "signOutNumber" : null,
+          "trainers" : [ {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 5,
+            "username" : "测试讲师1",
+            "userEmail" : "hahaha@gmail.com"
+          } ],
+          "trainees" : [ {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 6,
+            "username" : "测试学员3"
+          }, {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 13,
+            "username" : "测试学员6"
+          }, {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 3,
+            "username" : "测试学员1"
+          }, {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 11,
+            "username" : "测试学员4"
+          }, {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 4,
+            "username" : "测试学员2"
+          }, {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 18,
+            "username" : "20220330"
+          }, {
+            "plan" : 15,
+            "taskOrder" : 1655278281670,
+            "user" : 12,
+            "username" : "测试学员5"
+          } ]
+        } ],
+        "_links" : {
+          "self" : {
+            "href" : "http://10.8.0.1:8080/training-plan/plans/15"
+          }
+        }
+      },
+
       id: '',
       response: {},
       people_data: [],
@@ -353,6 +434,8 @@ export default {
         classroom: '',
         description: ''
       },
+      taskIndex: -1,
+
       popData: {
         department: '',
         approver: []
@@ -406,19 +489,38 @@ export default {
           people: [],
           classes: []
         };
-        // for(var i=0;i<res.trainees.length;i++)
-        // {
-        //   that. taskData.people.push(res.trainees[i].user)
-        //   that.$refs.traineeTable.toggleRowSelection(that.people_data[that.trainee_id2no[res.trainees[i].user]],true);
-        //   that.traineeChange(res.trainees[i].user,true)
-        // }
         if(res.tasks.length==0)
         {
           that.tableData=[]
         }
         else
         {
-          that.tableData=res.tasks;
+          that.tableData=[]
+          for(var i=0;i<res.tasks.length;i++)
+          {
+            var data={
+              classroom: res.tasks[i].classroom,
+              name: res.tasks[i].name,
+              chooseTask: res.tasks[i].chooseTask,
+              type: res.tasks[i].type,
+              inPlanTask: null,
+              description: res.tasks[i].description,
+              startTime: res.tasks[i].startTime,
+              endTime: res.tasks[i].endTime,
+              trainers: [],
+              trainees: [],
+              order: res.tasks[i].order,
+              signInNumber: null,
+              signOutNumber: null
+            }
+            for(var j=0;j<res.tasks[i].trainers.length;j++) {
+              data.trainers.push(res.tasks[i].trainers[j].user)
+            }
+            for(var k=0;k<res.tasks[i].trainees.length;k++) {
+              data.trainees.push(res.tasks[i].trainees[k].user)
+            }
+            that.tableData.push(data)
+          }
           that.tableData.sort(function (a,b) {
             return a.order-b.order;
           });
@@ -426,8 +528,31 @@ export default {
       });
     },
     submit(form) {
-      console.log(this.formData)
       this.dialogFormVisible = true
+    },
+    saveTask() {
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.teachers.length==0||this.taskData.people.length==0||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+        this.$message.error('表单内存在空值！');
+      }
+      else{
+        var data={
+          classroom: this.taskData.classroom,
+          name: this.taskData.name,
+          chooseTask: this.taskData.option,
+          type: this.taskData.type,
+          inPlanTask: null,
+          description: this.taskData.description,
+          startTime: this.taskData.date+' '+this.taskData.period[0],
+          endTime: this.taskData.date+' '+this.taskData.period[1],
+          trainers: this.taskData.teachers,
+          trainees: this.taskData.people,
+          order: this.tableData[this.taskIndex].timestamp,
+          signInNumber: null,
+          signOutNumber: null
+        }
+        this.$set(this.tableData,this.taskIndex,data)
+      }
+      console.log(this.tableData)
     },
     addTask() {
       var timestamp=new Date().getTime()
@@ -440,7 +565,6 @@ export default {
           name: this.taskData.name,
           chooseTask: this.taskData.option,
           type: this.taskData.type,
-          //scoringFormTemplate: this.taskData.score,
           inPlanTask: null,
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
@@ -451,9 +575,6 @@ export default {
           signInNumber: null,
           signOutNumber: null
         })
-        // this.tableData.sort(function (a,b) {
-        //   return a.order-b.order;
-        // })
       }
     },
     deleteRow(index, tableData) {
@@ -809,7 +930,7 @@ export default {
       this. taskData.people=[]
       for(var i=0;i<selection.length;i++)
       {
-        this. taskData.people.push(selection[i].key)
+        this.taskData.people.push(selection[i].key)
       }
     },
     handleTraineeChange(selection, row){
@@ -863,6 +984,38 @@ export default {
             }
           }
         }
+      }
+    },
+    tableCellClassName({row, column, rowIndex, columnIndex}){
+      //注意这里是解构
+      //利用单元格的 className 的回调方法，给行列索引赋值
+      row.index=rowIndex;
+      column.index=columnIndex;
+    },
+    cellClick(row, column, cell, event){
+      this.taskIndex = row.index
+
+      this.taskData.people.forEach(user => {
+        this.traineeChange(user, false)
+        this.$refs.traineeTable.toggleRowSelection(this.people_data[this.trainee_id2no[user]],false);
+      })
+      this.taskData={
+        name: this.tableData[row.index].name,
+        option: this.tableData[row.index].chooseTask,
+        date: this.tableData[row.index].startTime.substr(0,10),
+        period: [this.tableData[row.index].startTime.substr(11,19),this.tableData[row.index].endTime.substr(11,19)],
+        teachers: [],
+        people: this.taskData.people,
+        type: this.tableData[row.index].type,
+        classroom: this.tableData[row.index].classroom,
+        description: this.tableData[row.index].description
+      }
+      for(var i=0; i < this.tableData[row.index].trainers.length; i++) {
+        this.taskData.teachers.push(this.tableData[row.index].trainers[i])
+      }
+      for(var i=0;i<this.tableData[row.index].trainees.length;i++) {
+        this.traineeChange(this.tableData[row.index].trainees[i], true)
+        this.$refs.traineeTable.toggleRowSelection(this.people_data[this.trainee_id2no[this.tableData[row.index].trainees[i]]],true);
       }
     }
   }

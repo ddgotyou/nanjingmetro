@@ -218,6 +218,7 @@
         <el-table
           :data="taskTableData"
           style="width: 100"
+          :default-sort = "{prop: 'index', order: 'descending'}"
         >
           <el-table-column
             type="index"
@@ -232,10 +233,12 @@
             label="任务名称"
           />
           <el-table-column
+            sortable
             prop="startTime"
             label="课时开始时间"
           />
            <el-table-column
+            sortable
             prop="startTime"
             label="课时结束时间"
           />
