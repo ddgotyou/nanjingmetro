@@ -1,17 +1,36 @@
+/*
+ * @Author: your name
+ * @LastEditors: your name
+ */
 import request from '@/utils/request'
 
 // 用户培训计划
-export function plan(id) {
+// export function plan(id) {
+//   return request({
+//     url: '/training-plan/plans/search/findUserPlans' + '?userId=' + id,
+//     method: 'get',
+//   })
+// }
+export function plan(userId){
   return request({
-    url: '/training-plan/plans/search/findUserPlans' + '?userId=' + id,
-    method: 'get',
+      url: '/training-plan/plans',
+      headers: {
+          user_id: userId
+      },
+      method: 'get',
+      params: {
+        module: 'plan_query',
+        trainer: userId,
+        page: 0,
+        size: 20
+      }
   })
 }
 
 // 用户本周任务
 export function task(id) {
   return request({
-    url: '/training-plan/plans/search/findUserWeeklyTasks' + '?userId=' + id,
+    url: '/training-plan/tasks/weekly' + '?userId=' + id,
     method: 'get',
   })
 }
