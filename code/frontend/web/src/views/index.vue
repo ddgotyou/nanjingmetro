@@ -155,24 +155,24 @@
                 align="center"
               />
               <el-table-column
-                prop="planDetails.name"
+                prop="name"
                 label="名称"
                 width=""
                 align="center"
               />
-              <el-table-column label="讲师" width="" align="center">
+              <!-- <el-table-column label="讲师" width="" align="center">
                 <template slot-scope="scope">
-                  <!-- {{ getTrainer(scope.row.planDetails.trainers) }} -->
+                  {{ getTrainer(scope.row.trainers) }}
                 </template>
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column label="开始时间" width="" align="center">
                 <template slot-scope="scope">
-                  {{ scope.row.planDetails.startTime.split(" ")[0] }}
+                  {{ scope.row.startTime.split(" ")[0] }}
                 </template>
               </el-table-column>
               <el-table-column label="结束时间" width="" align="center">
                 <template slot-scope="scope">
-                  {{ scope.row.planDetails.endTime.split(" ")[0] }}
+                  {{ scope.row.endTime.split(" ")[0] }}
                 </template>
               </el-table-column>
               <el-table-column
@@ -184,7 +184,7 @@
                 <template slot-scope="scope">
                   <el-button
                     type="text"
-                    @click="handleDetail(scope.row.planDetails.id)"
+                    @click="handleDetail(scope.row.id)"
                     >详情</el-button
                   >
                 </template>
@@ -316,12 +316,12 @@ export default {
         console.log(this.planList);
         this.planAllList = response._embedded.plans.map((item) => {
           return {
-            name: item.planDetails.name,
+            name: item.name,
             // trainers: item.planDetails.trainers
             //   .map((item) => item.username)
             //   .join("，"),
-            startTime: item.planDetails.startTime,
-            endTime: item.planDetails.endTime,
+            startTime: item.startTime,
+            endTime: item.endTime,
           };
         });
       });
