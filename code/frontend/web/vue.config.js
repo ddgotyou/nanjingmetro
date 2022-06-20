@@ -42,7 +42,7 @@ module.exports = {
         }
       },
     },
-    disableHostCheck: true
+    disableHostCheck: false
   },
   configureWebpack: {
     name: name,

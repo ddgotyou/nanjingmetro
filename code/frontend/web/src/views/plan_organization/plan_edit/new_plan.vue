@@ -30,27 +30,6 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="讲师">
-              <el-select
-                v-model="formData.teachers"
-                style="width:100%"
-                placeholder="请选择"
-                clearable
-                multiple
-                filterable
-              >
-                <el-option
-                  v-for="item in teacher_data"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
             <el-form-item label="计划时间">
               <el-date-picker
                 style="width:100%;"
@@ -80,40 +59,6 @@
         </el-row>
       </el-card>
       <el-card class="box-card" style="width:100%">
-        <div slot="header">人员添加</div>
-        <el-checkbox 
-          v-for="group in group_data" 
-          :label="group.label"  
-          :key="group.value"
-          :indeterminate="group.isIndeterminate"
-          v-model="group.isCheckAll"
-          border
-          @change="handleGroupChange(group.no)">
-          {{group.label}}
-        </el-checkbox>
-        <el-table
-          ref="traineeTable"
-          :data="people_data"
-          tooltip-effect="dark"
-          style="width: 100%"
-          height="250"
-          @select="handleTraineeChange"
-          @select-all="handleTraineeAll"
-          @selection-change="handleSelectionChange">
-          <el-table-column
-            type="selection">
-          </el-table-column>
-          <el-table-column
-            prop="key"
-            label="id">
-          </el-table-column>
-          <el-table-column
-            prop="label"
-            label="姓名">
-          </el-table-column>
-        </el-table>
-      </el-card>
-      <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
         <el-form label-position="right" label-width="80px" :model="taskData">
           <el-row>
@@ -136,7 +81,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="24">
+            <el-col :span="12">
               <el-form-item label="课时安排">
                 <el-date-picker
                   style="width:50%;"
@@ -173,11 +118,25 @@
                 </el-time-picker>
               </el-form-item>
             </el-col>
-            <!-- <el-col :span="12">
-              <el-form-item label="顺序">
-                <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
+            <el-col :span="12">
+              <el-form-item label="讲师">
+                <el-select
+                  v-model="taskData.teachers"
+                  style="width:100%"
+                  placeholder="请选择"
+                  clearable
+                  multiple
+                  filterable
+                >
+                  <el-option
+                    v-for="item in teacher_data"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
               </el-form-item>
-            </el-col> -->
+            </el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
@@ -212,9 +171,49 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <div style="text-align:right"><el-button type="primary" @click="addTask">确认新增</el-button></div>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="学员">
+                  <el-checkbox 
+                    v-for="group in group_data" 
+                    :label="group.label"  
+                    :key="group.value"
+                    :indeterminate="group.isIndeterminate"
+                    v-model="group.isCheckAll"
+                    border
+                    @change="handleGroupChange(group.no)">
+                    {{group.label}}
+                  </el-checkbox>
+                  <el-table
+                    ref="traineeTable"
+                    :data="people_data"
+                    tooltip-effect="dark"
+                    style="width: 100%"
+                    height="250"
+                    @select="handleTraineeChange"
+                    @select-all="handleTraineeAll"
+                    @selection-change="handleSelectionChange">
+                    <el-table-column
+                      type="selection">
+                    </el-table-column>
+                    <el-table-column
+                      prop="key"
+                      label="id">
+                    </el-table-column>
+                    <el-table-column
+                      prop="label"
+                      label="姓名">
+                    </el-table-column>
+                  </el-table>
+              </el-form-item>
+            </el-col>
+          </el-row>
         </el-form>
+        <div style="text-align:right"><el-button type="primary" @click="addTask">确认新增</el-button></div>
         <el-divider />
+      </el-card>
+      <el-card class="box-card" style="width:100%">
+        <div slot="header">任务列表</div>
         <el-table
           :data="tableData"
           :default-sort = "{prop: 'order', order: 'ascending'}"
@@ -327,9 +326,7 @@ export default {
         speciality: '',
         type: '',
         period: ['',''],
-        description: '',
-        people: [],
-        teachers: []
+        description: ''
       },
       taskData: {
         name: '',
@@ -337,6 +334,8 @@ export default {
         // order: '',
         date: null,
         period: [null,null],
+        teachers: [],
+        people: [],
         type: '',
         //score: '',
         classroom: '',
@@ -385,7 +384,7 @@ export default {
     },
     addTask() {
       var timestamp=new Date().getTime()
-      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.teachers.length==0||this.taskData.people.length==0||this.taskData.type==''||this.taskData.score==' '||this.taskData.classroom==''||this.taskData.description==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -399,6 +398,8 @@ export default {
           description: this.taskData.description,
           startTime: this.taskData.date+' '+this.taskData.period[0],
           endTime: this.taskData.date+' '+this.taskData.period[1],
+          trainers: this.taskData.teachers,
+          trainees: this.taskData.people,
           order: timestamp,
           signInNumber: null,
           signOutNumber: null
@@ -515,14 +516,12 @@ export default {
         searchText: this.formData.name,
         startTime: this.formData.period[0],
         endTime: this.formData.period[1],
-        trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
 
-      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0){
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -548,9 +547,7 @@ export default {
         searchText: this.formData.name,
         startTime: this.formData.period[0],
         endTime: this.formData.period[1],
-        trainees: this.formData.people,
         auditors: [],
-        trainers: this.formData.teachers,
         tasks: this.tableData,
         user: this.$user.userId
       }
@@ -560,7 +557,7 @@ export default {
         auditors.push(this.approvers_res[this.popData.approver[i]].id)
       }
       data.auditors=auditors
-      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.trainees.length==0||data.auditors.length==0){
+      if(data.name==''||data.major==''||data.type==''||data.detailed==''||data.searchText==''||data.startTime==''||data.endTime==''||data.auditors.length==0){
         this.$message.error('表单内存在空值！');
       }
       else{
@@ -758,10 +755,10 @@ export default {
       //console.log(this.group_data[gno].selection)
     },
     handleSelectionChange(selection){
-      this.formData.people=[]
+      this.taskData.people=[]
       for(var i=0;i<selection.length;i++)
       {
-        this.formData.people.push(selection[i].key)
+        this.taskData.people.push(selection[i].key)
       }
     },
     handleTraineeChange(selection, row){

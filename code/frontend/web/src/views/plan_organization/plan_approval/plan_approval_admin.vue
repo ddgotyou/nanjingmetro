@@ -72,6 +72,7 @@
       <el-table
         :data="tableData"
         style="width: 100"
+        :default-sort = "{prop: 'index', order: 'descending'}"
         >
         <el-table-column
           type="index"
@@ -82,10 +83,12 @@
           label="计划名称"
         />
         <el-table-column
+          sortable
           prop="startTime"
           label="开始时间"
         />
         <el-table-column
+          sortable
           prop="endTime"
           label="结束时间"
         />

@@ -80,6 +80,7 @@
       <el-table
         :data="tableData"
         style="width: 100"
+        :default-sort = "{prop: 'index', order: 'descending'}"
       >
         <el-table-column
           type="index"
@@ -90,16 +91,14 @@
           label="计划名称"
         />
         <el-table-column
+          sortable
           prop="startTime"
           label="开始时间"
         />
         <el-table-column
+          sortable
           prop="endTime"
           label="结束时间"
-        />
-        <el-table-column
-          prop="teacher"
-          label="讲师"
         />
         <el-table-column
           prop="status"
@@ -206,13 +205,8 @@ export default {
               name: res._embedded.plans[i].name,
               startTime: res._embedded.plans[i].startTime,
               endTime: res._embedded.plans[i].endTime,
-              teacher:'',
               status: res._embedded.plans[i].status,
               self: res._embedded.plans[i]._links.self.href
-            }
-            for(var j = 0; j < res._embedded.plans[i].trainers.length; j++)
-            {
-              item.teacher = item.teacher + res._embedded.plans[i].trainers[j].username + ';';
             }
             that.tableData.push(item)
           }
