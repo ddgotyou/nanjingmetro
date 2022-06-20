@@ -10,9 +10,8 @@ function add(id, data) {
 }
 
 // 查询讲师列表
-function list(id, query, page, size) {
+function list(query, page, size) {
   let params = {};
-  params["myUserId"] = id;
   if (page) params["page"] = page;
   if (size) params["size"] = size;
   for (let attr in query) {

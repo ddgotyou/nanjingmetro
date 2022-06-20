@@ -160,11 +160,19 @@
                 width=""
                 align="center"
               />
+<<<<<<< HEAD
+              <!-- <el-table-column label="讲师" width="" align="center">
+                <template slot-scope="scope">
+                  {{ getTrainer(scope.row.planDetails.trainers) }}
+                </template>
+              </el-table-column> -->
+=======
               <!-- <el-table-column label="讲师" width="" align="center">
                 <template slot-scope="scope">
                   {{ getTrainer(scope.row.trainers) }}
                 </template>
               </el-table-column> -->
+>>>>>>> fc1ad1cd531a5f879c36dc02a21776c16812860f
               <el-table-column label="开始时间" width="" align="center">
                 <template slot-scope="scope">
                   {{ scope.row.startTime.split(" ")[0] }}
@@ -305,13 +313,13 @@ export default {
   },
   methods: {
     loadData() {
-      trainee.list(this.$user.userId).then((response) => {
+      trainee.list().then((response) => {
         this.numTrainee = response.page.totalElements;
       });
-      trainer.list(this.$user.userId).then((response) => {
+      trainer.list().then((response) => {
         this.numTrainer = response.page.totalElements;
       });
-      api.plan(this.$user.userId).then((response) => {
+      api.plan().then((response) => {
         this.planList = response._embedded.plans.slice(0, 4);
         console.log(this.planList);
         this.planAllList = response._embedded.plans.map((item) => {

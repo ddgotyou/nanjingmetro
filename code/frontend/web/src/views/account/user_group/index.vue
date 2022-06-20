@@ -184,8 +184,8 @@ export default {
     },
     // 加载数据
     loadData() {
-      api.list(this.$user.userId, 0, 10000).then((response) => {
-        this.table = response._embedded ? response._embedded.groupVoes : [];
+      api.list(0, 10000).then((response) => {
+        this.table = response._embedded.usergroupVoes || [];
       });
       this.data(0, this.page.size);
     },
@@ -220,7 +220,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .del(this.$user.userId, this.selection[i].id)
+              .del(this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });

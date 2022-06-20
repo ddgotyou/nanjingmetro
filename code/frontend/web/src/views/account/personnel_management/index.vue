@@ -7,15 +7,18 @@
           <span slot="header">部门</span>
 
           <span>
-            <el-input></el-input>
+            <el-input v-model="query.keyword" @keyup.enter.native="handleDeptSearch">
+              <template #append>
+                <el-button icon="el-icon-search" type="primary" @click="handleDeptSearch" ></el-button>
+              </template>
+            </el-input>
           </span>
           <el-tree
-            :data="deptData"
+            :data="tree"
             show-checkbox
             node-key="id"
             ref="DeptTree"
             @node-click="handleNodeClick"
-            :props="defaultProps"
             class="tree"
           >
           </el-tree>
@@ -168,7 +171,7 @@
           <!-- 人员列表 -->
           <el-table
             v-loading="loading"
-            :data="list"
+            :data="data"
             :default-sort="{ prop: 'id', order: 'descending' }"
             stripe
             style="width: 100%"
@@ -210,7 +213,7 @@
             </el-table-column>
             <el-table-column label="状态" width="50" align="center">
               <template slot-scope="scope">
-                {{ getStatus(scope.row.type) }}
+                {{ getType(scope.row.type) }}
               </template>
             </el-table-column>
             <el-table-column prop="enabled" label="操作" align="center">
@@ -251,11 +254,11 @@
 </template>
 
 <script>
-import * as api from "@/api/account/trainee";
+import * as api from "@/api/account/user";
+import * as dept from "@/api/account/dept";
 import * as sel from "@/api/account/selection";
-import { auth } from "@/api/auth";
 import JsonExcel from "vue-json-excel";
-import Template from "../../plan_organization/pad/template.vue";
+import { param } from "../../../utils";
 
 export default {
   components: {
@@ -271,41 +274,7 @@ export default {
       },
 
       // 部门树
-      deptData: [
-        {
-          id: 1,
-          label: "南京地铁运营有限公司",
-          children: [
-            {
-              id: 2,
-              label: "总经理室",
-            },
-            {
-              id: 4,
-              label: "工会工作部",
-              children: [
-                {
-                  id: 9,
-                  label: "生产保护科",
-                },
-                {
-                  id: 10,
-                  label: "文体教育科",
-                },
-                {
-                  id: 11,
-                  label: "工会新入职",
-                },
-              ],
-            },
-          ],
-        },
-      ],
-
-      defaultProps: {
-        children: "children",
-        label: "label",
-      },
+      tree: [],
 
       // 导出Excel表格的表头设置
       fields: {
@@ -321,15 +290,16 @@ export default {
 
       // 查询集
       query: {
-        key: "",
-        name: "",
-        idcard: "",
-        sex: "",
+        keyword: "",
         dept: "",
-        post: "",
-        edu: "",
-        major: "",
-        status: "",
+        // key: "",
+        // name: "",
+        // idcard: "",
+        // sex: "",
+        // post: "",
+        // edu: "",
+        // major: "",
+        // status: "",
       },
       // 查询类型
       queryType: "list",
@@ -376,7 +346,7 @@ export default {
           value: "",
           options: [],
         },
-        status: {
+        type: {
           key: "5",
           label: "学员状态",
           visible: false,
@@ -391,7 +361,7 @@ export default {
       // 遮罩层
       loading: true,
       // 当前页面的学员的列表
-      list: [],
+      data: [],
       // 选中学员的列表
       selection: [],
 
@@ -415,67 +385,54 @@ export default {
     },
   },
   mounted: function () {
-    this.loadData();
-    auth(this.$user.userId, "stuMgt").then((response) => {
-      if (response.msg === "view") {
-        this.perm.add = true;
-        this.perm.delete = true;
-        this.perm.edit = true;
-      }
+    dept.tree(null).then((response) => {
+      this.tree = response._embedded.linkedHashMaps;
     });
+    this.loadData({}, 0, this.page.size);
   },
   methods: {
-    // 学员列表
-    data(query, page, size) {
+    // 搜索部门
+    handleDeptSearch() {},
+    // 加载人员数据
+    loadData(query, page, size) {
+      let params = query;
+      if (page !== null) params['page'] = page;
+      if (size !== null) params['size'] = size;
+      
+      console.log(params);
+
       this.loading = true;
       api
-        .list(this.$user.userId, query, page, size)
+        .list(params)
         .then((response) => {
-          this.list = response._embedded.traineeVoes;
+          console.log(response)
+          this.data = response._embedded.userNewVoes || [];
           this.page = response.page;
           this.loading = false;
         })
         .catch((error) => {
-          // console.log(JSON.stringify(error));
-          this.list = [];
+          this.data = [];
           this.loading = false;
         });
     },
-    // 模糊搜索
-    search(key, page, size) {
-      this.loading = true;
-      api.search(key, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.traineeVoes : [];
-        this.page = response.page;
-        this.loading = false;
-      });
-    },
-    // 加载学员数据
-    loadData() {
-      sel.dept({}).then((response) => {
-        this.items.dept.options = response._embedded.dboxVoes;
-      });
-      // sel.post({}).then((response) => {
-      //   this.items.post.options = response._embedded.dboxVoes;
-      // });
-      // sel.edu({}).then((response) => {
-      //   this.items.edu.options = response._embedded.dboxVoes;
-      // });
-      // sel.major({}).then((response) => {
-      //   this.items.major.options = response._embedded.dboxVoes;
-      // });
-      api.list(this.$user.userId, {}, 0, 10000).then((response) => {
-        this.table = response._embedded ? response._embedded.traineeVoes : [];
-      });
-      this.data({}, 0, this.page.size);
-    },
+    // 点击部门，加载对应人员
     handleNodeClick(data, node, obj) {
-      // console.log(data);
-      // console.log(node);
-      // console.log(obj);
       console.log(data.label);
-      this.data({ dept: data.label }, 0, this.page.size);
+      this.loadData({ dept: data.label }, 0, this.page.size);
     },
+    // 将部门数组转换为字符串
+    getDept(dept) {
+      return (dept || []).join('，');
+    },
+    // 将岗位数组转换为字符串
+    getPost(post) {
+      return (post || []).join('，');
+    },
+    // 将“0/1”转换为“正式/临时”
+    getType(type) {
+      return type === "0" ? "正式" : "临时";
+    },
+    
     // 当筛选选择框更改时，更新所有筛选选项的可见控制开关
     handleItemChange() {
       for (let key in this.items) {
@@ -492,30 +449,15 @@ export default {
         this.query[key] = this.items[key].value;
       }
     },
-    // 将部门数组转换为字符串
-    getDept(dept) {
-      return dept.join("，");
-    },
-    // 将岗位数组转换为字符串
-    getPost(post) {
-      return post.join("，");
-    },
-    // 将“0/1”转换为“正式/临时”
-    getStatus(status) {
-      return status === "0" ? "正式" : "临时";
-    },
+
     // 判断查询字典是否为空
     getQueryType() {
-      // 模糊查询
-      if (this.query.key !== "") return "search";
-
+      let query = {}
       for (let attr in this.query) {
-        // 严格查询
-        if (this.query[attr] !== "") return "query";
+        let value = this.query[attr];
+        if (value) query[attr] = value;
       }
-
-      // 无查询
-      return "list";
+      return query;
     },
     // 当选中学员更改时，更新选中学员列表
     handleSelectionChange(selection) {

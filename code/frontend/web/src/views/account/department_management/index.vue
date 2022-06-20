@@ -53,22 +53,21 @@
       <el-tree
         :data="data"
         show-checkbox
+        check-strictly
         node-key="id"
         ref="tree"
-        size="large"
         default-expand-all
         :expand-on-click-node="false"
         @check="handleCheck"
       >
         <span class="custom-tree-node" slot-scope="{ node, data }">
           <span v-if="!data.showInput">{{ data.label }}</span>
-          <span v-if="data.showInput"
-            ><el-input
-              v-model="form.name"
-              size="mini"
-              @blur="() => submit(node, data)"
-            ></el-input
-          ></span>
+          <span v-if="data.showInput">
+            <el-input v-model="form.name" size="mini" style="width:300px">
+              <el-button slot="suffix" size="mini" type="text" @click="() => submit(node, data)" >提交</el-button>
+              <el-button slot="suffix" size="mini" type="text" @click="() => cancel(node, data)" >取消</el-button>
+            </el-input>
+          </span>
           <span>
             <el-button type="text" @click="() => append(data)">
               新增
@@ -124,36 +123,7 @@ export default {
       selection: [],
 
       // 树状数据
-      data: [
-        {
-          id: 1,
-          label: "南京地铁运营有限公司",
-          children: [
-            {
-              id: 2,
-              label: "总经理室",
-            },
-            {
-              id: 4,
-              label: "工会工作部",
-              children: [
-                {
-                  id: 9,
-                  label: "生产保护科",
-                },
-                {
-                  id: 10,
-                  label: "文体教育科",
-                },
-                {
-                  id: 11,
-                  label: "工会新入职",
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      data: [],
     };
   },
   computed: {},
@@ -174,18 +144,14 @@ export default {
       children.splice(index, 1);
     },
     handleCheck(nodeObj, SelectedObj) {
-      console.log(nodeObj);
-      console.log(SelectedObj.checkedKeys); // 这是选中的节点的key数组
-      console.log(SelectedObj.checkedNodes); // 这是选中的节点数组
       this.selection = SelectedObj.checkedNodes;
-      // this.selection = SelectedObj.checkedKeys;
     },
 
     // 加载部门树
     loadData() {
-      // api.tree().then((response) => {
-      //   console.log(response);
-      // });
+      api.tree(null).then((response) => {
+        this.data = response._embedded.linkedHashMaps;
+      });
       this.appendShowInput(this.data);
     },
     // 删除部门
@@ -202,11 +168,14 @@ export default {
           type: "warning",
         }
       ).then(() => {
-        this.data[0].children.splice(0, 1);
-        // api
-        //   .remove(this.$user.userId, this.selection[i].id)
-        //   .then((response) => {})
-        //   .catch((error) => {});
+        let ids = this.selection.map(item => item.id);
+        api
+          .remove(ids)
+          .then((response) => {
+            this.data = response._embedded.linkedHashMaps;
+            this.$message.success(`删除成功！`);
+          })
+          .catch((error) => {});
       });
     },
     // 搜索部门
@@ -217,12 +186,16 @@ export default {
     },
     // 新增部门
     append(data) {
+      if (this.isAppend || this.isEdit) return;
+
       this.isAppend = true;
       if (!data.children) this.$set(data, "children", []);
       data.children.push({ label: "", showInput: true });
     },
     // 编辑部门
     edit(node, data) {
+      if (this.isAppend || this.isEdit) return;
+
       this.isEdit = true;
       this.form.name = data.label;
       data.showInput = true;
@@ -231,36 +204,43 @@ export default {
       data.label = "";
       data.label = this.form.name;
     },
+    // 新增/编辑部门取消
+    cancel(node, data) {
+      if (this.isAppend) {
+        this.isAppend = false;
+        this.removeNode(node, data);
+      } else if (this.isEdit) {
+        this.isEdit = false;
+        data.showInput = false;
+      }
+      this.form.name = "";
+    },
     // 新增/编辑部门完成
     submit(node, data) {
-      setTimeout(() => {
-        data.showInput = false;
+      data.showInput = false;
 
-        if (this.isAppend) {
-          this.isAppend = false;
+      if (this.isAppend) {
+        this.isAppend = false;
+        api.append(node.parent.data.id, this.form.name).then(response => {
+          this.data = response._embedded.linkedHashMaps;
+          this.$message.success(`新增成功！`);
+        });
+      } else if (this.isEdit) {
+        this.isEdit = false;
+        api.edit(data.id, this.form.name).then(response => {
+          this.data = response._embedded.linkedHashMaps;
+          this.$message.success(`编辑成功！`);
+        });
+      }
 
-          // 新增成功
-          data.label = this.form.name;
-
-          // 取消新增
-          if (!this.form.name) this.removeNode(node, data);
-
-          this.form.name = "";
-        } else if (this.isEdit) {
-          console.log("1");
-          this.isEdit = false;
-
-          if (this.form.name) data.label = this.form.name;
-          this.form.name = "";
-        }
-      }, 100);
+      this.form.name = "";
     },
     // 位置移动
     moveNode(node, data, option) {
       const parent = node.parent;
       const children = parent.data.children || parent.data;
       const length = children.length;
-      const index = children.findIndex((d) => d.id === data.id);
+      const index = children.findIndex((child) => child.id === data.id);
       const nodeMoved = children.splice(index, 1)[0];
       let indexMoved = -1;
       if (option == "up") indexMoved = index - 1;
@@ -272,27 +252,36 @@ export default {
       }, 100);
       console.log(this.data);
     },
+    // 移动
+    shift(id, action) {
+      if (this.isAppend || this.isEdit) return;
+
+      api.shift(id, action).then((response) => {
+        console.log(response)
+        this.data = response._embedded.linkedHashMaps;
+      })
+    },
     // 上移
     up(node, data) {
-      this.moveNode(node, data, "up");
+      this.shift(data.id, "up");
     },
     // 下移
     down(node, data) {
-      this.moveNode(node, data, "down");
+      this.shift(data.id, "down");
     },
     // 置顶
     top(node, data) {
-      this.moveNode(node, data, "top");
+      this.shift(data.id, "top");
     },
     // 置底
     bottom(node, data) {
-      this.moveNode(node, data, "bottom");
+      this.shift(data.id, "bottom");
     },
   },
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .card-box {
   max-width: 100%;
   margin: 20px auto;
@@ -301,9 +290,14 @@ export default {
 .custom-tree-node {
   flex: 1;
   display: flex;
+  height: 50px;
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+}
+
+.el-tree-node__content {
+  height: 28px;
 }
 </style>
