@@ -131,7 +131,7 @@
 
 <script>
 import * as api from "@/api/account/user_group";
-import * as user from "@/api/account/user";
+import * as sel from "@/api/account/selection";
 import * as role from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 import { clone, compare } from "@/utils/object";
@@ -238,21 +238,20 @@ export default {
     // 加载数据
     async loadData() {
       // 获取所有角色模板
-      role.list(this.$user.userId, 0, 1000).then((response) => {
-        this.selection.roles = response._embedded.groupVoes.map(
-          (element, index) => {
-            return { key: index, value: element.name, label: element.name };
+      role.list(0, 1000).then((response) => {
+        this.selection.roles = response._embedded.roleVoes.map(
+          (element) => {
+            return { key: element.id, value: element.name, label: element.name };
           }
         );
       });
       // 获取所有用户
-      user.list(null).then((response) => {
+      sel.userList(null).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
       // 获取用户组详情
       await api.detail(this.id).then((response) => {
         this.form = response;
-        console.log(this.form);
         for (let i in this.form.users) {
           let user = this.usersOptional.find(
             (element) => element.value === this.form.users[i]
@@ -318,7 +317,7 @@ export default {
     },
     // 模糊搜索用户
     handleSearch() {
-      user.search(this.query.key).then((response) => {
+      sel.userSearch(this.query.key).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
     },
@@ -350,19 +349,16 @@ export default {
             return;
           }
 
-          api.edit(this.$user.userId, this.id, this.form).then((response) => {
-            if (response.code === 200) {
-              this.$message.success("编辑成功！");
-              this.onCancel();
-            } else {
-              this.$message.error(response.msg);
-            }
+          api.edit(this.id, this.form).then((response) => {
+            this.$message.success("编辑成功！");
+            this.onCancel();
           });
         } else {
           this.$message.error("请按提示填写正确内容！");
         }
       });
     },
+    
     // 取消，返回上一级菜单
     onCancel() {
       this.$router.push("/account/user-group");

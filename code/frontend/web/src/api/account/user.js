@@ -1,20 +1,12 @@
 import request from '@/utils/request'
 
-// 查询用户列表
-function list(query) {
+// 部门树
+function list(params) {
   return request({
-    url: '/tms-account/dbox/getAllUser',
+    url: '/tms-account/users/list',
     method: 'get',
-    params: query
+    params: params
   })
 }
 
-// 模糊搜索用户
-function search(keyword) {
-  return request({
-    url: '/tms-account/dbox/getUserLike/{keys}' + keyword,
-    method: 'get',
-  })
-}
-
-export { list, search }
+export { list }

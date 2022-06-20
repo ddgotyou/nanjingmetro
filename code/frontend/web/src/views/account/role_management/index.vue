@@ -167,8 +167,8 @@ export default {
     // 用户组列表
     data(page, size) {
       this.loading = true;
-      api.list(this.$user.userId, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.groupVoes : [];
+      api.list(page, size).then((response) => {
+        this.list = response._embedded.roleVoes || [];
         this.page = response.page;
         this.loading = false;
       });
@@ -177,14 +177,14 @@ export default {
     search(key, page, size) {
       this.loading = true;
       api.search(key, page, size).then((response) => {
-        this.list = response._embedded ? response._embedded.groupVoes : [];
+        this.list = response._embedded.roleVoes || [];
         this.page = response.page;
         this.loading = false;
       });
     },
     loadData() {
-      api.list(this.$user.userId, 0, 10000).then((response) => {
-        this.table = response._embedded ? response._embedded.groupVoes : [];
+      api.list(0, 10000).then((response) => {
+        this.table = response._embedded.roleVoes || [];
       });
       this.data(0, this.page.size);
     },
@@ -230,7 +230,7 @@ export default {
         for (let i in this.selection) {
           let promise = new Promise((resolve, reject) => {
             api
-              .del(this.$user.userId, this.selection[i].id)
+              .del(this.selection[i].id)
               .then((response) => resolve(response))
               .catch((error) => reject(error.message));
           });

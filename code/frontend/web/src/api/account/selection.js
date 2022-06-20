@@ -18,7 +18,7 @@ function userGroupByType(key) {
     default: break
   }
   return request({
-    url: '/tms-account/usergroup/getUsergroupByType/' + key,
+    url: '/tms-account/dbox/getUsergroupByType/' + key,
     method: 'get',
   })
 }
@@ -26,7 +26,7 @@ function userGroupByType(key) {
 // 查询部门下拉框选项
 function dept(query) {
   return request({
-    url: '/tms-account/depts/getDepts',
+    url: '/tms-account/dbox/getDepts',
     method: 'get',
     params: query
   })
@@ -59,4 +59,21 @@ function major(query) {
   })
 }
 
-export { userGroup, userGroupByType, dept, post, edu, major }
+// 查询用户列表
+function userList(query) {
+  return request({
+    url: '/tms-account/dbox/getAllUser',
+    method: 'get',
+    params: query
+  })
+}
+
+// 模糊搜索用户
+function userSearch(keyword) {
+  return request({
+    url: '/tms-account/dbox/getUserLike/' + keyword,
+    method: 'get',
+  })
+}
+
+export { userGroup, userGroupByType, dept, post, edu, major, userList, userSearch }

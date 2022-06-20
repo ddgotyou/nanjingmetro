@@ -131,7 +131,7 @@
 
 <script>
 import * as api from "@/api/account/user_group";
-import * as user from "@/api/account/user";
+import * as sel from "@/api/account/selection";
 import * as role from "@/api/account/role";
 import AuthCard from "@/views/components/AuthCard.vue";
 import { clone, compare } from "@/utils/object";
@@ -232,15 +232,15 @@ export default {
     // 加载数据
     loadData() {
       // 获取所有角色模板
-      role.list(this.$user.userId).then((response) => {
-        this.selection.roles = response._embedded.groupVoes.map(
-          (element, index) => {
-            return { key: index, value: element.name, label: element.name };
+      role.list().then((response) => {
+        this.selection.roles = response._embedded.roleVoes.map(
+          (element) => {
+            return { key: element.id, value: element.name, label: element.name };
           }
         );
       });
       // 获取所有用户
-      user.list(null).then((response) => {
+      sel.userList(null).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
     },
@@ -297,7 +297,7 @@ export default {
     },
     // 模糊搜索用户
     handleSearch() {
-      user.search(this.query.key).then((response) => {
+      sel.userSearch(this.query.key).then((response) => {
         this.usersOptional = response._embedded.dboxVoes;
       });
     },
@@ -329,13 +329,9 @@ export default {
         }
 
         if (valid) {
-          api.add(this.$user.userId, this.form).then((response) => {
-            if (response.code === 200) {
-              this.$message.success("新增成功！");
-              this.onCancel();
-            } else {
-              this.$message.error(response.msg);
-            }
+          api.add(this.form).then((response) => {
+            this.$message.success("新增成功！");
+            this.onCancel();
           });
         } else {
           this.$message.error("请按提示填写正确内容！");

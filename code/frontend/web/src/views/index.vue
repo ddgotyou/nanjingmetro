@@ -161,9 +161,9 @@
                 align="center"
               />
               <el-table-column label="讲师" width="" align="center">
-                <template slot-scope="scope">
+                <!-- <template slot-scope="scope"> -->
                   <!-- {{ getTrainer(scope.row.planDetails.trainers) }} -->
-                </template>
+                <!-- </template> -->
               </el-table-column>
               <el-table-column label="开始时间" width="" align="center">
                 <template slot-scope="scope">
@@ -305,13 +305,13 @@ export default {
   },
   methods: {
     loadData() {
-      trainee.list(this.$user.userId).then((response) => {
+      trainee.list().then((response) => {
         this.numTrainee = response.page.totalElements;
       });
-      trainer.list(this.$user.userId).then((response) => {
+      trainer.list().then((response) => {
         this.numTrainer = response.page.totalElements;
       });
-      api.plan(this.$user.userId).then((response) => {
+      api.plan().then((response) => {
         this.planList = response._embedded.plans.slice(0, 4);
         console.log(this.planList);
         this.planAllList = response._embedded.plans.map((item) => {
