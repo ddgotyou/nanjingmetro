@@ -164,6 +164,161 @@
         </el-form>
       </el-dialog>
       <el-card class="box-card" style="width:100%">
+        <div slot="header">新增预约</div>
+        <el-divider content-position="left">基本信息</el-divider>
+        <el-form label-position="right" label-width="80px" :model="taskData">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="任务名称">
+                <el-input id="task_name" v-model="taskData.name" name="task_name" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="任务选择">
+                <el-select v-model="taskData.option" style="width:100%" placeholder="请选择">
+                  <el-option
+                    v-for="item in task_chooses"
+                    :key="item.value"
+                    :label="item.lable"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="课时安排">
+                <el-date-picker
+                  style="width:50%;"
+                  value-format="yyyy-MM-dd"
+                  v-model="taskData.date"
+                  type="date"
+                  placeholder="选择日期"
+                  :picker-options="taskPeriodOptions"
+                  @change="changeDate">
+                </el-date-picker>
+                <el-time-picker
+                  style="width:25%;"
+                  placeholder="起始时间"
+                  format="HH:mm"
+                  value-format="HH:mm:00"
+                  :disabled="taskData.date==null"
+                  v-model="taskData.period[0]"
+                  :picker-options="{
+                    selectableRange: startTimeRange
+                  }"
+                  @change="changeStartTime">
+                </el-time-picker>
+                <el-time-picker
+                  style="width:25%;"
+                  placeholder="结束时间"
+                  format="HH:mm"
+                  value-format="HH:mm:00"
+                  :disabled="taskData.date==null||taskData.period[0]==null"
+                  v-model="taskData.period[1]"
+                  :picker-options="{
+                    selectableRange: endTimeRange
+                  }"
+                  @change="changeEndTime">
+                </el-time-picker>
+              </el-form-item>
+            </el-col>
+             <el-col :span="12">
+            <el-form-item label="讲师">
+              <el-select
+                v-model="taskData.trainers"
+                style="width:100%"
+                placeholder="请选择"
+                clearable
+                multiple
+                filterable
+              >
+                <el-option
+                  v-for="item in teacher_data"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+            <!-- <el-col :span="12">
+              <el-form-item label="顺序">
+                <el-input-number style="width:100%;" v-model="taskData.order" :min="1" :max="100"></el-input-number>
+              </el-form-item>
+            </el-col> -->
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="类型">
+                <el-select id="task_type" v-model="taskData.type" style="width:100%" placeholder="请选择">
+                  <el-option
+                    v-for="item in task_types"
+                    :key="item.value"
+                    :label="item.lable"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="教室">
+                <el-select v-model="taskData.classroom" style="width:100%" clearable placeholder="请选择" @change="changeClassroom">
+                  <el-option
+                    v-for="item in classrooms"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="描述">
+                <el-input v-model="taskData.description" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-divider content-position="left">人员添加</el-divider>
+          <el-checkbox 
+            v-for="group in group_data" 
+            :label="group.label"  
+            :key="group.value"
+            :indeterminate="group.isIndeterminate"
+            v-model="group.isCheckAll"
+            border
+            @change="handleGroupChange(group.no)">
+            {{group.label}}
+          </el-checkbox>
+          <el-table
+            ref="traineeTable"
+            :data="people_data"
+            tooltip-effect="dark"
+            style="width: 100%"
+            height="250"
+            @select="handleTraineeChange"
+            @select-all="handleTraineeAll"
+            @selection-change="handleSelectionChange">
+            <el-table-column
+              type="selection">
+            </el-table-column>
+            <el-table-column
+              prop="key"
+              label="id">
+            </el-table-column>
+            <el-table-column
+              prop="label"
+              label="姓名">
+            </el-table-column>
+          </el-table>
+          <el-divider />
+          <div style="text-align:right"><el-button type="primary" @click="addTask">确认新增</el-button></div>
+        </el-form>
+      </el-card>
+      <el-card class="box-card" style="width:100%">
         <div slot="header">任务列表</div>
         <el-table
           :data="tableData"
@@ -354,6 +509,34 @@ export default {
           })
         }
       })
+    },
+    addTask() {
+      if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''||this.taskData.trainers.length==0||this.taskData.trainees.length==0){
+        this.$message.error('表单内存在空值！');
+      }
+      else{
+        api.addTempTask({
+          classroom: this.taskData.classroom,
+          name: this.taskData.name,
+          chooseTask: this.taskData.option,
+          type: this.taskData.type,
+          inPlanTask: null,
+          description: this.taskData.description,
+          startTime: this.taskData.date+' '+this.taskData.period[0],
+          endTime: this.taskData.date+' '+this.taskData.period[1],
+          // order: this.taskData.order,
+          trainees: this.taskData.trainees,
+          trainers: this.taskData.trainers,
+          signInNumber: null,
+          signOutNumber: null
+        }).then( res => {
+          this.list()
+          this.$message({
+            message: '预约临时任务成功！',
+            type: 'success'
+          });
+        })
+      }
     },
     save() {
       if(this.taskData.name==''||this.taskData.option==''||this.taskData.date==null||this.taskData.period[0]==null||this.taskData.period[1]==null||this.taskData.type==''||this.taskData.classroom==''||this.taskData.description==''||this.taskData.trainers.length==0||this.taskData.trainees.length==0){
