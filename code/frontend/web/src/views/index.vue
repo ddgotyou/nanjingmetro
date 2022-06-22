@@ -319,7 +319,8 @@ export default {
       trainer.list().then((response) => {
         this.numTrainer = response.page.totalElements;
       });
-      api.plan().then((response) => {
+      console.log(this.$user.userId)
+      api.plan(this.$user.userId).then((response) => {
         this.planList = response._embedded.plans.slice(0, 4);
         console.log(this.planList);
         this.planAllList = response._embedded.plans.map((item) => {
