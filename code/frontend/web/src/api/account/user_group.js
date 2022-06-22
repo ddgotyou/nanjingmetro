@@ -2,9 +2,9 @@ import request from '@/utils/request'
 
 
 // 新增用户组
-function add(id, data) {
+function add(data) {
   return request({
-    url: '/tms-account/usergroup/addUsergroup' + '?myUserId=' + id,
+    url: '/tms-account/usergroup/addUsergroup',
     method: 'post',
     data: data
   })
@@ -35,18 +35,18 @@ function detail(id) {
 }
 
 // 编辑用户组
-function edit(userId, id, data) {
+function edit(id, data) {
   return request({
-    url: '/tms-account/usergroup/editUsergroup/' + id + '?myUserId=' + userId,
+    url: '/tms-account/usergroup/editUsergroup/' + id,
     method: 'put',
     data: data
   })
 }
 
 // 删除用户组
-function del(userId, id) {
+function del(id) {
   return request({
-    url: '/tms-account/usergroup/deleteUsergroup/' + id + '?myUserId=' + userId,
+    url: '/tms-account/usergroup/deleteUsergroup/' + id,
     method: 'delete'
   })
 }

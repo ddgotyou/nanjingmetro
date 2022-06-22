@@ -157,10 +157,10 @@ export default {
     // 加载数据
     loadData() {
       // 获取所有角色模板
-      api.list(this.$user.userId, 0, 1000).then((response) => {
-        this.selection.roles = response._embedded.groupVoes.map(
-          (element, index) => {
-            return { key: index, value: element.name, label: element.name };
+      api.list(0, 1000).then((response) => {
+        this.selection.roles = response._embedded.roleVoes.map(
+          (element) => {
+            return { key: element.id, value: element.name, label: element.name };
           }
         );
       });
@@ -200,13 +200,9 @@ export default {
           }
 
           // console.log(this.form);
-          api.edit(this.$user.userId, this.id, this.form).then((response) => {
-            if (response.code === 200) {
+          api.edit(this.id, this.form).then((response) => {
               this.$message.success("编辑成功！");
               this.onCancel();
-            } else {
-              this.$message.error(response.msg);
-            }
           });
         } else {
           this.$message.error("请按提示填写正确内容！");
