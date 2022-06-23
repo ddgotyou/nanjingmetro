@@ -24,7 +24,7 @@ function getTraineeGroup() {
 }
 function getDepts() {
     return request({
-        url: '/tms-account/depts/getDepts',
+        url: '/tms-account/dbox/getAllWorkdepts',
         method: 'get'
     })
 }
