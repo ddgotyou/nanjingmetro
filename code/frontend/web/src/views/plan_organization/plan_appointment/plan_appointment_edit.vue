@@ -592,9 +592,8 @@ export default {
         }
       }) 
       for(var i=0;i< this.classrooms.length;i++){
-        if(this.classrooms[i].name==this.tableData[index].classroom){
-          this.taskData.classroom=this.classrooms[i].id
-          break
+        if(this.classrooms[i].label==this.tableData[index].classroom){
+          this.taskData.classroom=this.classrooms[i].value
         }
       }
     },
