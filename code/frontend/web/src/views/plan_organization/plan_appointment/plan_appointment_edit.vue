@@ -724,6 +724,8 @@ export default {
         }
         else if(this.taskData.date!=null&&this.taskData.period[0]!=null&&this.taskData.period[1]!=null) {
         //选择了日期
+
+
           this.first_choose='period'
           var that=this
           api.findClassrooms({

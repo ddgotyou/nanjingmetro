@@ -12,6 +12,7 @@ import store from './store'
 import router from './router'
 import permission from './directive/permission'
 import { download } from '@/utils/request'
+import global from './Global'
 
 import './assets/icons' // icon
 import './permission' // permission control
@@ -35,6 +36,7 @@ Vue.prototype.selectDictLabel = selectDictLabel
 Vue.prototype.selectDictLabels = selectDictLabels
 Vue.prototype.download = download
 Vue.prototype.handleTree = handleTree
+Vue.prototype.GLOBAL = global
 
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: "success" });

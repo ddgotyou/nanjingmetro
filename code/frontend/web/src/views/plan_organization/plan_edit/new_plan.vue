@@ -1,5 +1,70 @@
 <template>
   <div class="app-container">
+
+  <div class="building-container">
+  <el-form label-position="right" label-width="80px">
+  <el-card class="box-card" style="width:100%">
+    <div slot="header">楼宇选择</div>
+    <el-row>
+      <el-col :span="12"></el-col>
+    </el-row>
+    <div id="father"></div>
+
+
+  </el-card>
+  </el-form>
+  </div>
+
+  <div class="floor-container">
+  <el-form label-position="right" label-width="80px" :model="taskData">
+  <el-card class="box-card" style="width:100%">
+    <div slot="header">教室选择</div>
+    <el-row>
+      <el-col :span="12">
+        <p>请填写预约时间</p>
+      <el-form-item label="课时安排">
+      <el-date-picker
+        style="width:50%;"
+        value-format="yyyy-MM-dd"
+        v-model="taskData.date"
+        type="date"
+        placeholder="选择日期"
+        :picker-options="taskPeriodOptions">
+      </el-date-picker>
+      <el-time-picker
+        style="width:25%;"
+        placeholder="起始时间"
+        format="HH:mm"
+        value-format="HH:mm"
+        :disabled="taskData.date==null"
+        v-model="taskData.period[0]"
+        :picker-options="{
+         selectableRange: startTimeRange
+        }"
+        @change="changeStartTime">
+      </el-time-picker>
+      <el-time-picker
+        style="width:25%;"
+        placeholder="结束时间"
+        format="HH:mm"
+        value-format="HH:mm"
+        :disabled="taskData.date==null||taskData.period[0]==null"
+        v-model="taskData.period[1]"
+        :picker-options="{
+        selectableRange: endTimeRange
+        }"
+        @change="changeEndTime">
+        </el-time-picker>
+      </el-form-item>
+      </el-col>
+    </el-row>
+    <div id="son"></div>
+
+
+  </el-card>
+  </el-form>
+  </div>
+
     <el-button style="float:right;margin:10px;" icon="el-icon-arrow-left" circle @click="$router.go(-1)"></el-button>
     <el-form label-position="right" label-width="80px" :model="formData">
       <el-card class="box-card" style="width:100%">
@@ -58,6 +123,106 @@
           </el-col>
         </el-row>
       </el-card>
+
+      <el-card class="box-card" style="width:100%">
+        <div slot="header">任务列表</div>
+        <el-table
+          :data="tableData"
+          :default-sort = "{prop: 'order', order: 'ascending'}"
+          style="width: 100"
+        >
+          <el-table-column
+            type="index"
+            width="50">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="任务名称"
+          />
+          <el-table-column
+            prop="startTime"
+            label="课时开始时间"
+          />
+           <el-table-column
+            prop="startTime"
+            label="课时结束时间"
+          />
+          <el-table-column
+            label="操作"
+            width="120"
+          >
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                size="small"
+                @click.native.prevent="deleteRow(scope.$index, tableData)"
+              >
+                移除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+      <div style="text-align:right">
+        <el-button @click="save">保存</el-button>
+        <el-button type="primary" @click="submit">保存并提交</el-button>
+      </div>
+    </el-form>
+    
+    <el-dialog title="发起审批" :visible.sync="dialogFormVisible">
+      <div class="dialog-footer">
+        <el-form label-position="right" label-width="100px" :model="popData">
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="部门">
+                <el-select v-model="popData.department" style="width:100%" filterable placeholder="请选择部门" @change="changeDep">
+                  <el-option
+                    v-for="item in departments"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="审批人">
+                <el-select
+                  v-model="popData.approver"
+                  style="width:100%"
+                  multiple
+                  filterable
+                  default-first-option
+                  placeholder="请选择审批人"
+                  :disabled="popData.department==''"
+                >
+                  <el-option
+                    v-for="item in approvers"
+                    :key="item.key"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+        <div style="text-align: right">
+          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="commit">确 定</el-button>
+        </div>
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      title="预约"
+      :visible.sync="dialogReserveVisible"
+      width="95%"
+      height="70%"
+      :before-close="handleClose">
+
       <el-card class="box-card" style="width:100%">
         <div slot="header">详细任务</div>
         <el-form label-position="right" label-width="80px" :model="taskData">
@@ -81,43 +246,6 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="12">
-              <el-form-item label="课时安排">
-                <el-date-picker
-                  style="width:50%;"
-                  value-format="yyyy-MM-dd"
-                  v-model="taskData.date"
-                  type="date"
-                  placeholder="选择日期"
-                  :picker-options="taskPeriodOptions"
-                  @change="changeDate">
-                </el-date-picker>
-                <el-time-picker
-                  style="width:25%;"
-                  placeholder="起始时间"
-                  format="HH:mm"
-                  value-format="HH:mm:00"
-                  :disabled="taskData.date==null"
-                  v-model="taskData.period[0]"
-                  :picker-options="{
-                    selectableRange: startTimeRange
-                  }"
-                  @change="changeStartTime">
-                </el-time-picker>
-                <el-time-picker
-                  style="width:25%;"
-                  placeholder="结束时间"
-                  format="HH:mm"
-                  value-format="HH:mm:00"
-                  :disabled="taskData.date==null||taskData.period[0]==null"
-                  v-model="taskData.period[1]"
-                  :picker-options="{
-                    selectableRange: endTimeRange
-                  }"
-                  @change="changeEndTime">
-                </el-time-picker>
-              </el-form-item>
-            </el-col>
             <el-col :span="12">
               <el-form-item label="讲师">
                 <el-select
@@ -195,128 +323,86 @@
                     @selection-change="handleSelectionChange">
                     <el-table-column
                       type="selection">
-                    </el-table-column>
-                    <el-table-column
+                  </el-table-column>
+                  <el-table-column
                       prop="key"
                       label="id">
-                    </el-table-column>
-                    <el-table-column
+                  </el-table-column>
+                  <el-table-column
                       prop="label"
                       label="姓名">
-                    </el-table-column>
+                  </el-table-column>
                   </el-table>
               </el-form-item>
             </el-col>
           </el-row>
         </el-form>
-        <div style="text-align:right"><el-button type="primary" @click="addTask">确认新增</el-button></div>
+        <div style="text-align:right">
+          <el-button type="primary" @click="pushPage">查看教室设备</el-button>
+          <el-button type="primary" @click="addTask">确认新增</el-button>
+        </div>
         <el-divider />
       </el-card>
-      <el-card class="box-card" style="width:100%">
-        <div slot="header">任务列表</div>
-        <el-table
-          :data="tableData"
-          :default-sort = "{prop: 'order', order: 'ascending'}"
-          style="width: 100"
-        >
-          <el-table-column
-            type="index"
-            width="50">
-          </el-table-column>
-          <el-table-column
-            prop="name"
-            label="任务名称"
-          />
-          <el-table-column
-            prop="startTime"
-            label="课时开始时间"
-          />
-           <el-table-column
-            prop="startTime"
-            label="课时结束时间"
-          />
-          <el-table-column
-            label="操作"
-            width="120"
-          >
-            <template slot-scope="scope">
-              <el-button
-                type="text"
-                size="small"
-                @click.native.prevent="deleteRow(scope.$index, tableData)"
-              >
-                移除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-      <div style="text-align:right">
-        <el-button @click="save">保存</el-button>
-        <el-button type="primary" @click="submit">保存并提交</el-button>
-      </div>
-    </el-form>
-    <el-dialog title="发起审批" :visible.sync="dialogFormVisible">
-      <div class="dialog-footer">
-        <el-form label-position="right" label-width="100px" :model="popData">
-          <el-row>
-            <el-col :span="24">
-              <el-form-item label="部门">
-                <el-select v-model="popData.department" style="width:100%" filterable placeholder="请选择部门" @change="changeDep">
-                  <el-option
-                    v-for="item in departments"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="24">
-              <el-form-item label="审批人">
-                <el-select
-                  v-model="popData.approver"
-                  style="width:100%"
-                  multiple
-                  filterable
-                  default-first-option
-                  placeholder="请选择审批人"
-                  :disabled="popData.department==''"
-                >
-                  <el-option
-                    v-for="item in approvers"
-                    :key="item.key"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
-        <div style="text-align: right">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="commit">确 定</el-button>
-        </div>
-      </div>
+
     </el-dialog>
   </div>
 </template>
 
 <script>
+
 import * as api from '@/api/training_plan/training_plan' 
 import * as api2 from '@/api/training_plan/application'
 import * as api3 from '@/api/training_plan/account'
+ 
+ var building_info;
+
+    function initBuildingInfo(i)
+    {
+      building_info=i;
+    }
+
+    function initBuilding(){
+      var res=building_info;    //楼的数据
+
+      var newdiv=document.createElement("div");
+      var i=1;
+      for(var tmp in res[0]){
+        newdiv.className='buildings';
+        if(tmp!='item')
+        {
+          var newbut=document.createElement("button");
+          newbut.id="building"+tmp;
+          // newbut.name="buliding"+tmp;
+          newbut.type="button";
+          newbut.innerHTML=res[0][tmp]+"楼";
+          newbut.style="height:100px; width:200px; margin:30px;";
+          newbut.setAttribute("onclick","showFloor('"+res[0][tmp]+"')");
+
+          newdiv.appendChild(newbut);
+          if(i%2==0)
+            newdiv.innerHTML+="<br>"
+         
+        }    
+         i++;    
+      }
+      document.getElementById("father").appendChild(newdiv);
+    }
+
 export default {
   components: {
     api,
     api2,
-    api3
+    api3,
+
   },
+ mounted(){
+      var building_info=this.GLOBAL.BuildingInfo.Info;
+      initBuildingInfo(building_info);
+      initBuilding();
+ },
   data() {
     return {
+      building_info:[[]],
       people_data: [],
       teacher_data: [],
       trainee_id2no:{},
@@ -326,7 +412,7 @@ export default {
         speciality: '',
         type: '',
         period: ['',''],
-        description: ''
+        description: '',
       },
       taskData: {
         name: '',
@@ -355,6 +441,7 @@ export default {
       approvers_res: [],
       dialogTableVisible: false,
       dialogFormVisible: false,
+      dialogReserveVisible: false,
       tags: [],
 
       first_choose: '',
@@ -364,8 +451,15 @@ export default {
     }
   },
   created() {
-    this.getSelection()
+    this.getSelection(),
+    window.showFloor=this.showFloor;
+    window.setRoom=this.setRoom;
+    window.judgeReserve=window.judgeReserve;
+    window.initBuildingInfo=this.initBuildingInfo;
+    window.pushPage=this.pushPage;
+
   },
+
   computed: {
     taskPeriodOptions() {
       return {
@@ -378,6 +472,7 @@ export default {
     }
   },
   methods: {
+
     submit(form) {
       console.log(this.formData)
       this.dialogFormVisible = true
@@ -578,7 +673,7 @@ export default {
         })
       }
     },
-    changeDate() {
+    changeDate() {  
       if(this.first_choose=='' || this.first_choose=='period') {
         //清空或未选择
         if(this.taskData.date==null) {
@@ -638,6 +733,7 @@ export default {
       }
     },
     changeStartTime() {
+
       if(this.first_choose=='' || this.first_choose=='period') {
         //清空或未选择
         if(this.taskData.period[0]==null)
@@ -679,9 +775,13 @@ export default {
       }
     },
     changeEndTime() {
+      this.judgeReserve();
+
       if(this.first_choose=='' || this.first_choose=='period') {
         if(this.taskData.date!=null&&this.taskData.period[0]!=null&&this.taskData.period[1]!=null) {
         //选择了日期
+        //查看预约情况
+
           this.first_choose='period'
           var that=this
           api.findClassrooms({
@@ -695,8 +795,9 @@ export default {
               that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
             }
           })
-        }
+         }
       }
+
     },
     changeClassroom() {
       if(this.first_choose=='' || this.first_choose=='classroom') {
@@ -813,7 +914,133 @@ export default {
           }
         }
       }
-    }
+    },
+    showFloor(building)
+    {
+      this.GLOBAL.ChosenInfo.Building=building;
+    //删除上一次生成的
+    var s=document.getElementById("newdiv");
+    if(s!=null)
+      s.parentNode.removeChild(s);
+
+      var res=building_info;    //楼的数据
+
+      var newdiv=document.createElement("div");
+      newdiv.id="newdiv";
+      var i=Number(1+building.charCodeAt()-65);
+
+      for(var tmp=0;tmp<res[i].length;tmp++){
+          newdiv.className='buildings';
+          var newbut=document.createElement("button");
+          newbut.id=building+'-'+res[i][tmp];
+
+          newbut.type="button";
+          //检查是否能预约状态
+          var t=this.GLOBAL.BuildingInfo.Reserve;
+          if(t[newbut.id]==null||t[newbut.id][3]==1)
+          {
+            newbut.innerHTML=res[i][tmp];
+            newbut.style="height:80px; width:160px; margin:40px;background-color:rgb(84, 151, 233);border:none;color:white;font-color:white;";
+          }
+          else
+          {
+            newbut.innerHTML=res[i][tmp]+"满";
+            newbut.style="height:80px; width:160px; margin:40px;background-color:rgb(225, 73, 91);border:none;color:white;font-color:white;";
+
+          }
+          newbut.setAttribute("onclick","setRoom('"+res[i][tmp]+"')");
+
+          newdiv.appendChild(newbut);
+          if(tmp!=0&&(tmp+1)%4==0)
+            newdiv.innerHTML+="<br>";
+           
+      }
+      document.getElementById("son").appendChild(newdiv);
+    },
+    //变色
+    Reserved(if_reserved,room,room_num)
+    {
+      var btn=document.getElementById(room);
+      if(if_reserved)
+      {
+        btn.innerHTML=room_num+"满";
+        btn.style="height:80px; width:160px; margin:40px;background-color:rgb(225, 73, 91);border:none;color:white;font-color:white;";
+        this.GLOBAL.BuildingInfo.Reserve[room][3]=0;   //不允许预约
+      }
+      else
+      {
+        btn.innerHTML=room_num;
+        btn.style="height:80px; width:160px; margin:40px;background-color:rgb(84, 151, 233);border:none;color:white;font-color:white;";
+        this.GLOBAL.BuildingInfo.Reserve[room][3]=1;   //允许预约
+      }
+    },
+    //比较开始时间和结束时间
+    judgeTime(i,reserve_data)
+    {
+      var if_reserved=0;
+        var start_time=reserve_data[1][i];
+        var end_time=reserve_data[2][i];
+        var b1=(this.taskData.period[0]<start_time&&this.taskData.period[1]<start_time);
+        var b2=(this.taskData.period[0]>end_time&&this.taskData.period[1]>end_time);
+        if(b1||b2)
+          console.log("该时间未被预约");
+        else
+        {
+          console.log("该时间有预约");
+          if_reserved=1;
+
+        }
+        return if_reserved;
+    },
+    judgeReserve()
+    {
+      var i=Number(1+this.GLOBAL.ChosenInfo.Building.charCodeAt()-65);
+      var res=building_info;    //楼的数据
+      //遍历选中楼宇的每个房间
+      for(var tmp=0;tmp<res[i].length;tmp++)
+      {
+        //this.GLOBAL.ChosenInfo.Union=room;          
+        var room=this.GLOBAL.ChosenInfo.Building+'-'+res[i][tmp];
+        var conserve=this.GLOBAL.BuildingInfo.Reserve;
+        var reserve_data=conserve[room];
+        var if_reserved=0;
+
+        if(reserve_data==null)
+          return; 
+
+        //比较年月日
+        for(var t in reserve_data[0])
+        {
+          if(reserve_data[0][t]==this.taskData.date)
+          {
+            console.log("该日期有预约");
+            if_reserved=(this.judgeTime(t,reserve_data));
+          }
+        }
+        this.Reserved(if_reserved,room,res[i][tmp]);
+      }
+    },
+    pushPage()
+    {
+      alert();
+    },
+    setRoom(room)
+    {
+      this.GLOBAL.ChosenInfo.Room=room;     
+      var building=this.GLOBAL.ChosenInfo.Building;
+      var Room=building+'-'+room;
+      var t=this.GLOBAL.BuildingInfo.Reserve;
+      //打开预约资料卡
+      if(t[Room]==null||t[Room][3]==1)
+          this.dialogReserveVisible=true;
+    },
+    handleClose(done) {
+      this.$confirm('确认关闭？')
+        .then(_ => {
+          done();
+        })
+        .catch(_ => {});
+    },
   }
 }
 </script>
@@ -822,5 +1049,6 @@ export default {
   width: 400px;
   max-width: 100%;
   margin: 20px auto;
+ //color:rgb(225, 73, 91)
   }
 </style>
