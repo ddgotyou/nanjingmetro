@@ -338,7 +338,7 @@
           </el-row>
         </el-form>
         <div style="text-align:right">
-          <el-button type="primary" @click="pushPage">查看教室设备</el-button>
+          <el-button type="primary" @click="pushPage">预约该教室设备</el-button>
           <el-button type="primary" @click="addTask">确认新增</el-button>
         </div>
         <el-divider />
@@ -1022,7 +1022,7 @@ export default {
     },
     pushPage()
     {
-      alert();
+      this.$router.push({path: 'device_task'})
     },
     setRoom(room)
     {

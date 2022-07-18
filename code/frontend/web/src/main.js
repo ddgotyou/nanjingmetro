@@ -7,6 +7,7 @@ import './assets/styles/element-variables.scss'
 
 import '@/assets/styles/index.scss' // global css
 import '@/assets/styles/common.scss' // common css
+import '@/assets/icons/iconfont/iconfont.css'   //设备 电脑 监控图表
 import App from './App'
 import store from './store'
 import router from './router'

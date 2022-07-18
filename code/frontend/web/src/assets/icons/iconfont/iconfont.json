@@ -1,0 +1,30 @@
+{
+  "id": "3479960",
+  "name": "UI-classroom",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "2932822",
+      "name": "电脑",
+      "font_class": "diannao",
+      "unicode": "e7fc",
+      "unicode_decimal": 59388
+    },
+    {
+      "icon_id": "1104641",
+      "name": "设备类_设备-44",
+      "font_class": "shebeileishebei44",
+      "unicode": "ea21",
+      "unicode_decimal": 59937
+    },
+    {
+      "icon_id": "6506474",
+      "name": "监控",
+      "font_class": "icon-jiankong",
+      "unicode": "e63e",
+      "unicode_decimal": 58942
+    }
+  ]
+}
