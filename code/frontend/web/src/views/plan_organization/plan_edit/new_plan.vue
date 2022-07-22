@@ -338,6 +338,7 @@
           </el-row>
         </el-form>
         <div style="text-align:right">
+          <el-button type="primary" @click="pushCamera">查看教室监控</el-button>
           <el-button type="primary" @click="pushPage">查看教室设备</el-button>
           <el-button type="primary" @click="addTask">确认新增</el-button>
         </div>
@@ -1054,6 +1055,7 @@ export default {
         this.dialogCameraVisible=true;
     },
     pushCamera(){
+        this.dialogReserveVisible=false;
         this.dialogCameraVisible=false;
     },
     handleClose(done) {
