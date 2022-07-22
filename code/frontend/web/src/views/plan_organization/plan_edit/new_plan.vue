@@ -345,6 +345,21 @@
       </el-card>
 
     </el-dialog>
+
+    <el-dialog      
+      title="提示"
+      :visible.sync="dialogCameraVisible"
+      style="display:absolute;margin-top:200px;"
+      width="50%"
+      height="70%"
+      center
+      :before-close="handleClose">
+
+      <p style="font-size:18px;">进入监控页面查看</p>
+      <el-button type="primary" style="margin-left:290px;" @click="pushCamera">确定</el-button>
+    
+    </el-dialog>
+  
   </div>
 </template>
 
@@ -442,6 +457,7 @@ export default {
       dialogTableVisible: false,
       dialogFormVisible: false,
       dialogReserveVisible: false,
+      dialogCameraVisible:false,
       tags: [],
 
       first_choose: '',
@@ -457,6 +473,7 @@ export default {
     window.judgeReserve=window.judgeReserve;
     window.initBuildingInfo=this.initBuildingInfo;
     window.pushPage=this.pushPage;
+    window.pushCamera=this.pushCamera;
 
   },
 
@@ -792,7 +809,7 @@ export default {
             that.classrooms=[]
             for(var i=0;i<res._embedded.classrooms.length;i++)
             {
-              that.classrooms.push({label:res._embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
+              that.classrooms.push({label:res_embedded.classrooms[i].name,value:res._embedded.classrooms[i].id})
             }
           })
          }
@@ -1033,6 +1050,11 @@ export default {
       //打开预约资料卡
       if(t[Room]==null||t[Room][3]==1)
           this.dialogReserveVisible=true;
+          else
+        this.dialogCameraVisible=true;
+    },
+    pushCamera(){
+        this.dialogCameraVisible=false;
     },
     handleClose(done) {
       this.$confirm('确认关闭？')
