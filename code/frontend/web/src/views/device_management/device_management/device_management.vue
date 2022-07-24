@@ -297,6 +297,7 @@
         <template slot-scope="scope">
           <el-button @click.native.prevent="edit(scope.$index)" type="text">修改</el-button>
           <el-button @click.native.prevent="apply(scope.$index)" type="text">申请</el-button>
+          <el-button @click.native.prevent="check(scope.$index)" type="text">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -698,6 +699,17 @@ export default {
       //清空
       this.newlabForm={};
       this.getDeviceList();
+    },    
+    //查看设备
+    check(index) {
+      let id = this.tableData[index].deviceId;
+      let classroom = this.tableData[index].deviceClassroom;
+      console.log("查看设备信息")
+      console.log(this.tableData);
+      this.$router.push({
+        path: 'device_check',
+        query:{id, classroom},
+      });
     },
     //修改设备
     edit(index) {
