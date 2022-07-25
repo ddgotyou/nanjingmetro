@@ -281,14 +281,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="教室">
-                <el-select v-model="taskData.classroom" style="width:100%" clearable placeholder="请选择" @change="changeClassroom">
-                  <el-option
-                    v-for="item in classrooms"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
+                {{ChosenBuilding}}楼-{{ChosenClassroom}}教室
               </el-form-item>
             </el-col>
           </el-row>
@@ -339,7 +332,7 @@
         </el-form>
         <div style="text-align:right">
           <el-button type="primary" @click="pushCamera">查看教室监控</el-button>
-          <el-button type="primary" @click="pushPage">查看教室设备</el-button>
+          <el-button type="primary" @click="pushPage">预约该教室设备</el-button>
           <el-button type="primary" @click="addTask">确认新增</el-button>
         </div>
         <el-divider />
@@ -418,6 +411,8 @@ export default {
  },
   data() {
     return {
+      ChosenBuilding: null,
+      ChosenClassroom: null,
       building_info:[[]],
       people_data: [],
       teacher_data: [],
@@ -469,6 +464,8 @@ export default {
   },
   created() {
     this.getSelection(),
+    this.ChosenBuilding=this.GLOBAL.ChosenInfo.Building;
+    this.ChosenClassroom=this.GLOBAL.ChosenInfo.Room;
     window.showFloor=this.showFloor;
     window.setRoom=this.setRoom;
     window.judgeReserve=window.judgeReserve;
@@ -936,6 +933,8 @@ export default {
     showFloor(building)
     {
       this.GLOBAL.ChosenInfo.Building=building;
+      this.ChosenBuilding=this.GLOBAL.ChosenInfo.Building;
+
     //删除上一次生成的
     var s=document.getElementById("newdiv");
     if(s!=null)
@@ -1040,11 +1039,12 @@ export default {
     },
     pushPage()
     {
-      alert();
+      this.$router.push({path: 'device_task'})
     },
     setRoom(room)
     {
-      this.GLOBAL.ChosenInfo.Room=room;     
+      this.GLOBAL.ChosenInfo.Room=room;    
+      this.ChosenClassroom=this.GLOBAL.ChosenInfo.Room; 
       var building=this.GLOBAL.ChosenInfo.Building;
       var Room=building+'-'+room;
       var t=this.GLOBAL.BuildingInfo.Reserve;
