@@ -26,6 +26,10 @@ import JsonExcel from 'vue-json-excel'
 
 import './utils/jsmpeg.min'
 
+//引入图表
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
+
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getConfigKey = getConfigKey
