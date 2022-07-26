@@ -190,6 +190,7 @@ export default {
       };
       let that=this;
       api.plans(this.$user.userId,params).then( res => {
+        console.log(res);
         that.response = res;
         that.tableData = [];
         if(res.hasOwnProperty('_embedded'))

@@ -387,4 +387,13 @@ export function camelCase(str) {
 export function isNumberStr(str) {
   return /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g.test(str)
 }
+
+// 页面滑动到指定位置
+export function scrollToLocation(toHeight) {
+  const scrollToTop = document.documentElement.scrollTop   //滚动条距离顶部的距离
+  $("html,body").animate({
+    scrollTop: scrollToTop + toHeight
+  }, 500);
+}
+
  

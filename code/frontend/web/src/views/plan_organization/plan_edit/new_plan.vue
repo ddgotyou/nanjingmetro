@@ -15,7 +15,7 @@
   </el-form>
   </div>
 
-  <div class="floor-container">
+  <div class="floor-container" ref="floorContainer">
   <el-form label-position="right" label-width="80px" :model="taskData">
   <el-card class="box-card" style="width:100%">
     <div slot="header">教室选择</div>
@@ -340,17 +340,30 @@
 
     </el-dialog>
 
+    <!-- 查看监控 -->
     <el-dialog      
-      title="提示"
+      title="监控界面"
       :visible.sync="dialogCameraVisible"
-      style="display:absolute;margin-top:200px;"
+      style="display:absolute;margin-top:5%;overflow: hidden;"
       width="50%"
       height="70%"
       center
       :before-close="handleClose">
-
-      <p style="font-size:18px;">进入监控页面查看</p>
-      <el-button type="primary" style="margin-left:290px;" @click="pushCamera">确定</el-button>
+      <div class="camera_outer" >
+      <video id="videoCamera" :width="videoWidth" :height="videoHeight" style="margin-left:2%;" autoplay></video>
+      <canvas style="display:none;" id="canvasCamera" :width="videoWidth" :height="videoHeight"></canvas>
+      <!-- <div v-if="imgSrc" class="img_bg_camera">
+        <p style="font-size: 15px;">效果预览</p>
+        <img :src="imgSrc" alt class="tx_img" style="margin-left:50%;" />
+      </div> -->
+      <div class="button">
+        <el-button @click="getCompetence()">打开摄像头</el-button>
+        <el-button @click="stopNavigator()">关闭摄像头</el-button>
+        <!-- <el-button @click="setImage()">截图</el-button> -->
+      </div>
+      </div>
+      <!-- <p style="font-size:18px;"></p> -->
+      <!-- <el-button type="primary" style="margin-left:290px;" @click="pushCamera">确定</el-button> -->
     
     </el-dialog>
   
@@ -459,7 +472,17 @@ export default {
       first_choose: '',
       periods: [],
       startTimeRange: [],
-      endTimeRange: []
+      endTimeRange: [],
+
+      // 监控
+      videoWidth: 650,
+      videoHeight: 450,
+      imgSrc: "",
+      thisCancas: null,
+      thisContext: null,
+      thisVideo: null,
+      openVideo:false
+
     }
   },
   created() {
@@ -973,6 +996,10 @@ export default {
            
       }
       document.getElementById("son").appendChild(newdiv);
+      //锚点滚动
+      // this.$nextTick(() => {
+        this.$refs["floorContainer"].scrollIntoView(true);
+      // })
     },
     //变色
     Reserved(if_reserved,room,room_num)
@@ -1056,7 +1083,86 @@ export default {
     },
     pushCamera(){
         this.dialogReserveVisible=false;
-        this.dialogCameraVisible=false;
+        this.dialogCameraVisible=true;
+    },
+    // 调用权限（打开摄像头功能）
+    getCompetence() {
+      var _this = this;
+      _this.thisCancas = document.getElementById("canvasCamera");
+      _this.thisContext = this.thisCancas.getContext("2d");
+      _this.thisVideo = document.getElementById("videoCamera");
+      _this.thisVideo.style.display = 'block';
+      // 获取媒体属性，旧版本浏览器可能不支持mediaDevices，我们首先设置一个空对象
+      if (navigator.mediaDevices === undefined) {
+        navigator.mediaDevices = {};
+      }
+      // 一些浏览器实现了部分mediaDevices，我们不能只分配一个对象
+      // 使用getUserMedia，因为它会覆盖现有的属性。
+      // 这里，如果缺少getUserMedia属性，就添加它。
+      if (navigator.mediaDevices.getUserMedia === undefined) {
+        navigator.mediaDevices.getUserMedia = function(constraints) {
+          // 首先获取现存的getUserMedia(如果存在)
+          var getUserMedia =
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia ||
+            navigator.getUserMedia;
+          // 有些浏览器不支持，会返回错误信息
+          // 保持接口一致
+          if (!getUserMedia) {//不存在则报错
+            return Promise.reject(
+              new Error("getUserMedia is not implemented in this browser")
+            );
+          }
+          // 否则，使用Promise将调用包装到旧的navigator.getUserMedia
+          return new Promise(function(resolve, reject) {
+            getUserMedia.call(navigator, constraints, resolve, reject);
+          });
+        };
+      }
+      var constraints = {
+        audio: false,
+        video: {
+          width: this.videoWidth,
+          height: this.videoHeight,
+          transform: "scaleX(-1)"
+        }
+      };
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(function(stream) {
+          // 旧的浏览器可能没有srcObject
+          if ("srcObject" in _this.thisVideo) {
+            _this.thisVideo.srcObject = stream;
+          } else {
+            // 避免在新的浏览器中使用它，因为它正在被弃用。
+            _this.thisVideo.src = window.URL.createObjectURL(stream);
+          }
+          _this.thisVideo.onloadedmetadata = function(e) {
+            _this.thisVideo.play();
+          };
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    //  绘制图片（拍照功能）
+    setImage() {
+      var _this = this;
+      // canvas画图
+      _this.thisContext.drawImage(
+        _this.thisVideo,
+        0,
+        0,
+        _this.videoWidth,
+        _this.videoHeight
+      );
+      // 获取图片base64链接
+      var image = this.thisCancas.toDataURL("image/png");
+      _this.imgSrc = image;//赋值并预览图片
+    },
+    // 关闭摄像头
+    stopNavigator() {
+      this.thisVideo.srcObject.getTracks()[0].stop();
     },
     handleClose(done) {
       this.$confirm('确认关闭？')
@@ -1075,4 +1181,10 @@ export default {
   margin: 20px auto;
  //color:rgb(225, 73, 91)
   }
+  .camera_outer{
+  position: relative;
+  overflow: hidden;
+  left:-20px;
+  width:1200px;
+}
 </style>
