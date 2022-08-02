@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="app-container">
     <el-card class="card-box" style="width: 100%">
       <div class="image-box">
@@ -6,8 +6,8 @@
         <el-tabs v-model='activeName' class="chartType" tab-position='right'>
           <el-tab-pane :key='tabs[0].name' :name='tabs[0].name' :label='tabs[0].label'>
             <div class="chartBox">
-              <span style="margin-right: 20px">统计维度</span>
-              <el-select v-model='dimensions' multiple placeholder="请选择统计维度（可多选）" @change='drawChart'>
+              <el-select v-model='dimensions' multiple placeholder="请选择统计维度（可多选）" @change='drawChart'
+                style="width:420px">
                 <el-option v-for='item in options' :key='item.value' :label='item.label' :value='item.value'>
                 </el-option>
               </el-select>
@@ -17,8 +17,9 @@
           </el-tab-pane>
           <el-tab-pane :key='tabs[1].name' :name='tabs[1].name' :label='tabs[1].label'>
             <div class="chartBox">
-              <span style="margin-right: 20px">统计维度</span>
-              <el-select v-model='dimensions' multiple placeholder="请选择统计维度（仅可单选）" @change="drawChart">
+
+              <el-select v-model='dimensions' multiple placeholder="请选择统计维度（仅可单选）" @change="drawChart"
+                style="width:450px">
                 <el-option v-for='item in options' :key='item.value' :label='item.label' :value='item.value'>
                 </el-option>
               </el-select>
@@ -33,11 +34,33 @@
 
       </div>
       <el-button style="margin-left:90%;" @click="download">导出图表</el-button>
+     <div class="desc-box">统计信息说明</div>
+    </el-card>
+  </div>
+</template> -->
+<template>
+  <div class="app-container">
+    <el-card class="card-box" style="width: 100%">
+      <div slot="header">
+        <span style="margin-right: 20px">统计维度</span>
+        <el-select v-model="dimensions" multiple placeholder="请选择统计维度（可多选）" @change="drawChart" @blur="setMinWidth">
+          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
+      <div class="image-box">
+        <div class="echart" id="mychart" :style="myChartStyle"></div>
+        <!-- <el-image
+          style="width: 800px; height: 400px"
+          :src="url"
+          fit="fill"
+        ></el-image> -->
+      </div>
+      <el-button style="margin-left:90%;" @click="download">导出图表</el-button>
       <!-- <div class="desc-box">统计信息说明</div> -->
     </el-card>
   </div>
 </template>
-
 <script>
 //引入图表
 import * as echarts from "echarts";
@@ -137,9 +160,7 @@ export default {
       seriesData: [],
       seriesType: [],
       myChartStyle: {
-        position: "relative",
-        top: "-50px",
-        width: "90%", height: "550px"
+        float: "left", width: "100%", height: "600px"
       },//图表样式
       dataList: null
     }
@@ -279,8 +300,9 @@ export default {
 }
 
 .chartBox {
+  display: flex;
   width: 100%;
-  height: 600px;
+  height: 650px;
 }
 
 
